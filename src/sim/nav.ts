@@ -144,7 +144,7 @@ export class Nav {
         if (Math.max(Math.abs(xx - cx), Math.abs(yy - cy)) !== r) continue;
         if (!this.passableXY(xx, yy, player)) continue;
         const ddx = xx + 0.5 - x, ddy = yy + 0.5 - y; const d = ddx * ddx + ddy * ddy;
-        if (d < bestD) { bestD = d; bestI = this.idx(xx, yy); }
+        if (d < bestD - 1e-9) { bestD = d; bestI = this.idx(xx, yy); } // epsilon: float noise must not break mirrored ties
       }
       if (bestI >= 0) return bestI;
     }

@@ -60,6 +60,15 @@ The client runs its own `requestAnimationFrame` loop. It accumulates real time �
 - **Save/load:** saves entities, players, the RNG state, the tick, the nav version, visible and explored grids, AI state and the command log. Nav, spatial hash and budgets are rebuilt. A test confirms that an uninterrupted run and a save → load → continue run have identical hashes 3000 ticks later.
 - **Cross-runtime:** the Node test build and the bundled browser build produce the same hash for the same seed over 3000 ticks (e2e). **Limits:** both runtimes are V8. JavaScriptCore (Safari/Tauri on macOS) and SpiderMonkey are untested, so cross-platform lockstep isn't claimed. Multiplayer would need that check plus desync hashing each tick.
 
+**Fairness invariants (0.3.1).** Two identical AIs on the point-symmetric map stay exactly mirrored. `tests/fairness.test.ts` checks this, and `tools/mirror_probe.ts` finds the first divergence if it ever breaks. The invariants:
+- Unit positions snap to a centre-symmetric fixed-point lattice every tick (`quantizePositions`).
+- Units decide from start-of-tick state; moves and hits are applied after all units have acted.
+- Timing staggers use per-owner sequence numbers, not global ids.
+- Every tie-break, formation slot and fixed offset is taken in the player's own mirrored frame.
+- Distance ties compare with an epsilon.
+
+New sim code must keep these.
+
 ## 4. Navigation
 
 - **Grid:** 64×64 tiles. Terrain is `0` (lattice) or `1` (void). Buildings stamp their footprint into `block[]` (building id) and `blockOwner[]`.

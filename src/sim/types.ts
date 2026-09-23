@@ -68,6 +68,8 @@ export interface Entity {
   path?: number[]; pathI?: number; pathPartial?: boolean; pathBreach?: boolean; pathGoal?: number[]; // goal rect x0,y0,x1,y1
   repathT?: number; stuckT?: number; navVer?: number; pathDeferred?: boolean; stuckN?: number; lastX?: number; lastY?: number;
   cd?: number; carry?: number; kills?: number; rank?: number;
+  /** Per-owner spawn order (see Player.spawnSeq); used instead of the global id for timing staggers. */
+  seq?: number;
   engaged?: number;                // current combat target id
   suspended?: boolean; crashed?: boolean;
   forkOf?: number; expires?: number;
@@ -95,6 +97,8 @@ export interface Player {
   ration: Ration; stability: number; unmet: number; crashT: number;
   forkReadyTick: number; surgeUntil: number;
   defeated: boolean;
+  /** Units spawned so far by this player: gives each program a mirror-consistent sequence number. */
+  spawnSeq?: number;
   stats: PlayerStats;
   alerts: Alert[];
   explored: Uint8Array;             // saved as string

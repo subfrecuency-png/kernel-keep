@@ -1,5 +1,23 @@
 # TEST_REPORT — Kernel Keep
 
+## 0.3.1 (branch `iso-art-0.3`), 2026-09-23
+
+This build uses the same container as below. **Nothing was run on the Air.** Logs in `docs/test-logs/` were overwritten.
+
+| Check | Result |
+|---|---|
+| Type check | 0 errors |
+| `npm test` | **33 / 33 pass**, including the new `tests/fairness.test.ts`. That test checks that equal-phase AIs stay exactly point-mirrored for 3,000 ticks. It fails if position snapping is switched off, which was verified by doing so. |
+| `npm run e2e` | **36 / 36 pass**. Node and the browser agree on the new reference hash **`adb5621a`** (seed 777, 3,000 ticks). |
+| `npm run e2e:pwa` | pass |
+| `tools/mirror_probe.ts 1e-9 20000` | mirror-exact for 20,000 ticks; the match ends in a draw |
+| `tools/fairness.ts 12 25` | **P1 11 – P2 11**, 2 undecided, p = 1.00, Data ratio 1.00. Every swapped pair has the opposite winner. |
+| `npm run bench` | worst tick ≤ 31 ms at every size, well under the 100 ms budget |
+| AI vs AI, seed 7 | P2 wins at 14:17. Mirror-swapping the phases makes P1 win. |
+| Battle fps (container, software GPU) | ~33 fps at 160 units. The new motion effects add slices and flashes. |
+
+---
+
 ## 0.3 (branch `iso-art-0.3`: isometric view with the concept art on the map), 2026-09-23
 
 This build uses the same container as below. **Nothing was run on the Air.**

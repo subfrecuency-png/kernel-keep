@@ -39,8 +39,8 @@ test('hardened walls: non-siege attacks deal 25%, Breakers full damage', () => {
   const dealt = hp0 - wall.hp;
   assert.ok(dealt > 0 && dealt <= B.units.bulwark.attack!.dmg * 0.25 * 2 + 1e-9, `bulwark vs wall ${dealt}`);
   const br = w.spawnUnit('breaker', 1, 25.5, 40.5);
+  const hp1 = wall.hp; // measure from the spawn: an idle Breaker may auto-target the wall on its first tick
   g.step(); cmd(g, { t: 'attack', ids: [br.id], target: wall.id });
-  const hp1 = wall.hp;
   for (let i = 0; i < 12; i++) g.step();
   assert.ok(hp1 - wall.hp >= B.units.breaker.attack!.dmg * 0.99, 'breaker full damage');
 });

@@ -8,12 +8,12 @@ The same game is played with P1's start entities inserted first, then with P2's.
 
 | AI phases (P1,P2) | Setup order | Winner | Length | P1 Data | P2 Data |
 |---|---|---|---|---|---|
-| 3,6 | p1first | 1 | 17:03 | 4840 | 4250 |
-| 3,6 | p2first | 1 | 17:03 | 4840 | 4250 |
-| 6,3 | p1first | 1 | 17:04 | 5330 | 3780 |
-| 6,3 | p2first | 1 | 17:04 | 5330 | 3780 |
-| 0,0 | p1first | 2 | 12:22 | 3510 | 4050 |
-| 0,0 | p2first | 2 | 12:22 | 3510 | 4050 |
+| 3,6 | p1first | 2 | 14:17 | 4178 | 4530 |
+| 3,6 | p2first | 2 | 14:17 | 4178 | 4530 |
+| 6,3 | p1first | 1 | 14:13 | 4520 | 4178 |
+| 6,3 | p2first | 1 | 14:13 | 4520 | 4178 |
+| 0,0 | p1first | — | 25:00 | 5670 | 5670 |
+| 0,0 | p2first | — | 25:00 | 5670 | 5670 |
 
 ## B. Paired win rate
 
@@ -21,44 +21,58 @@ The AIs use no randomness, so the seed alone does not change the game. Each seed
 
 | Games | P1 wins | P2 wins | Undecided | Two-sided binomial p (decided games) | Median length | Σ P1 Data / Σ P2 Data |
 |---|---|---|---|---|---|---|
-| 24 | 18 | 6 | 0 | 0.023 | 12:58 | 1.12 |
+| 24 | 11 | 11 | 2 | 1.000 | 12:44 | 1.00 |
 
 | seed | phases | winner | length | first contact | P1 lost | P2 lost | P1 Data | P2 Data | final hash |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | 6,7 | 2 | 12:22 | 4:17 | 45 | 15 | 3480 | 4090 | aaf4b628 |
-| 1 | 7,6 | 1 | 12:25 | 4:18 | 13 | 46 | 4080 | 3450 | 028dcccc |
-| 2 | 8,9 | 1 | 17:03 | 4:09 | 29 | 66 | 5250 | 4752 | 30fa87b6 |
-| 2 | 9,8 | 2 | 13:08 | 4:09 | 37 | 11 | 3941 | 4250 | 1aaa626c |
-| 3 | 9,1 | 2 | 12:37 | 4:17 | 48 | 12 | 3230 | 4120 | f78b3973 |
-| 3 | 1,9 | 1 | 12:30 | 4:17 | 12 | 41 | 4130 | 3030 | 47321111 |
-| 4 | 0,7 | 1 | 12:23 | 4:16 | 13 | 38 | 4090 | 2940 | 31e83251 |
-| 4 | 7,0 | 1 | 14:02 | 4:16 | 22 | 55 | 4480 | 4040 | 78c5469d |
-| 5 | 3,8 | 1 | 12:46 | 4:06 | 12 | 38 | 3940 | 2950 | 010bbf69 |
-| 5 | 8,3 | 1 | 16:24 | 4:06 | 29 | 47 | 4970 | 4058 | b29808eb |
-| 6 | 2,4 | 2 | 13:06 | 6:50 | 52 | 15 | 3718 | 4060 | ccc50bb0 |
-| 6 | 4,2 | 1 | 13:10 | 4:19 | 16 | 46 | 4280 | 3390 | 57fc9c48 |
-| 7 | 6,3 | 1 | 17:04 | 4:06 | 30 | 46 | 5330 | 3780 | 9e6bcad6 |
-| 7 | 3,6 | 1 | 17:03 | 4:06 | 27 | 48 | 4840 | 4250 | 5d46f634 |
-| 8 | 6,3 | 1 | 17:04 | 4:06 | 30 | 46 | 5330 | 3780 | 988605ab |
-| 8 | 3,6 | 1 | 17:03 | 4:06 | 27 | 48 | 4840 | 4250 | fa81bb63 |
-| 9 | 7,8 | 1 | 12:40 | 4:18 | 12 | 43 | 4150 | 3310 | 87d53452 |
-| 9 | 8,7 | 1 | 12:58 | 4:25 | 19 | 50 | 4040 | 3730 | 487260e4 |
-| 10 | 4,5 | 1 | 12:45 | 4:17 | 14 | 45 | 4160 | 3550 | 5aafc1c0 |
-| 10 | 5,4 | 2 | 13:14 | 4:01 | 54 | 16 | 3570 | 4150 | 9a03a40e |
-| 11 | 3,1 | 1 | 12:36 | 4:06 | 13 | 48 | 3920 | 3680 | b0b4dc19 |
-| 11 | 1,3 | 1 | 12:11 | 4:06 | 13 | 46 | 4060 | 3218 | f7f17659 |
-| 12 | 8,4 | 2 | 12:53 | 4:18 | 44 | 12 | 3180 | 4030 | 3fa3d4f0 |
-| 12 | 4,8 | 1 | 12:55 | 4:17 | 17 | 44 | 4200 | 3580 | 0160ed0b |
+| 1 | 6,7 | 2 | 12:48 | 4:16 | 48 | 14 | 3680 | 3990 | be383ec4 |
+| 1 | 7,6 | 1 | 12:48 | 4:16 | 14 | 48 | 3990 | 3680 | 984eee02 |
+| 2 | 8,9 | — | 25:00 | 4:08 | 22 | 45 | 5920 | 3590 | de9653df |
+| 2 | 9,8 | — | 25:00 | 4:08 | 45 | 22 | 3590 | 5920 | 61442fc6 |
+| 3 | 9,1 | 2 | 17:09 | 4:16 | 53 | 25 | 4480 | 5380 | cacce808 |
+| 3 | 1,9 | 1 | 17:09 | 4:16 | 25 | 53 | 5380 | 4480 | c7f30b2f |
+| 4 | 0,7 | 2 | 11:39 | 4:08 | 37 | 11 | 2910 | 3710 | ca6840dd |
+| 4 | 7,0 | 1 | 12:03 | 4:08 | 12 | 38 | 3790 | 2910 | 7d3392e6 |
+| 5 | 3,8 | 1 | 11:15 | 3:59 | 8 | 38 | 3920 | 3040 | 5b73c5b0 |
+| 5 | 8,3 | 2 | 11:14 | 3:59 | 38 | 8 | 3048 | 3920 | 688d0d6c |
+| 6 | 2,4 | 2 | 12:26 | 4:16 | 50 | 12 | 3330 | 4060 | 6ad948e1 |
+| 6 | 4,2 | 1 | 12:25 | 4:16 | 12 | 50 | 4060 | 3330 | 771ecb5e |
+| 7 | 6,3 | 1 | 14:13 | 4:10 | 25 | 56 | 4520 | 4178 | 5db4b8e5 |
+| 7 | 3,6 | 2 | 14:17 | 4:10 | 56 | 25 | 4178 | 4530 | 84c6183c |
+| 8 | 6,3 | 1 | 14:13 | 4:10 | 25 | 56 | 4520 | 4178 | 977ec610 |
+| 8 | 3,6 | 2 | 14:17 | 4:10 | 56 | 25 | 4178 | 4530 | 133b2c13 |
+| 9 | 7,8 | 2 | 12:43 | 4:08 | 46 | 15 | 3170 | 4040 | 3864f42d |
+| 9 | 8,7 | 1 | 12:42 | 4:08 | 15 | 46 | 4040 | 3170 | e3f8bb8d |
+| 10 | 4,5 | 2 | 12:55 | 4:16 | 51 | 14 | 3688 | 4220 | b4f8c56c |
+| 10 | 5,4 | 1 | 12:53 | 4:16 | 14 | 51 | 4220 | 3688 | 377db29a |
+| 11 | 3,1 | 1 | 12:44 | 4:10 | 15 | 44 | 4290 | 3570 | 3f5eb858 |
+| 11 | 1,3 | 2 | 12:44 | 4:10 | 44 | 15 | 3570 | 4290 | fc9675e2 |
+| 12 | 8,4 | 2 | 12:41 | 3:59 | 45 | 13 | 3460 | 4200 | 244cac4e |
+| 12 | 4,8 | 1 | 12:40 | 3:59 | 13 | 46 | 4200 | 3478 | 2cd87684 |
 
-## What was fixed in v0.2 and what remains
+## What was fixed, and the result
 
-The first run of this experiment, before any fixes, found that the player whose start entities had the **higher** ids won 10/10 in every configuration. Seeds made no difference. The v0.2 fixes, each found by bisecting with probes:
+The first run of this experiment, before any fixes, found that the player whose start entities had the **higher** ids won 10/10 in every configuration, whatever the seed. A later run (0.2) still found P1 winning 18 of 24. Each fix below was found by bisecting with `tools/mirror_probe.ts`, which runs two identical AIs and reports the first tick where the point-mirrored states differ.
 
-1. **Separation** was a sequential (Gauss–Seidel) sweep in id order. Disabling it removed the id-order effect, so it is now Jacobi-style: all pushes are computed from start-of-step positions and then applied.
-2. **Simultaneous damage**: shots and heals are queued and resolved together (`applyHits`), so the order of attackers does not decide who dies first.
-3. **Mirrored tie-breaks** for player 2 in build placement (`findSpot`), spawn tiles (`freeTileNear`), A* neighbour expansion and the `nearestPassable` ring scan.
-4. **Arrival epsilon**: a waypoint counts as reached when the distance is ≤ step + 1e-6. Before this, mirrored float positions arrived on different ticks.
+**0.2 fixes:**
+1. **Separation** is Jacobi-style: every push is computed from start-of-step positions, then applied.
+2. **Simultaneous damage** (`applyHits`).
+3. **Mirrored tie-breaks** for player 2 in:
+   - build placement;
+   - spawn tiles;
+   - A* neighbour expansion;
+   - the `nearestPassable` ring scan.
+4. **Arrival epsilon** for waypoints.
 
-**Remaining (open):** a mirrored-state probe shows the two sides stay mirror-identical to within 1e-9 for the first ~55 s of AI play. Positions are floats, though, and `64 − x` is not exactly representable. The first float-level divergence appears around tick 549. Crowd separation around busy wells amplifies it until it is visible (around 1e-4 near 2:56), after which the economies drift apart. Section B shows whether that drift has a systematic direction. The exact fix would be fixed-point (integer) positions in the sim: **Proposed**, not done, because it touches every movement system and every hash.
+**0.3.1 fixes:**
+5. **Fixed-point positions.** Unit positions snap each tick to a 1/4096-tile lattice, symmetric about the map centre and offset by half a step, so a position is never an exact integer and `Math.floor` mirrors exactly. Before this, floats let 64 − x round differently from x, and crowding at wells amplified that 1e-13 noise about tenfold per tick.
+6. **Deferred movement.** Every program decides from the same start-of-tick world, and moves are applied after the loop. Before this, the lower id moved first and the other side reacted to its new position.
+7. **Mirror-consistent staggering.** Auto-acquire scans are staggered by each player's own spawn sequence (`Entity.seq`), not the global id. The global id put mirrored twins on different ticks.
+8. **Mirrored AI offsets.** Formation slots, the Fork clone offset and the AI's rally and scout offsets are laid out in each player's own frame.
+9. **Ring-scan epsilon.** Float noise can no longer break an exact distance tie.
 
-**Reading section B (this run):** P1 still wins more often than chance, and P1 also harvests more Data overall. Some phase pairs repeat across seeds, so the games are not fully independent and the p-value is optimistic. The residual advantage is real enough to track as an **open fairness bug**. Next suspects, in order: (1) tile-granular goal and approach checks around wells and drop-offs (`approach`, `nearestWell`, `nearestDropoff` distance ties and `Math.floor` on mirrored float positions); (2) fixed-point positions (above); (3) A* `bestH` tie on partial paths. Until fixed, AI-vs-AI results are not evidence of balance, and ranked or competitive use should wait.
+**Result:**
+- With equal AI phases, the two sides stay **exactly mirror-identical (to 1e-9) for 20,000 ticks, over 33 minutes**, and the match is a draw.
+- In section B, every swapped pair produces the opposite winner: **11–11, p = 1.00, Data ratio 1.00**.
+- Which side wins is now decided by which AI's decision cycle falls earlier relative to the other's, not by the side it plays.
+- Paired lengths still differ by a few seconds. That is a small leftover asymmetry, most likely the per-tick pathfinding budget, which is spent in id order. It does not change any winner here.

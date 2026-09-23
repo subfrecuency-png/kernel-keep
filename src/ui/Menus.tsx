@@ -48,7 +48,7 @@ export function Title({ snap }: { snap: Snapshot }) {
         <button id="t-set" onClick={() => engine.openModal('settings')}>Settings</button>
       </div>
     </div>
-    <footer className="title-footer"><span><i className="status-dot" /> OFFLINE · NO ACCOUNT · HASH CREDITS ARE FICTIONAL AND MATCH-LOCAL</span><span>MERIDIAN DIVIDE · PROTOTYPE 0.3 · PROVISIONAL TITLE</span></footer>
+    <footer className="title-footer"><span><i className="status-dot" /> OFFLINE · NO ACCOUNT · HASH CREDITS ARE FICTIONAL AND MATCH-LOCAL</span><span>MERIDIAN DIVIDE · PROTOTYPE 0.3.1 · PROVISIONAL TITLE</span></footer>
   </main>;
 }
 

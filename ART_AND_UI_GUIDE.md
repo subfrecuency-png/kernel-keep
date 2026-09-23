@@ -18,6 +18,10 @@
 - Sprites turn to face their movement or their target, bob while walking and recoil when firing.
 - They flash when hit.
 - A Runner carrying Data shows a small cube.
+- **0.3.1:** walking swings the lower third of the sprite about the hips.
+- Ranged shots kick back with a muzzle flash; melee attacks lunge.
+- New programs compile in bottom-up behind a scan line; destroyed programs and structures de-rez into glitching slices.
+- Programs hidden behind a structure show through as a flat team-coloured silhouette.
 
 Silhouettes stay distinct: a hunched Runner with a cube, a spindly Ping, a shield-bearing Bulwark, a Lancer with a long rifle, an armed Patcher, and the four-legged Breaker cannon. The 0.1 geometric shapes remain only as a fallback while the sprites decode.
 

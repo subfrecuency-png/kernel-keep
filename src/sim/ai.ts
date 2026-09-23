@@ -38,7 +38,7 @@ export class AIController {
   }
 
   update(w: World, issue: (c: Command) => CommandResult) {
-    const s = this.s; const pid = s.pid;
+    const s = this.s; const pid = s.pid; const sg = pid === 2 ? -1 : 1; // mirrored frame for fixed offsets
     if ((w.tick + (s.phase ?? pid * 3)) % 10 !== 0) return;
     const p = w.players[pid];
     if (p.defeated || w.winner) return;
@@ -162,7 +162,7 @@ export class AIController {
     } else if (s.scoutPhase === 1) {
       const ping = w.get(s.scoutId);
       if (!ping) s.scoutPhase = 2;
-      else if (ping.order?.type === 'idle') { s.scoutPhase = 2; cmd({ t: 'move', ids: [ping.id], x: core.x + 3, y: core.y - 3 }); }
+      else if (ping.order?.type === 'idle') { s.scoutPhase = 2; cmd({ t: 'move', ids: [ping.id], x: core.x + 3 * sg, y: core.y - 3 * sg }); }
     }
     const fighters = army.filter(u => !(s.scoutPhase === 1 && u.id === s.scoutId));
 
@@ -192,7 +192,7 @@ export class AIController {
       s.attackIds = alive;
       if (alive.length < Math.max(1, Math.ceil(s.launched * 0.3))) {
         s.attacking = false;
-        if (alive.length) cmd({ t: 'move', ids: alive, x: core.x + 2, y: core.y - 2 });
+        if (alive.length) cmd({ t: 'move', ids: alive, x: core.x + 2 * sg, y: core.y - 2 * sg });
         s.attackIds = [];
       } else {
         const idleAtk = alive.map(id => w.get(id)!).filter(u => u.order?.type === 'idle');

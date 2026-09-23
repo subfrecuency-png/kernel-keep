@@ -74,7 +74,9 @@ export class World {
   }
   spawnUnit(type: string, owner: number, x: number, y: number): Entity {
     const d = B.units[type];
-    const e: Entity = { id: this.nextId++, kind: 'unit', type, owner, x, y, hp: d.hp, maxHp: d.hp, order: { type: 'idle' }, cd: 0, carry: 0, kills: 0, rank: 0 };
+    const pl = this.players[owner];
+    const seq = pl ? (pl.spawnSeq = (pl.spawnSeq ?? 0) + 1) : 0;
+    const e: Entity = { id: this.nextId++, kind: 'unit', type, owner, x, y, hp: d.hp, maxHp: d.hp, order: { type: 'idle' }, cd: 0, carry: 0, kills: 0, rank: 0, seq };
     this.add(e);
     this.events.push({ t: 'spawn', id: e.id, owner, type });
     return e;

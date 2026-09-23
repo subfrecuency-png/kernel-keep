@@ -1,3 +1,29 @@
+# HANDOFF — session 4 (2026-09-23): 0.3.1, motion, x-ray and a fair mirror match
+
+Committed on branch `iso-art-0.3` in `~/Downloads/kernel-keep`, which is checked out there.
+
+**Presentation (simulation untouched):**
+- Programs hidden behind structures show through as team-coloured silhouettes. Operators working inside buildings are left hidden.
+- Motion from the single pose:
+  - the lower body swings while walking;
+  - ranged programs kick back and show a muzzle flash; melee programs lunge;
+  - new programs compile in from the ground;
+  - destroyed programs and structures de-rez into glitching slices.
+- A narrower top bar for laptop widths, and thinner beams.
+
+**Fairness (simulation changed; new hash `adb5621a`):**
+- Mirror matches are now exactly symmetric, 11–11 over 24 paired games. The fixes and the evidence are in docs/FAIRNESS_RESULTS.md.
+- A regression test guards it: `tests/fairness.test.ts`.
+- One test (`hardened walls`) was corrected to measure from the Breaker's spawn. The idle Breaker now auto-targets on its first tick; the expected damage is unchanged.
+
+**Still open:**
+- Real animation frames and several facings would need new art.
+- The Tauri shell has not been built.
+- Nothing has been measured on the Air.
+- The art still needs rights clearance.
+
+---
+
 # HANDOFF — session 3 (2026-09-23): concept art integrated into the battlefield → prototype 0.3
 
 **Request:** "full integration between the imagery and the units and layout in the game." Ryan chose:

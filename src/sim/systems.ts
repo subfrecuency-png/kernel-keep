@@ -376,61 +376,72 @@ function combat(w: World, u: Entity, t: Entity, allowChase: boolean): boolean {
 }
 
 export function stepUnits(w: World) {
+  // Every program decides from the same start-of-tick world: moves are computed per unit but applied after the
+  // loop, so a unit processed later (a higher id) never sees where an earlier one has already stepped to. Combat
+  // is resolved the same way (applyHits). Without this the lower-id side always moved "first".
   const ents = w.entities;
+  const moves: [Entity, number, number][] = [];
   for (let k = 0; k < ents.length; k++) {
     const u = ents[k];
     if (u.kind !== 'unit' || u.dead) continue;
-    if (u.forkOf && u.expires !== undefined && w.tick >= u.expires) { w.kill(u); continue; }
-    if (u.suspended) continue;
-    const ud = B.units[u.type];
-    if (u.cd! > 0) u.cd = Math.max(0, u.cd! - DT); // cooldowns are in seconds
-    const o = u.order ?? (u.order = { type: 'idle' });
-    // ---- support heal ----
-    if (ud.heal && (o.type === 'idle' || o.type === 'attackMove' || o.type === 'hold')) {
-      if (healStep(w, u, o.type !== 'hold')) continue;
-    }
-    // ---- engaged target (auto or breach) ----
-    if (ud.attack && u.engaged) {
-      const t = w.get(u.engaged);
-      const valid = t && isEnemy(u, t) && w.canSee(u.owner, t) && (o.type !== 'hold' || w.distTo(u.x, u.y, t) <= ud.attack.range);
-      if (valid && combat(w, u, t!, o.type !== 'hold')) continue;
-      u.engaged = undefined; u.path = undefined;
-    }
-    // ---- auto-acquire (staggered every 3 ticks) ----
-    if (ud.attack && ud.autoAttack && (o.type === 'idle' || o.type === 'attackMove' || o.type === 'hold') && (w.tick + u.id) % 3 === 0) {
-      const t = acquire(w, u, o.type === 'hold' ? ud.attack.range : ud.sight, ud.attack);
-      if (t) { u.engaged = t.id; u.path = undefined; combat(w, u, t, o.type !== 'hold'); continue; }
-    }
-    switch (o.type) {
-      case 'idle': case 'hold': break;
-      case 'move': case 'attackMove': {
-        if (o.x === undefined) { u.order = { type: 'idle' }; break; }
-        const goal = [Math.floor(o.x), Math.floor(o.y!), Math.floor(o.x), Math.floor(o.y!)];
-        const canBreach = o.type === 'attackMove' && !!ud.attack;
-        if (!u.path) {
-          setPath(w, u, goal, false);
-          // no open route: attack-moving programs chew through enemy structures instead
-          if (u.pathPartial && canBreach && !u.pathDeferred) setPath(w, u, goal, true);
-        }
-        const r = followPath(w, u);
-        if (typeof r === 'object') { if (canBreach) u.engaged = r.blockedBy; else { u.order = { type: 'idle' }; u.path = undefined; } }
-        else if (r === 'arrived') {
-          if (canBreach && u.pathPartial && !u.pathBreach) { setPath(w, u, goal, true); if (u.path!.length) break; }
-          u.order = { type: 'idle' }; u.path = undefined;
-        }
-        break;
+    const ox = u.x, oy = u.y;
+    stepUnit(w, u);
+    if (u.x !== ox || u.y !== oy) { moves.push([u, u.x, u.y]); u.x = ox; u.y = oy; }
+  }
+  for (const [u, x, y] of moves) if (!u.dead) { u.x = x; u.y = y; }
+}
+
+function stepUnit(w: World, u: Entity) {
+  if (u.forkOf && u.expires !== undefined && w.tick >= u.expires) { w.kill(u); return; }
+  if (u.suspended) return;
+  const ud = B.units[u.type];
+  if (u.cd! > 0) u.cd = Math.max(0, u.cd! - DT); // cooldowns are in seconds
+  const o = u.order ?? (u.order = { type: 'idle' });
+  // ---- support heal ----
+  if (ud.heal && (o.type === 'idle' || o.type === 'attackMove' || o.type === 'hold')) {
+    if (healStep(w, u, o.type !== 'hold')) return;
+  }
+  // ---- engaged target (auto or breach) ----
+  if (ud.attack && u.engaged) {
+    const t = w.get(u.engaged);
+    const valid = t && isEnemy(u, t) && w.canSee(u.owner, t) && (o.type !== 'hold' || w.distTo(u.x, u.y, t) <= ud.attack.range);
+    if (valid && combat(w, u, t!, o.type !== 'hold')) return;
+    u.engaged = undefined; u.path = undefined;
+  }
+  // ---- auto-acquire (staggered every 3 ticks) ----
+  if (ud.attack && ud.autoAttack && (o.type === 'idle' || o.type === 'attackMove' || o.type === 'hold') && (w.tick + (u.seq ?? u.id)) % 3 === 0 /* per-owner sequence: mirror-consistent, unlike the global id */) {
+    const t = acquire(w, u, o.type === 'hold' ? ud.attack.range : ud.sight, ud.attack);
+    if (t) { u.engaged = t.id; u.path = undefined; combat(w, u, t, o.type !== 'hold'); return; }
+  }
+  switch (o.type) {
+    case 'idle': case 'hold': break;
+    case 'move': case 'attackMove': {
+      if (o.x === undefined) { u.order = { type: 'idle' }; break; }
+      const goal = [Math.floor(o.x), Math.floor(o.y!), Math.floor(o.x), Math.floor(o.y!)];
+      const canBreach = o.type === 'attackMove' && !!ud.attack;
+      if (!u.path) {
+        setPath(w, u, goal, false);
+        // no open route: attack-moving programs chew through enemy structures instead
+        if (u.pathPartial && canBreach && !u.pathDeferred) setPath(w, u, goal, true);
       }
-      case 'attack': {
-        const t = w.get(o.target);
-        if (!t || !isEnemy(u, t) || !w.canSee(u.owner, t) || !ud.attack) { u.order = { type: 'idle' }; u.path = undefined; break; }
-        combat(w, u, t, true);
-        break;
+      const r = followPath(w, u);
+      if (typeof r === 'object') { if (canBreach) u.engaged = r.blockedBy; else { u.order = { type: 'idle' }; u.path = undefined; } }
+      else if (r === 'arrived') {
+        if (canBreach && u.pathPartial && !u.pathBreach) { setPath(w, u, goal, true); if (u.path!.length) break; }
+        u.order = { type: 'idle' }; u.path = undefined;
       }
-      case 'harvest': harvestStep(w, u, o); break;
-      case 'build': buildStep(w, u, o); break;
-      case 'repair': repairStep(w, u, o); break;
-      case 'operate': operateStep(w, u, o); break;
+      break;
     }
+    case 'attack': {
+      const t = w.get(o.target);
+      if (!t || !isEnemy(u, t) || !w.canSee(u.owner, t) || !ud.attack) { u.order = { type: 'idle' }; u.path = undefined; break; }
+      combat(w, u, t, true);
+      break;
+    }
+    case 'harvest': harvestStep(w, u, o); break;
+    case 'build': buildStep(w, u, o); break;
+    case 'repair': repairStep(w, u, o); break;
+    case 'operate': operateStep(w, u, o); break;
   }
 }
 
@@ -625,7 +636,7 @@ export function stepSeparation(w: World) {
       const dx = v.x - u.x, dy = v.y - u.y; const dd = dx * dx + dy * dy; const min = ru + rv;
       if (dd >= min * min) return;
       let dist = Math.sqrt(dd); let nx = 1, ny = 0;
-      if (dist > 1e-6) { nx = dx / dist; ny = dy / dist; } else { nx = u.owner === 2 ? -1 : 1; ny = 0; dist = 0; } // exact overlap: mirrored fixed axis
+      if (dist > 1e-3) { nx = dx / dist; ny = dy / dist; } else { nx = u.owner === 2 ? -1 : 1; ny = 0; dist = 0; } // exact overlap: mirrored fixed axis
       const push = (min - dist) * 0.25;
       add(u, -nx * push, -ny * push);
       add(v, nx * push, ny * push);
@@ -674,4 +685,22 @@ export function stepFog(w: World) {
       }
     }
   }
+}
+
+// =====================================================================
+// Fixed-point positions: after every tick unit positions snap to a 1/4096-tile lattice, symmetric about the map
+// centre. Floats are not mirror-exact (64 − x rounds differently from x), and crowding at wells
+// amplified those 1e-13 differences into different games for the two mirrored players. Snapping removes the
+// noise every tick, so a point-mirrored position stays exactly mirrored. (See docs/FAIRNESS_RESULTS.md.)
+// =====================================================================
+export const POS_Q = 4096;
+function snapSym(v: number, size: number) {
+  // Snap to the half-offset lattice (k + ½)/POS_Q, measured from the map centre. Offsetting by half a step means a
+  // position is never an exact integer, so Math.floor(x) (the unit's tile) mirrors exactly too: floor(W − x) = W − 1 − floor(x).
+  const c = size / 2, d = (v - c) * POS_Q;
+  return c + Math.sign(d) * (Math.floor(Math.abs(d)) + 0.5) / POS_Q;
+}
+export function quantizePositions(w: World) {
+  const W = w.map.w, H = w.map.h;
+  for (const e of w.entities) if (e.kind === 'unit' && !e.dead) { e.x = snapSym(e.x, W); e.y = snapSym(e.y, H); }
 }

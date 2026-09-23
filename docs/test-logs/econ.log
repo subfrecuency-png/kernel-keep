@@ -1,5 +1,5 @@
-A: hash 1493 codeP 1465 trained 56 crashes 0 minStab 60 grid@1:38 rig@1:07
-B: hash 1050 codeP 1025 trained 29 crashes 0 minStab 52 grid@2:57 rig@0:47
-C: hash 1050 codeP 1160 trained 29 crashes 0 minStab 60 grid@1:37 rig@2:04
-D: hash 985 codeP 1410 trained 25 crashes 0 minStab 60 grid@1:38 rig@1:07
-E: hash 511 codeP 765 trained 18 crashes 0 minStab 25 grid@3:30 rig@2:56
+A: hash 1488 codeP 1510 trained 58 crashes 0 minStab 60 grid@1:34 rig@1:04
+B: hash 1050 codeP 1015 trained 29 crashes 0 minStab 52 grid@3:01 rig@0:47
+C: hash 1050 codeP 1160 trained 29 crashes 0 minStab 60 grid@1:39 rig@2:06
+D: hash 1055 codeP 1455 trained 25 crashes 0 minStab 60 grid@1:34 rig@1:04
+E: hash 527 codeP 770 trained 18 crashes 0 minStab 25 grid@3:29 rig@2:55

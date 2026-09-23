@@ -1,21 +1,18 @@
-min 1: P1 D70 C14 H40 st60 s run10 army0 bld[ccbr*] crash0 lost0 | P2 D56 C9 H40 st60 s run10 army0 bld[ccbr] crash0 lost0
-min 2: P1 D208 C2 H89 st60 s run11 army0 bld[ccbrngcr*] crash0 lost0 | P2 D222 C8 H97 st54 s run11 army0 bld[ccbrngcr*] crash0 lost0
-min 3: P1 D88 C22 H139 st60 s run11 army0 bld[ccbrngcrtnrct*] crash0 lost0 | P2 D198 C13 H170 st60 s run13 army0 bld[ccbrngcrtnbr*] crash0 lost0
-min 4: P1 D122 C49 H267 st60 s run15 army1 bld[ccbrngcrtnrctbc] crash0 lost0 | P2 D254 C39 H267 st60 s run15 army0 bld[ccbrngcrtnbrctc] crash0 lost0
-min 5: P1 D290 C32 H301 st60 s run15 army2 bld[ccbrngcrtnrctbcb] crash0 lost1 | P2 D458 C24 H300 st60 s run14 army3 bld[ccbrngcrtnbrctcb] crash0 lost0
-min 6: P1 D494 C32 H374 st60 s run16 army5 bld[ccbrngcrtnrctbcbc*] crash0 lost1 | P2 D398 C41 H413 st60 s run17 army4 bld[ccbrngcrtnbrctcbccb*] crash0 lost0
-min 7: P1 D374 C38 H397 st60 s run16 army5 bld[ccbrngcrtnrctbcbccb] crash0 lost3 | P2 D456 C55 H296 st60 s run16 army10 bld[ccbrngcrtnbrctcbccb] crash0 lost1
-min 8: P1 D268 C46 H330 st60 s run17 army4 bld[ccbrngcrtnrctbcbccb] crash0 lost10 | P2 D280 C48 H232 st60 s run16 army6 bld[ccbrngcrtnbrctcbccbb] crash0 lost6
-min 9: P1 D112 C45 H267 st60 s run17 army7 bld[ccbrngcrtnrctbcbccbb] crash0 lost13 | P2 D230 C38 H164 st60 s run16 army9 bld[ccbrngcrtnbrctcbccbb] crash0 lost9
-min 10: P1 D26 C36 H174 st60 s run16 army7 bld[ccbrngcrtnrctbcbccbb] crash0 lost16 | P2 D200 C32 H112 st60 s run16 army7 bld[ccbrngcrtnbrctcbccbb] crash0 lost14
-min 11: P1 D20 C49 H121 st60 s run16 army11 bld[ccbrngcrtnrctbcbccbb] crash0 lost17 | P2 D78 C36 H85 st60 s run15 army5 bld[ccbrngcrtnbrctcbccbb] crash0 lost22
-min 12: P1 D4 C26 H153 st60 s run16 army6 bld[ccbrngcrtnrctbcbccbb] crash0 lost24 | P2 D0 C45 H61 st60 s run11 army4 bld[ccbrngcrtnbrctcbccbb] crash0 lost31
-min 13: P1 D4 C30 H226 st60 s run15 army9 bld[ccbrngcrtnrctbcbccbb] crash0 lost24 | P2 D2 C89 H74 st60 s run10 army6 bld[ccbrngcrtnbrctcbccbb] crash0 lost31
-min 14: P1 D0 C59 H330 st60 s run17 army10 bld[ccbrngcrtnrctbcbccbb] crash0 lost24 | P2 D2 C138 H132 st60 s run10 army6 bld[ccbrngcrtnbrctcbccbb] crash0 lost31
-min 15: P1 D4 C34 H262 st60 s run15 army17 bld[ccbrngcrtnrctbcbccbb] crash0 lost25 | P2 D4 C180 H179 st60 s run7 army2 bld[ccbrngcrtnbrctcbccbb] crash0 lost38
-min 16: P1 D0 C39 H290 st60 s run16 army10 bld[ccbrngcrtnrctbcbccbb] crash0 lost27 | P2 D4 C194 H179 st60 s run1 army0 bld[ccbncrnbrcbccbb] crash0 lost47
-min 17: P1 D24 C50 H357 st60 s run17 army13 bld[ccbrngcrtnrctbcbccbb] crash0 lost27 | P2 D4 C199 H179 st60 s run0 army0 bld[cbncnrbccbb] crash0 lost48
-min 18: P1 D0 C44 H332 st60 s run16 army13 bld[ccbrngcrtnrctbcbccbb] crash0 lost27 | P2 D4 C200 H179 st60 s run0 army0 bld[bncnrbccbb] crash0 lost48
-winner 1 tick 10239 hash 5d46f634 ms 6008 avgStep 0.465 max 22.48
-1 {"dataHarvested":4840,"codeProduced":2125,"codeConsumed":1134.2149999999765,"hashMined":2237.2586399996635,"unitsTrained":90,"unitsLost":27,"buildingsLost":0,"kills":37,"crashes":0} A Compiler is idle: not enough Data to compile Code. / Brownout: Compute demand exceeds supply — rigs, towers and training run at 96%. / Your programs are under attack! / Memory Bank complete.
-2 {"dataHarvested":4250,"codeProduced":1830,"codeConsumed":875.3550000000338,"hashMined":1634.6060390586135,"unitsTrained":75,"unitsLost":48,"buildingsLost":10,"kills":20,"crashes":0} Core under attack! / A Compiler is idle: not enough Data to compile Code. / Brownout: Compute demand exceeds supply — rigs, towers and training run at 96%. / Memory Bank complete.
+min 1: P1 D70 C14 H40 st60 s run10 army0 bld[ccbr*] crash0 lost0 | P2 D90 C14 H40 st60 s run10 army0 bld[ccbr*] crash0 lost0
+min 2: P1 D238 C2 H92 st60 s run11 army0 bld[ccbrngcr*] crash0 lost0 | P2 D222 C8 H95 st54 s run11 army0 bld[ccbrngcr*] crash0 lost0
+min 3: P1 D162 C25 H164 st60 s run12 army0 bld[ccbrngcrtnbrc*] crash0 lost0 | P2 D218 C13 H169 st60 s run13 army0 bld[ccbrngcrtnbr] crash0 lost0
+min 4: P1 D218 C43 H263 st60 s run15 army1 bld[ccbrngcrtnbrctc] crash0 lost0 | P2 D244 C38 H267 st60 s run15 army0 bld[ccbrngcrtnbrctc] crash0 lost0
+min 5: P1 D362 C21 H296 st60 s run14 army2 bld[ccbrngcrtnbrctcb] crash0 lost1 | P2 D468 C46 H340 st60 s run15 army3 bld[ccbrngcrtnbrctcb] crash0 lost0
+min 6: P1 D494 C46 H409 st60 s run17 army4 bld[ccbrngcrtnbrctcbc] crash0 lost1 | P2 D438 C48 H413 st60 s run17 army5 bld[ccbrngcrtnbrctcbcb] crash0 lost0
+min 7: P1 D456 C44 H291 st60 s run18 army5 bld[ccbrngcrtnbrctcbccb] crash0 lost3 | P2 D494 C47 H336 st60 s run17 army5 bld[ccbrngcrtnbrctcbcbc] crash0 lost2
+min 8: P1 D534 C77 H263 st60 s run17 army2 bld[ccbrngcrtnbrctcbccb] crash0 lost10 | P2 D398 C59 H288 st60 s run18 army4 bld[ccbrngcrtnbrctcbcbcb] crash0 lost6
+min 9: P1 D404 C49 H221 st60 s run16 army6 bld[ccbrngcrtnbrctcbccb] crash0 lost12 | P2 D272 C38 H206 st60 s run17 army12 bld[ccbrngcrtnbrctcbcbcb] crash0 lost7
+min 10: P1 D308 C58 H169 st60 s run17 army6 bld[ccbrngcrtnbrctcbccb] crash0 lost17 | P2 D246 C53 H147 st60 s run17 army6 bld[ccbrngcrtnbrctcbcbcb] crash0 lost14
+min 11: P1 D122 C36 H40 st60 s run16 army4 bld[ccbrngcrtnbrctcbccbb] crash0 lost24 | P2 D54 C40 H120 st60 s run15 army7 bld[ccbrngcrtnbrctcbcbcb] crash0 lost21
+min 12: P1 D76 C40 H28 st60 s run13 army7 bld[ccbrngcrtnbrctcbccbb] crash0 lost29 | P2 D34 C41 H133 st60 s run18 army14 bld[ccbrngcrtnbrctcbcbcb] crash0 lost21
+min 13: P1 D0 C88 H87 st60 s run8 army0 bld[ccbrngcrnbrccbccbb] crash0 lost47 | P2 D2 C34 H119 st60 s run17 army10 bld[ccbrngcrtnbrctcbcbcb] crash0 lost25
+min 14: P1 D0 C94 H87 st60 s run0 army0 bld[cbncrnrbccbb] crash0 lost56 | P2 D4 C31 H51 st60 s run16 army19 bld[ccbrngcrtnbrctcbcbcb] crash0 lost25
+min 15: P1 D0 C96 H87 st60 s run0 army0 bld[bncnrbccbb] crash0 lost56 | P2 D14 C51 H94 st60 s run18 army14 bld[ccbrngcrtnbrctcbcbcb] crash0 lost25
+winner 2 tick 8576 hash 84c6183c ms 5077 avgStep 0.459 max 15.71
+1 {"dataHarvested":4178,"codeProduced":1640,"codeConsumed":708.4200000000119,"hashMined":1542.9767999998264,"unitsTrained":83,"unitsLost":56,"buildingsLost":10,"kills":21,"crashes":0} Core under attack! / A Compiler is idle: not enough Data to compile Code. / Brownout: Compute demand exceeds supply — rigs, towers and training run at 96%. / Memory Bank complete.
+2 {"dataHarvested":4530,"codeProduced":1880,"codeConsumed":929.8399999999397,"hashMined":1824.3629397301072,"unitsTrained":87,"unitsLost":25,"buildingsLost":0,"kills":49,"crashes":0} A Compiler is idle: not enough Data to compile Code. / Brownout: Compute demand exceeds supply — rigs, towers and training run at 96%. / Your programs are under attack! / Memory Bank complete.

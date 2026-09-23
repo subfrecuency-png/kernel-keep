@@ -2,7 +2,7 @@
 import { B, Command, CommandResult } from './types.ts';
 import { World, WorldOptions } from './world.ts';
 import { applyCommand } from './commands.ts';
-import { stepEconomy, stepBuildings, stepUnits, stepSeparation, stepFog, applyHits } from './systems.ts';
+import { stepEconomy, stepBuildings, stepUnits, stepSeparation, stepFog, applyHits, quantizePositions } from './systems.ts';
 import { AIController } from './ai.ts';
 
 export interface LoggedCommand { tick: number; cmd: Command }
@@ -44,6 +44,7 @@ export class Game {
     applyHits(w);
     w.rebuildCells();
     stepSeparation(w);
+    quantizePositions(w);
     w.compact();
     for (const ai of this.ais) ai.update(w, (c) => applyCommand(w, c));
     w.tick++;

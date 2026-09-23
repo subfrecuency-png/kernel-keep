@@ -37,7 +37,7 @@ It was tested in headless Chromium only. Safari and Firefox should work but have
 - A rule-based Rival AI that plays by the same rules and fog of war as you.
 - Fog of war, minimap, save/load/autosave, pause-and-order, a guided tutorial, rebindable keys, UI scale, and reduced flashing.
 - 0.2: React HUD with a recovery panel (real shortages, one-click fixes that are existing commands), concept portraits, and an Art codex.
-- Evidence (0.3): 32 simulation/view tests, 36 browser end-to-end checks (including sprite-pixel and hit-box checks), a PWA offline smoke test, replay and save/load determinism, a fairness experiment, and benchmarks. See TEST_REPORT.md.
+- Evidence (0.3.1): 33 simulation/view tests (including an exact mirror-symmetry test), 36 browser end-to-end checks (including sprite-pixel and hit-box checks), a PWA offline smoke test, replay and save/load determinism, a fairness experiment, and benchmarks. See TEST_REPORT.md.
 
 **Not built yet:** a desktop installer (.app/.exe) — the Tauri shell in `desktop/` is scaffolded but has never been compiled; production world art (the concept art is UI-only); designed audio and music; extra factions; campaign; multiplayer. See BUILD_PLAN.md.
 

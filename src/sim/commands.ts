@@ -61,13 +61,15 @@ export function canPlace(w: World, pid: number, type: string, tx: number, ty: nu
   return OK;
 }
 
-function formationPoints(n: number, x: number, y: number): { x: number; y: number }[] {
+function formationPoints(n: number, x: number, y: number, pid = 1): { x: number; y: number }[] {
+  // player 2 lays the same grid out in the point-mirrored frame, so mirrored orders produce mirrored formations
+  const sg = pid === 2 ? -1 : 1;
   const pts: { x: number; y: number }[] = [];
   const side = Math.ceil(Math.sqrt(n));
   const sp = 0.8;
   for (let i = 0; i < n; i++) {
     const r = Math.floor(i / side), c = i % side;
-    pts.push({ x: x + (c - (side - 1) / 2) * sp, y: y + (r - (side - 1) / 2) * sp });
+    pts.push({ x: x + sg * (c - (side - 1) / 2) * sp, y: y + sg * (r - (side - 1) / 2) * sp });
   }
   return pts;
 }
@@ -86,7 +88,7 @@ export function applyCommand(w: World, c: Command): CommandResult {
       const us = ownUnits(w, pid, c.ids, e => !e.suspended);
       if (!us.length) return fail('No active programs selected.');
       if (!w.nav.inBounds(Math.floor(c.x), Math.floor(c.y))) return fail('Out of bounds.');
-      const pts = formationPoints(us.length, c.x, c.y);
+      const pts = formationPoints(us.length, c.x, c.y, pid);
       us.forEach((u, k) => {
         releaseOperator(w, u);
         const pt = pts[k];
@@ -263,7 +265,8 @@ export function applyCommand(w: World, c: Command): CommandResult {
       p.forkReadyTick = w.tick + B.fork.cooldownSec * B.tickRate;
       p.surgeUntil = w.tick + dur;
       for (const u of us) {
-        const t = w.nav.nearestPassable(u.x + 0.6, u.y + 0.6, pid, 3);
+        const off = pid === 2 ? -0.6 : 0.6; // offset in the player's own (mirrored) frame
+        const t = w.nav.nearestPassable(u.x + off, u.y + off, pid, 3);
         const fx = t >= 0 ? (t % w.map.w) + 0.5 : u.x, fy = t >= 0 ? Math.floor(t / w.map.w) + 0.5 : u.y;
         const f = w.spawnUnit(u.type, pid, fx, fy);
         f.forkOf = u.id; f.expires = w.tick + dur;

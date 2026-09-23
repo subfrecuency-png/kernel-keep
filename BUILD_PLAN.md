@@ -35,10 +35,11 @@ Status as of 2026-09-23 (end of session 1). Labels: **Tested** (automated eviden
 | Windows smoke test | **Blocked here** (needs a Windows machine or CI runner) |
 | Cross-engine determinism check in Safari/WebKit (Playwright WebKit) | Proposed |
 | Replace procedural placeholders with authored art/SFX (see manifest) | Proposed |
-| Mirror-AI fairness investigation | **Tested (0.2)**: the id-order bias is fixed. The residual P1 advantage (18–6) is **open**. |
+| Mirror-AI fairness investigation | **Tested (0.3.1)**: exactly mirror-symmetric, 11–11; regression test added |
 | React HUD behind an engine adapter (Master v0.2 kit) | **Tested (0.2)** |
 | Concept art in the UI (menu, portraits, codex) | **Implemented (0.2)** |
 | Isometric battlefield with the concept renders as program and structure sprites; HUD using the same cut-outs | **Tested (0.3)** |
+| Procedural motion from single poses (stride, lunge/recoil, muzzle flash, spawn, de-rez) and x-ray silhouettes | **Implemented (0.3.1)** |
 | Animated sprite frames / several facings; tileable wall art | **Proposed** (needs new art) |
 | Optional offline install (PWA) | **Tested (0.2)**, Chromium only |
 | Optional Tauri 2 shell (`desktop/`) | **Proposed / untested** (no Rust here). Replaces the Electron plan as the lighter option, per the kit's review. |

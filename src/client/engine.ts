@@ -7,7 +7,7 @@ import { Game, stateHash } from '../sim/game.ts';
 import { saveGame, loadGame, SaveFile } from '../sim/save.ts';
 import { AIController } from '../sim/ai.ts';
 import { ClientState, COLORS } from './state.ts';
-import { render, renderMinimap, wallLine, pickAt, miniToWorld } from './render.ts';
+import { render, renderMinimap, wallLine, pickAt, miniToWorld, unitFacing } from './render.ts';
 import { proj, unproj, toU, toV, mapBounds } from './iso.ts';
 import { preloadSprites } from './sprites.ts';
 import { loadSettings, saveSettings, defaultSettings, Settings } from './settings.ts';
@@ -332,11 +332,20 @@ export class EngineHost {
         case 'death':
           if (!w.isVisible(me, ev.x, ev.y) && ev.owner !== me) break;
           if (ev.type === 'absorbed') { cs.fx.push({ kind: 'ring', x: ev.x, y: ev.y, t: 0, life: 0.5, color: '#ffffff' }); break; }
+          { // de-rez the sprite (presentation only): remember what died, where, and which way it faced
+            const type = ev.kind === 'unit' ? (B.units[ev.type] ? ev.type : w.byId.get(ev.id)?.type) : ev.kind === 'building' ? ev.type : undefined;
+            if (type && (B.units[type] || (B.buildings[type] && !B.buildings[type].wall))) cs.fx.push({ kind: 'derez', x: ev.x, y: ev.y, t: 0, life: ev.kind === 'building' ? 1.1 : 0.7, color: COLORS[ev.owner]?.main ?? '#fff', type, owner: ev.owner, id: ev.id, face: unitFacing(ev.id) });
+          }
           cs.fx.push({ kind: 'burst', x: ev.x, y: ev.y, t: 0, life: ev.kind === 'building' ? 0.9 : 0.5, color: ev.kind === 'well' ? '#7cc7ff' : COLORS[ev.owner]?.main ?? '#fff' });
           if (ev.kind !== 'well') sfx.death();
           break;
         case 'built': if (ev.owner === me) { const e = w.get(ev.id); if (e) cs.fx.push({ kind: 'ring', x: e.x, y: e.y, t: 0, life: 0.8, color: '#ffffff' }); if (e && !B.buildings[e.type].wall) sfx.built(); } break;
-        case 'spawn': if (ev.owner === me) sfx.spawn(); break;
+        case 'spawn': {
+          if (ev.owner === me) sfx.spawn();
+          const e = w.get(ev.id);
+          if (e && e.kind === 'unit' && (ev.owner === me || w.canSee(me, e))) cs.fx.push({ kind: 'spawn', x: e.x, y: e.y, t: 0, life: 0.55, color: COLORS[ev.owner]?.main ?? '#fff', id: e.id });
+          break;
+        }
         case 'deposit': if (ev.owner === me && cs.cam.z >= 24) cs.fx.push({ kind: 'text', x: ev.x, y: ev.y - 0.4, t: 0, life: 0.6, color: '#7cc7ff', text: '+10' }); break;
         case 'produce': if (ev.owner === me) { const e = w.get(ev.id); if (e) cs.fx.push({ kind: 'text', x: e.x, y: e.y - 0.8, t: 0, life: 1.1, color: ev.res === 'code' ? '#9cff8a' : '#ffcf5a', text: ev.res === 'code' ? '+Code' : '+Hash' }); } break;
         case 'alert':

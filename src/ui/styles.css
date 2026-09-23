@@ -188,4 +188,5 @@ table.keys button{min-width:7rem;padding:.2rem .5rem}
 .codex-item small{font-size:.7rem;color:var(--dim)}
 .sheet{display:block;width:100%;border:1px solid var(--divider);border-radius:10px;margin:.5rem 0}
 
-@media (max-width:1150px){.chip{min-width:6.5rem}.chip-sub{display:none}.bottom{grid-template-columns:10rem minmax(0,1fr) minmax(17rem,22rem)}.portrait{width:5.5rem;height:5.5rem}}
+@media (max-width:1320px){.chip{min-width:6.6rem;gap:.35rem;padding:.2rem .45rem}.chip-sub{display:none}.brand span:last-child{display:none}}
+@media (max-width:1150px){.chip{min-width:5.8rem}.bottom{grid-template-columns:10rem minmax(0,1fr) minmax(17rem,22rem)}.portrait{width:5.5rem;height:7rem}}

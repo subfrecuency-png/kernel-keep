@@ -67,11 +67,13 @@ export function preloadSprites() { for (const t of Object.keys(SPRITE_URLS)) { s
 // ---------------------------------------------------------------- pre-scaled, pre-filtered copies
 // Scaling a 400 px render down to ~80 px and running CSS filters every frame is the main cost on software
 // rendering, so each (sprite, variant, size bucket) is rendered once into an offscreen canvas and reused.
-export type Variant = '' | 'gray' | 'susp' | 'fork' | 'holo' | 'glow';
+export type Variant = '' | 'gray' | 'susp' | 'fork' | 'holo' | 'glow' | 'sil';
 const FILTERS: Record<Variant, string> = {
   '': '', gray: 'grayscale(0.75) brightness(0.7)', susp: 'grayscale(1) brightness(0.55)', fork: 'saturate(0.35) brightness(1.55)',
-  holo: 'brightness(1.6) saturate(0.4)', glow: 'brightness(2.2) saturate(1.4)',
+  holo: 'brightness(1.6) saturate(0.4)', glow: 'brightness(2.2) saturate(1.4)', sil: '',
 };
+/** Flat team colour used for the 'sil' (x-ray silhouette) variant. */
+const SIL_COLOR: Record<number, string> = { 1: '#3ee6ff', 2: '#ff4d6a' };
 const scaledCache = new Map<string, HTMLCanvasElement>();
 const STEP = Math.log(1.08);
 /** A copy of the sprite at roughly `w` px wide (8% size buckets) with the variant's filter baked in. */
@@ -88,6 +90,7 @@ export function scaledSprite(type: string, owner: number, variant: Variant, w: n
     const g = c.getContext('2d')!; g.imageSmoothingQuality = 'high';
     if (FILTERS[variant] && 'filter' in g) g.filter = FILTERS[variant];
     g.drawImage(img, 0, 0, bw, bh);
+    if (variant === 'sil') { g.filter = 'none'; g.globalCompositeOperation = 'source-in'; g.fillStyle = SIL_COLOR[owner === 2 ? 2 : 1]; g.fillRect(0, 0, bw, bh); }
     scaledCache.set(key, c);
   }
   return c;

@@ -7,7 +7,7 @@
 // Sprites are the Master v0.2 concept renders cut out by tools/art/cut_sprites.py (see ART_AND_UI_GUIDE.md).
 import { B, Entity } from '../sim/types.ts';
 import { World } from '../sim/world.ts';
-import { ClientState, COLORS } from './state.ts';
+import { ClientState, COLORS, Fx } from './state.ts';
 import { canPlace } from '../sim/commands.ts';
 import { KU, KV, proj, unproj, groundMatrix, mapBounds, unitRect, buildingRect, depthOf, NATIVE_FACING, Rect, toU } from './iso.ts';
 import { sprite, scaledSprite } from './sprites.ts';
@@ -21,6 +21,8 @@ const FOG_RES = 6; // iso-canvas pixels per iso unit
 let miniBase: HTMLCanvasElement | null = null;
 let miniBaseFor: World | null = null;
 const facing = new Map<number, number>();
+/** Last on-screen facing of a program (+1 right, −1 left), used when it de-rezzes. */
+export function unitFacing(id: number) { const f = facing.get(id); facing.delete(id); return f; }
 
 const DATA_C = '#7cc7ff', FRAG_C = '#c59bff';
 
@@ -174,16 +176,31 @@ export function render(ctx: CanvasRenderingContext2D, cs: ClientState, W: number
   for (const b of ghosts) items.push({ depth: depthOf(b), draw: () => drawBuilding(ctx, cs, w, b, 0.4) });
   const hitNow = new Set<number>(), firing = new Map<number, number>();
   for (const f of cs.fx) if (f.from !== undefined && f.t < 0.12) { if (f.to !== undefined && f.kind !== 'heal') hitNow.add(f.to); firing.set(f.from, toU(f.x2!, f.y2!) - toU(f.x, f.y)); }
-  for (const e of units) items.push({ depth: depthOf(e), draw: () => drawUnit(ctx, cs, e, upos.get(e.id)!, hitNow.has(e.id), firing.get(e.id)) });
+  const spawning = new Map<number, number>();
+  for (const f of cs.fx) {
+    if (f.kind === 'spawn' && f.id !== undefined) spawning.set(f.id, f.t / f.life);
+    if (f.kind === 'derez') items.push({ depth: f.x + f.y, draw: () => drawDerez(ctx, cs, f) });
+  }
+  for (const e of units) items.push({ depth: depthOf(e), draw: () => drawUnit(ctx, cs, e, upos.get(e.id)!, hitNow.has(e.id), firing.get(e.id), spawning.get(e.id)) });
   items.sort((a, b) => a.depth - b.depth);
   for (const it of items) it.draw();
 
   // ================================================================ 3. overlay
   for (const b of buildings) overlayBuilding(ctx, cs, b);
-  // selected programs stay visible behind structures: a faint silhouette on top
-  for (const e of units) if (cs.sel.has(e.id)) {
-    const [x, y] = upos.get(e.id)!; const r = unitRect(cam, e.type, x, y); const img = scaledSprite(e.type, e.owner, 'glow', r.w);
-    if (img) { ctx.save(); ctx.globalAlpha = 0.28; ctx.translate(r.x + r.w / 2, r.y); if ((facing.get(e.id) ?? 1) * NATIVE_FACING[e.type] < 0) ctx.scale(-1, 1); ctx.drawImage(img, -r.w / 2, 0, r.w, r.h); ctx.restore(); }
+  // x-ray: programs standing behind a nearer structure show through as a flat team-coloured silhouette
+  // (stronger when selected), so nobody is lost inside a dense base
+  {
+    const fronts = buildings.filter(b => !B.buildings[b.type].wall).map(b => ({ d: depthOf(b), r: buildingRect(cam, b.type, b.tx!, b.ty!, b.w!, b.h!) }));
+    for (const e of units) {
+      if (e.order?.type === 'operate' && e.order.phase === 'work') continue; // operators are meant to be inside
+      const [x, y] = upos.get(e.id)!; const r = unitRect(cam, e.type, x, y); const cx = r.x + r.w / 2, cy = r.y + r.h * 0.55; const d = x + y;
+      const hidden = fronts.some(f => f.d > d && cx > f.r.x + f.r.w * 0.12 && cx < f.r.x + f.r.w * 0.88 && cy > f.r.y + f.r.h * 0.08 && cy < f.r.y + f.r.h * 0.95);
+      if (!hidden) continue;
+      const img = scaledSprite(e.type, e.owner, 'sil', r.w); if (!img) continue;
+      ctx.save(); ctx.globalAlpha = cs.sel.has(e.id) ? 0.6 : 0.34; ctx.translate(r.x + r.w / 2, r.y);
+      if ((facing.get(e.id) ?? 1) * NATIVE_FACING[e.type] < 0) ctx.scale(-1, 1);
+      ctx.drawImage(img, -r.w / 2, 0, r.w, r.h); ctx.restore();
+    }
   }
   for (const e of units) overlayUnit(ctx, cs, e, upos.get(e.id)!);
   for (const f of cs.fx) {
@@ -192,7 +209,7 @@ export function render(ctx: CanvasRenderingContext2D, cs: ClientState, W: number
       const src = f.from !== undefined ? w.get(f.from) : undefined, dst = f.to !== undefined ? w.get(f.to) : undefined;
       const [sx, sy] = proj(cam, src ? src.x : f.x, src ? src.y : f.y), [ex, ey] = proj(cam, dst ? dst.x : f.x2!, dst ? dst.y : f.y2!);
       const h0 = z * (src?.kind === 'building' ? 1.3 : CHEST), h1 = z * (dst?.kind === 'building' ? 0.6 : CHEST);
-      const lw = f.kind === 'siege' ? Math.max(2.5, z * 0.12) : Math.max(1.5, z * 0.05);
+      const lw = f.kind === 'siege' ? Math.max(2.5, Math.min(6, z * 0.06)) : Math.max(1.5, Math.min(3, z * 0.03));
       if (f.kind === 'heal') { ctx.strokeStyle = f.color; ctx.lineWidth = lw; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(sx, sy - h0); ctx.lineTo(ex, ey - h1); ctx.stroke(); ctx.setLineDash([]); }
       else glowLine(ctx, f.color, lw, [[sx, sy - h0], [ex, ey - h1]]);
       ctx.strokeStyle = f.color; ctx.lineWidth = lw;
@@ -345,7 +362,7 @@ function wallBox(ctx: CanvasRenderingContext2D, cam: { x: number; y: number; z: 
   }
 }
 
-function drawUnit(ctx: CanvasRenderingContext2D, cs: ClientState, e: Entity, pos: [number, number, number, number], hit: boolean, fireDu?: number) {
+function drawUnit(ctx: CanvasRenderingContext2D, cs: ClientState, e: Entity, pos: [number, number, number, number], hit: boolean, fireDu?: number, spawnK?: number) {
   const [x, y, dx, dy] = pos;
   const r = unitRect(cs.cam, e.type, x, y);
   if (r.x > ctx.canvas.width || r.y > ctx.canvas.height || r.x + r.w < 0 || r.y + r.h < 0) return;
@@ -355,21 +372,66 @@ function drawUnit(ctx: CanvasRenderingContext2D, cs: ClientState, e: Entity, pos
   if (Math.abs(du) > 0.002) facing.set(e.id, du > 0 ? 1 : -1);
   const face = facing.get(e.id) ?? (e.owner === 2 ? -1 : 1);
   const flip = face * NATIVE_FACING[e.type] < 0;
-  const moving = Math.abs(dx) + Math.abs(dy) > 1e-4;
-  const bob = moving && !rf ? -Math.abs(Math.sin(cs.time * 9 + e.id)) * r.h * 0.035 : 0;
-  const recoil = fireDu !== undefined && !rf ? -Math.sign(fireDu) * r.w * 0.04 : 0;
+  const speed = Math.hypot(dx, dy); const moving = speed > 1e-4;
+  const phase = cs.time * (6 + speed * 40) + e.id * 1.7;
+  const bob = moving && !rf ? -Math.abs(Math.sin(phase)) * r.h * 0.035 : 0;
+  // firing: ranged programs kick back, melee programs lunge in
+  const melee = (B.units[e.type].attack?.range ?? 2) < 1.2;
+  const kick = fireDu !== undefined && !rf ? (melee ? 1 : -1) * Math.sign(fireDu) * r.w * (melee ? 0.08 : 0.04) : 0;
   const variant = e.suspended ? 'susp' : e.forkOf ? 'fork' : '';
   const img = scaledSprite(e.type, e.owner, variant, r.w);
   ctx.save();
-  ctx.translate(r.x + r.w / 2 + recoil, r.y + bob);
+  ctx.translate(r.x + r.w / 2 + kick, r.y + bob);
   if (flip) ctx.scale(-1, 1);
   if (e.forkOf) ctx.globalAlpha = 0.72;
   if (img) {
-    ctx.drawImage(img, -r.w / 2, 0, r.w, r.h);
+    const iw = (img as HTMLCanvasElement).width, ih = (img as HTMLCanvasElement).height;
+    if (spawnK !== undefined && spawnK < 1) {
+      // materialise: the program compiles in from the ground up behind a bright scan line
+      const k = spawnK, reveal = r.h * k;
+      ctx.save(); ctx.beginPath(); ctx.rect(-r.w, r.h - reveal, r.w * 2, reveal); ctx.clip(); ctx.drawImage(img, -r.w / 2, 0, r.w, r.h); ctx.restore();
+      const g = scaledSprite(e.type, e.owner, 'sil', r.w); if (g) { ctx.globalAlpha = 0.35 * (1 - k); ctx.drawImage(g, -r.w / 2, 0, r.w, r.h); ctx.globalAlpha = 1; }
+      ctx.fillStyle = (COLORS[e.owner] ?? COLORS[0]).main; ctx.fillRect(-r.w * 0.45, r.h - reveal - 1, r.w * 0.9, 2);
+    } else if (moving && !rf) {
+      // stride: the upper body rides the bob while the lower third swings about the hips (no extra frames needed)
+      const hip = 0.62, sway = Math.sin(phase) * 0.16;
+      ctx.drawImage(img, 0, 0, iw, ih * hip, -r.w / 2, 0, r.w, r.h * hip);
+      ctx.save(); ctx.translate(0, r.h * hip); ctx.transform(1, 0, sway, 1, 0, 0);
+      ctx.drawImage(img, 0, ih * hip, iw, ih * (1 - hip), -r.w / 2, -0.5, r.w, r.h * (1 - hip) + 0.5);
+      ctx.restore();
+    } else ctx.drawImage(img, -r.w / 2, 0, r.w, r.h);
     if (hit && !rf) { const g = scaledSprite(e.type, e.owner, 'glow', r.w); if (g) { ctx.globalAlpha = 0.5; ctx.drawImage(g, -r.w / 2, 0, r.w, r.h); } }
   } else {
     const c = COLORS[e.owner] ?? COLORS[0]; ctx.fillStyle = c.dark; ctx.strokeStyle = c.main;
     ctx.beginPath(); ctx.ellipse(0, r.h * 0.6, r.h * 0.22, r.h * 0.35, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  }
+  ctx.restore();
+  // muzzle flash for ranged shots, at the weapon side at chest height
+  if (fireDu !== undefined && !melee && !rf) {
+    const mx = r.x + r.w / 2 + Math.sign(fireDu) * r.w * 0.42, my = r.y + r.h * 0.42;
+    ctx.fillStyle = '#ffffffcc'; ctx.beginPath(); ctx.arc(mx, my, Math.max(2, cs.cam.z * 0.06), 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = (COLORS[e.owner] ?? COLORS[0]).main + '88'; ctx.beginPath(); ctx.arc(mx, my, Math.max(4, cs.cam.z * 0.13), 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+/** A destroyed program or structure de-rezzes: horizontal slices glitch sideways, sink and fade. */
+function drawDerez(ctx: CanvasRenderingContext2D, cs: ClientState, f: Fx) {
+  const k = f.t / f.life; const type = f.type!;
+  const isUnit = !!B.units[type];
+  let r: Rect;
+  if (isUnit) r = unitRect(cs.cam, type, f.x, f.y);
+  else { const d = B.buildings[type]; r = buildingRect(cs.cam, type, f.x - d.w / 2, f.y - d.h / 2, d.w, d.h); }
+  if (r.x > ctx.canvas.width || r.y > ctx.canvas.height || r.x + r.w < 0 || r.y + r.h < 0) return;
+  const img = scaledSprite(type, f.owner ?? 1, 'glow', r.w) as HTMLCanvasElement | null; if (!img) return;
+  const flip = isUnit && (f.face ?? (f.owner === 2 ? -1 : 1)) * NATIVE_FACING[type] < 0;
+  const rf = cs.settings.reducedFlash;
+  ctx.save(); ctx.translate(r.x + r.w / 2, r.y + r.h * k * 0.25); if (flip) ctx.scale(-1, 1);
+  ctx.globalAlpha = Math.max(0, 1 - k) * 0.9;
+  const slices = 10; const iw = img.width, ih = img.height;
+  for (let sIdx = 0; sIdx < slices; sIdx++) {
+    const sy = ih * sIdx / slices, sh = ih / slices + 1;
+    const off = rf ? 0 : Math.sin(sIdx * 12.9898 + f.x * 78.233 + f.t * 40) * r.w * 0.18 * k;
+    ctx.drawImage(img, 0, sy, iw, sh, -r.w / 2 + off, r.h * sIdx / slices, r.w, r.h / slices + 1);
   }
   ctx.restore();
 }

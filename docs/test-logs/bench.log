@@ -1,5 +1,5 @@
 Machine: Intel(R) Xeon(R) Processor @ 2.80GHz × 2, Node v22.22.2. Budget per tick at 10 Hz = 100 ms.
- 25 per side | units start 74 end 34 | avg 1.526 ms  p95 6.886 ms  max 35.582 ms per tick
- 50 per side | units start 124 end 43 | avg 2.575 ms  p95 9.581 ms  max 25.994 ms per tick
-100 per side | units start 224 end 95 | avg 3.142 ms  p95 9.58 ms  max 18.816 ms per tick
-200 per side | units start 424 end 185 | avg 6.335 ms  p95 13.426 ms  max 23.069 ms per tick
+ 25 per side | units start 75 end 42 | avg 1.628 ms  p95 6.86 ms  max 31.326 ms per tick
+ 50 per side | units start 125 end 43 | avg 1.857 ms  p95 7.995 ms  max 11.102 ms per tick
+100 per side | units start 225 end 75 | avg 3.116 ms  p95 9.27 ms  max 12.246 ms per tick
+200 per side | units start 425 end 168 | avg 6.553 ms  p95 13.369 ms  max 27.01 ms per tick

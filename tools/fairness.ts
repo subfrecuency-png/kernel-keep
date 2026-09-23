@@ -53,6 +53,32 @@ for (const r of A) md += `| ${r.phases.join(',')} | ${r.setupOrder} | ${r.winner
 md += `\n## B. Paired win rate\n\nThe AIs use no randomness, so the seed alone does not change the game. Each seed draws AI decision phases (a, b). Every pair is played twice, as (a, b) and as the swapped (b, a).\n\n| Games | P1 wins | P2 wins | Undecided | Two-sided binomial p (decided games) | Median length | Σ P1 Data / Σ P2 Data |\n|---|---|---|---|---|---|---|\n| ${Bs.length} | ${p1} | ${p2} | ${und} | ${pval.toFixed(3)} | ${d.length ? fmt(d[Math.floor(d.length / 2)]) : '—'} | ${dataRatio.toFixed(2)} |\n\n`;
 md += `| seed | phases | winner | length | first contact | P1 lost | P2 lost | P1 Data | P2 Data | final hash |\n|---|---|---|---|---|---|---|---|---|---|\n`;
 for (const r of Bs) md += `| ${r.seed} | ${r.phases.join(',')} | ${r.winner || '—'} | ${fmt(r.durationTicks)} | ${r.firstContactTick >= 0 ? fmt(r.firstContactTick) : '—'} | ${r.p1Lost} | ${r.p2Lost} | ${r.p1Data} | ${r.p2Data} | ${r.finalHash} |\n`;
-md += `\n## What was fixed in v0.2 and what remains\n\nThe first run of this experiment, before any fixes, found that the player whose start entities had the **higher** ids won 10/10 in every configuration. Seeds made no difference. The v0.2 fixes, each found by bisecting with probes:\n\n1. **Separation** was a sequential (Gauss–Seidel) sweep in id order. Disabling it removed the id-order effect, so it is now Jacobi-style: all pushes are computed from start-of-step positions and then applied.\n2. **Simultaneous damage**: shots and heals are queued and resolved together (\`applyHits\`), so the order of attackers does not decide who dies first.\n3. **Mirrored tie-breaks** for player 2 in build placement (\`findSpot\`), spawn tiles (\`freeTileNear\`), A* neighbour expansion and the \`nearestPassable\` ring scan.\n4. **Arrival epsilon**: a waypoint counts as reached when the distance is ≤ step + 1e-6. Before this, mirrored float positions arrived on different ticks.\n\n**Remaining (open):** a mirrored-state probe shows the two sides stay mirror-identical to within 1e-9 for the first ~55 s of AI play. Positions are floats, though, and \`64 − x\` is not exactly representable. The first float-level divergence appears around tick 549. Crowd separation around busy wells amplifies it until it is visible (around 1e-4 near 2:56), after which the economies drift apart. Section B shows whether that drift has a systematic direction. The exact fix would be fixed-point (integer) positions in the sim: **Proposed**, not done, because it touches every movement system and every hash.\n\n**Reading section B (this run):** P1 still wins more often than chance, and P1 also harvests more Data overall. Some phase pairs repeat across seeds, so the games are not fully independent and the p-value is optimistic. The residual advantage is real enough to track as an **open fairness bug**. Next suspects, in order: (1) tile-granular goal and approach checks around wells and drop-offs (\`approach\`, \`nearestWell\`, \`nearestDropoff\` distance ties and \`Math.floor\` on mirrored float positions); (2) fixed-point positions (above); (3) A* \`bestH\` tie on partial paths. Until fixed, AI-vs-AI results are not evidence of balance, and ranked or competitive use should wait.\n`;
+md += `\n## What was fixed, and the result
+
+The first run of this experiment, before any fixes, found that the player whose start entities had the **higher** ids won 10/10 in every configuration, whatever the seed. A later run (0.2) still found P1 winning 18 of 24. Each fix below was found by bisecting with \`tools/mirror_probe.ts\`, which runs two identical AIs and reports the first tick where the point-mirrored states differ.
+
+**0.2 fixes:**
+1. **Separation** is Jacobi-style: every push is computed from start-of-step positions, then applied.
+2. **Simultaneous damage** (\`applyHits\`).
+3. **Mirrored tie-breaks** for player 2 in:
+   - build placement;
+   - spawn tiles;
+   - A* neighbour expansion;
+   - the \`nearestPassable\` ring scan.
+4. **Arrival epsilon** for waypoints.
+
+**0.3.1 fixes:**
+5. **Fixed-point positions.** Unit positions snap each tick to a 1/4096-tile lattice, symmetric about the map centre and offset by half a step, so a position is never an exact integer and \`Math.floor\` mirrors exactly. Before this, floats let 64 − x round differently from x, and crowding at wells amplified that 1e-13 noise about tenfold per tick.
+6. **Deferred movement.** Every program decides from the same start-of-tick world, and moves are applied after the loop. Before this, the lower id moved first and the other side reacted to its new position.
+7. **Mirror-consistent staggering.** Auto-acquire scans are staggered by each player's own spawn sequence (\`Entity.seq\`), not the global id. The global id put mirrored twins on different ticks.
+8. **Mirrored AI offsets.** Formation slots, the Fork clone offset and the AI's rally and scout offsets are laid out in each player's own frame.
+9. **Ring-scan epsilon.** Float noise can no longer break an exact distance tie.
+
+**Result:**
+- With equal AI phases, the two sides stay **exactly mirror-identical (to 1e-9) for 20,000 ticks, over 33 minutes**, and the match is a draw.
+- In section B, every swapped pair produces the opposite winner: **11–11, p = 1.00, Data ratio 1.00**.
+- Which side wins is now decided by which AI's decision cycle falls earlier relative to the other's, not by the side it plays.
+- Paired lengths still differ by a few seconds. That is a small leftover asymmetry, most likely the per-tick pathfinding budget, which is spent in id order. It does not change any winner here.
+`;
 writeFileSync('docs/FAIRNESS_RESULTS.md', md);
 writeFileSync('docs/fairness.json', JSON.stringify(rows, null, 1));
