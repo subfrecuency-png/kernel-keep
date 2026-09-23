@@ -1,0 +1,426 @@
+{
+  "version": 1,
+  "notes": "Authoritative tuning data. Times in seconds, distances in tiles, rates per second unless named otherwise. Upkeep is Code per program per upkeepCycleSec.",
+  "tickRate": 10,
+  "map": {
+    "w": 64,
+    "h": 64
+  },
+  "start": {
+    "data": 150,
+    "code": 80,
+    "hash": 40,
+    "runners": 4
+  },
+  "economy": {
+    "upkeepCycleSec": 20,
+    "coreCodeTrickle": 0.1,
+    "hashCap": 600,
+    "rations": {
+      "lean": {
+        "mult": 0.5,
+        "stability": -25,
+        "label": "Lean (half rations)"
+      },
+      "standard": {
+        "mult": 1.0,
+        "stability": 0,
+        "label": "Standard"
+      },
+      "surplus": {
+        "mult": 1.5,
+        "stability": 15,
+        "label": "Surplus (+50%)"
+      }
+    },
+    "stabilityBase": 60,
+    "stabilityStart": 60,
+    "starvationPenalty": 50,
+    "stabilityRatePerSec": 1.0,
+    "crashThreshold": 20,
+    "crashIntervalSec": 10,
+    "workSpeedMin": 0.6,
+    "workSpeedMax": 1.2,
+    "lowCodeWarnSec": 60,
+    "miningBaseRate": 1.0,
+    "miningFalloff": 0.85,
+    "carry": 10,
+    "harvestTimeSec": 4,
+    "repairHpPerSec": 12,
+    "repairHpPerData": 10,
+    "salvageFraction": 0.3,
+    "demolishRefund": 0.25,
+    "maxQueue": 5
+  },
+  "fork": {
+    "cost": {
+      "hash": 60
+    },
+    "cooldownSec": 90,
+    "durationSec": 25,
+    "maxUnits": 6,
+    "hpFraction": 0.5,
+    "computeSurge": 8
+  },
+  "veterancy": {
+    "killsPerRank": [
+      2,
+      5
+    ],
+    "bonusPerRank": 0.15
+  },
+  "units": {
+    "runner": {
+      "name": "Runner",
+      "role": "Worker: harvests Data, builds, repairs, operates buildings",
+      "cost": {
+        "data": 20,
+        "code": 8
+      },
+      "time": 8,
+      "trainedAt": "core",
+      "needsRunner": false,
+      "upkeep": 1,
+      "mem": 1,
+      "hp": 40,
+      "armor": 0,
+      "speed": 2.4,
+      "sight": 5,
+      "radius": 0.28,
+      "attack": {
+        "dmg": 3,
+        "cd": 1.2,
+        "range": 0.9
+      },
+      "autoAttack": false
+    },
+    "ping": {
+      "name": "Ping",
+      "role": "Scout: fast, wide sight, fragile",
+      "cost": {
+        "code": 10,
+        "hash": 20
+      },
+      "time": 8,
+      "trainedAt": "grid",
+      "needsRunner": true,
+      "upkeep": 1,
+      "mem": 1,
+      "hp": 55,
+      "armor": 0,
+      "speed": 3.8,
+      "sight": 9,
+      "radius": 0.28,
+      "attack": {
+        "dmg": 5,
+        "cd": 1.0,
+        "range": 0.9
+      },
+      "autoAttack": true
+    },
+    "bulwark": {
+      "name": "Bulwark",
+      "role": "Frontline: armored melee that holds breaches",
+      "cost": {
+        "code": 20,
+        "hash": 35
+      },
+      "time": 12,
+      "trainedAt": "grid",
+      "needsRunner": true,
+      "upkeep": 2,
+      "mem": 2,
+      "hp": 190,
+      "armor": 3,
+      "speed": 1.9,
+      "sight": 5,
+      "radius": 0.38,
+      "attack": {
+        "dmg": 14,
+        "cd": 1.3,
+        "range": 0.95
+      },
+      "autoAttack": true
+    },
+    "lancer": {
+      "name": "Lancer",
+      "role": "Ranged: beam attacker, weak up close",
+      "cost": {
+        "code": 15,
+        "hash": 40
+      },
+      "time": 12,
+      "trainedAt": "grid",
+      "needsRunner": true,
+      "upkeep": 1,
+      "mem": 1,
+      "hp": 75,
+      "armor": 0,
+      "speed": 2.1,
+      "sight": 7,
+      "radius": 0.3,
+      "attack": {
+        "dmg": 11,
+        "cd": 1.5,
+        "range": 5.0
+      },
+      "autoAttack": true
+    },
+    "patcher": {
+      "name": "Patcher",
+      "role": "Support: repairs programs and structures, no attack",
+      "cost": {
+        "code": 20,
+        "hash": 45
+      },
+      "time": 14,
+      "trainedAt": "grid",
+      "needsRunner": true,
+      "upkeep": 1,
+      "mem": 1,
+      "hp": 65,
+      "armor": 0,
+      "speed": 2.1,
+      "sight": 6,
+      "radius": 0.3,
+      "heal": {
+        "amt": 7,
+        "cd": 1.0,
+        "range": 3.0
+      },
+      "autoAttack": false
+    },
+    "breaker": {
+      "name": "Breaker",
+      "role": "Siege: long-range structure cracker, weak vs programs",
+      "cost": {
+        "data": 30,
+        "code": 20,
+        "hash": 80
+      },
+      "time": 20,
+      "trainedAt": "grid",
+      "needsRunner": true,
+      "upkeep": 2,
+      "mem": 3,
+      "hp": 150,
+      "armor": 1,
+      "speed": 1.3,
+      "sight": 7,
+      "radius": 0.45,
+      "attack": {
+        "dmg": 50,
+        "cd": 3.2,
+        "range": 7.0,
+        "minRange": 2.0,
+        "vsUnits": 0.3,
+        "vsHardened": 1.0,
+        "siege": true
+      },
+      "autoAttack": true
+    }
+  },
+  "buildings": {
+    "core": {
+      "name": "Core",
+      "desc": "Your seat of power. Stores resources, compiles Runners, trickles Code. Lose it and you lose.",
+      "w": 3,
+      "h": 3,
+      "cost": {},
+      "build": 1,
+      "hp": 2500,
+      "hardened": true,
+      "sight": 8,
+      "provides": {
+        "compute": 10,
+        "memory": 10,
+        "dataCap": 400,
+        "codeCap": 250
+      },
+      "dropoff": true,
+      "trains": [
+        "runner"
+      ],
+      "buildable": false
+    },
+    "cache": {
+      "name": "Data Cache",
+      "desc": "Forward drop-off point. +250 Data storage.",
+      "w": 2,
+      "h": 2,
+      "cost": {
+        "data": 50
+      },
+      "build": 15,
+      "hp": 350,
+      "sight": 5,
+      "provides": {
+        "dataCap": 250
+      },
+      "dropoff": true,
+      "hotkey": "D"
+    },
+    "compiler": {
+      "name": "Compiler",
+      "desc": "Needs 1 Runner operator. Turns 6 Data into 5 Code every 8s. +60 Code storage.",
+      "w": 2,
+      "h": 2,
+      "cost": {
+        "data": 60
+      },
+      "build": 20,
+      "hp": 350,
+      "sight": 4,
+      "provides": {
+        "codeCap": 60
+      },
+      "operator": true,
+      "cycle": {
+        "time": 8,
+        "in": {
+          "data": 6
+        },
+        "out": {
+          "code": 5
+        }
+      },
+      "hotkey": "C"
+    },
+    "rig": {
+      "name": "Mining Rig",
+      "desc": "Needs 1 Runner operator and 4 Compute. Mines Hash Credits; each extra rig yields 15% less.",
+      "w": 2,
+      "h": 2,
+      "cost": {
+        "data": 80,
+        "code": 20
+      },
+      "build": 25,
+      "hp": 300,
+      "sight": 4,
+      "operator": true,
+      "compute": 4,
+      "mining": true,
+      "hotkey": "M"
+    },
+    "node": {
+      "name": "Compute Node",
+      "desc": "+8 Compute for rigs, towers and training.",
+      "w": 2,
+      "h": 2,
+      "cost": {
+        "data": 70
+      },
+      "build": 20,
+      "hp": 300,
+      "sight": 4,
+      "provides": {
+        "compute": 8
+      },
+      "hotkey": "N"
+    },
+    "bank": {
+      "name": "Memory Bank",
+      "desc": "+6 Memory (population room).",
+      "w": 2,
+      "h": 2,
+      "cost": {
+        "data": 50
+      },
+      "build": 15,
+      "hp": 300,
+      "sight": 4,
+      "provides": {
+        "memory": 6
+      },
+      "hotkey": "K"
+    },
+    "grid": {
+      "name": "Training Grid",
+      "desc": "Specializes an idle Runner into a combat program. Uses 3 Compute while training.",
+      "w": 3,
+      "h": 3,
+      "cost": {
+        "data": 100
+      },
+      "build": 30,
+      "hp": 700,
+      "sight": 5,
+      "compute": 3,
+      "computeWhileTraining": true,
+      "trains": [
+        "ping",
+        "bulwark",
+        "lancer",
+        "patcher",
+        "breaker"
+      ],
+      "hotkey": "T"
+    },
+    "wall": {
+      "name": "Firewall",
+      "desc": "Hardened wall segment. Only Breakers damage it efficiently. Drag to place a line.",
+      "w": 1,
+      "h": 1,
+      "cost": {
+        "data": 6
+      },
+      "build": 3,
+      "hp": 400,
+      "hardened": true,
+      "sight": 2,
+      "wall": true,
+      "hotkey": "W"
+    },
+    "gate": {
+      "name": "Access Gate",
+      "desc": "Your programs pass while it is Open; enemies never pass. Close it to seal the line.",
+      "w": 1,
+      "h": 1,
+      "cost": {
+        "data": 30
+      },
+      "build": 10,
+      "hp": 700,
+      "hardened": true,
+      "sight": 3,
+      "gate": true,
+      "hotkey": "G"
+    },
+    "tower": {
+      "name": "Sentry Tower",
+      "desc": "Hardened beam turret. Needs 2 Compute; fires slower during brownouts.",
+      "w": 2,
+      "h": 2,
+      "cost": {
+        "data": 60,
+        "hash": 30
+      },
+      "build": 20,
+      "hp": 600,
+      "hardened": true,
+      "sight": 8,
+      "compute": 2,
+      "attack": {
+        "dmg": 12,
+        "cd": 1.2,
+        "range": 6.5
+      },
+      "hotkey": "R"
+    }
+  },
+  "ai": {
+    "normal": {
+      "firstAttackSec": 330,
+      "firstWave": 6,
+      "waveGrowth": 2,
+      "waveIntervalSec": 120
+    },
+    "easy": {
+      "firstAttackSec": 480,
+      "firstWave": 4,
+      "waveGrowth": 1,
+      "waveIntervalSec": 180
+    }
+  }
+}

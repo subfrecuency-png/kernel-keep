@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kernel Keep</title>
+<style>
+:root{
+  --ui-scale:1;
+  --bg:#04060c; --panel:rgba(8,14,26,.92); --panel2:rgba(14,24,42,.95); --line:#1d3456; --line2:#2c4f7c;
+  --text:#d8e7ff; --dim:#7f95b8; --p1:#3ee6ff; --p2:#ff7a2f; --good:#6dffa8; --warn:#ffd24a; --bad:#ff4f6d;
+  --data:#7cc7ff; --code:#9cff8a; --hash:#ffcf5a; --compute:#c59bff; --mem:#ff9bd4;
+  font-size:calc(14px * var(--ui-scale));
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:"Segoe UI",system-ui,-apple-system,Helvetica,Arial,sans-serif}
+button{font:inherit;color:inherit}
+#view{position:fixed;inset:0;display:block;cursor:default}
+.hidden{display:none!important}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+/* ---------- top bar ---------- */
+#topbar{position:fixed;left:0;right:0;top:0;display:flex;gap:.35rem;align-items:stretch;padding:.3rem .4rem;background:linear-gradient(#0a1426f2,#07101ee6);border-bottom:1px solid var(--line);z-index:5;flex-wrap:wrap}
+.chip{display:flex;flex-direction:column;justify-content:center;min-width:7.2rem;padding:.2rem .55rem;border:1px solid var(--line);border-radius:.35rem;background:#0b1730;cursor:help;position:relative}
+.chip .k{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:.3rem}
+.chip .v{font-size:1.05rem;font-weight:600}
+.chip .s{font-size:.72rem;color:var(--dim)}
+.chip.warn{border-color:var(--warn);box-shadow:inset 0 0 0 1px #ffd24a44}
+.chip.bad{border-color:var(--bad);box-shadow:inset 0 0 0 1px #ff4f6d55}
+.sw{width:.6rem;height:.6rem;display:inline-block;border-radius:2px}
+#rations{display:flex;gap:.2rem;margin-top:.15rem}
+#rations button{font-size:.7rem;padding:.05rem .35rem;border:1px solid var(--line2);background:#0e1f3b;border-radius:.25rem;cursor:pointer}
+#rations button.on{background:#1f4d7a;border-color:var(--p1)}
+.spacer{flex:1}
+.tbtn{padding:.3rem .7rem;border:1px solid var(--line2);background:#0e1f3b;border-radius:.35rem;cursor:pointer;align-self:center}
+.tbtn:hover{border-color:var(--p1)}
+#clock{align-self:center;font-size:1rem;min-width:4rem;text-align:center}
+/* ---------- alerts / objectives ---------- */
+#alerts{position:fixed;left:.5rem;top:5.2rem;width:22rem;max-width:40vw;display:flex;flex-direction:column;gap:.25rem;z-index:4;pointer-events:none}
+.alert{pointer-events:auto;cursor:pointer;padding:.35rem .55rem;border-left:3px solid var(--dim);background:var(--panel);border-radius:.25rem;font-size:.82rem;line-height:1.25}
+.alert.warn{border-color:var(--warn)} .alert.danger{border-color:var(--bad)} .alert.info{border-color:var(--p1)}
+.alert .ic{font-weight:700;margin-right:.3rem}
+#objectives{position:fixed;right:.5rem;top:5.2rem;width:21rem;max-width:40vw;background:var(--panel);border:1px solid var(--line);border-radius:.4rem;padding:.5rem .6rem;z-index:4;font-size:.84rem}
+#objectives h3{margin:0 0 .3rem;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between}
+#objectives h3 button{background:none;border:0;color:var(--dim);cursor:pointer}
+.obj{display:flex;gap:.4rem;margin:.18rem 0;color:var(--dim)}
+.obj.cur{color:var(--text)} .obj.done{color:#6f8a74;text-decoration:line-through}
+.obj .hint{display:block;font-size:.76rem;color:#a9c3e6;margin-top:.1rem}
+/* ---------- bottom panel ---------- */
+#bottom{position:fixed;left:0;right:0;bottom:0;height:calc(13.5rem);display:flex;gap:.4rem;padding:.4rem;background:linear-gradient(#07101ee0,#050b16f5);border-top:1px solid var(--line);z-index:5}
+#mini{height:100%;aspect-ratio:1;border:1px solid var(--line2);border-radius:.3rem;background:#000;cursor:crosshair}
+#sel{flex:1;min-width:0;border:1px solid var(--line);border-radius:.35rem;background:var(--panel);padding:.45rem .6rem;overflow:auto}
+#sel h2{margin:0;font-size:1.05rem;display:flex;align-items:center;gap:.4rem}
+#sel .role{color:var(--dim);font-size:.8rem;margin:.1rem 0 .3rem}
+.bar{height:.5rem;background:#1a2438;border-radius:.25rem;overflow:hidden;margin:.15rem 0}
+.bar>i{display:block;height:100%;background:var(--good)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:.1rem .7rem;font-size:.82rem}
+.kv b{color:var(--dim);font-weight:500}
+.why{margin-top:.3rem;padding:.3rem .45rem;border-left:3px solid var(--warn);background:#2a230c55;font-size:.8rem}
+.queue{display:flex;gap:.3rem;margin-top:.35rem;flex-wrap:wrap}
+.qi{position:relative;width:3.1rem;height:3.1rem;border:1px solid var(--line2);border-radius:.3rem;background:#0e1f3b;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.72rem;text-align:center}
+.qi:hover{border-color:var(--bad)}
+.qi .pg{position:absolute;left:0;bottom:0;height:3px;background:var(--p1)}
+.multi{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem}
+.mu{padding:.25rem .45rem;border:1px solid var(--line2);border-radius:.3rem;background:#0e1f3b;font-size:.8rem;cursor:pointer}
+#cmds{width:25rem;max-width:34vw;display:grid;grid-template-columns:repeat(5,1fr);grid-auto-rows:minmax(0,1fr);gap:.3rem;border:1px solid var(--line);border-radius:.35rem;background:var(--panel);padding:.4rem}
+.cb{position:relative;border:1px solid var(--line2);background:#0e1f3b;border-radius:.3rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.15rem;font-size:.72rem;line-height:1.1;text-align:center;min-height:0}
+.cb:hover{border-color:var(--p1);background:#13294d}
+.cb.dis{opacity:.45}
+.cb .hk{position:absolute;top:.1rem;left:.25rem;font-size:.68rem;color:var(--warn);font-weight:700}
+.cb .cost{font-size:.64rem;color:var(--dim)}
+/* ---------- toast / modal ---------- */
+#toast{position:fixed;left:50%;bottom:15rem;transform:translateX(-50%);padding:.45rem .9rem;background:#2a0f18ee;border:1px solid var(--bad);border-radius:.35rem;z-index:9;font-size:.9rem;pointer-events:none;transition:opacity .25s}
+#toast.ok{background:#0f2a1cee;border-color:var(--good)}
+.modal{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:20}
+.card{width:min(44rem,94vw);max-height:90vh;overflow:auto;background:var(--panel2);border:1px solid var(--line2);border-radius:.6rem;padding:1.2rem 1.4rem;box-shadow:0 0 40px #3ee6ff22}
+.card h1{margin:.1rem 0 .2rem;font-size:2rem;letter-spacing:.06em}
+.card h2{margin:.3rem 0 .6rem;font-size:1.2rem}
+.card p{color:#b9cbe6;line-height:1.45}
+.row{display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0}
+.btn{padding:.55rem 1rem;border:1px solid var(--line2);background:#10284a;border-radius:.4rem;cursor:pointer}
+.btn:hover{border-color:var(--p1)} .btn.primary{background:#135a7c;border-color:var(--p1)}
+.btn.sel{border-color:var(--warn);background:#3a3210}
+.tag{color:var(--dim);font-size:.85rem}
+table.keys{width:100%;border-collapse:collapse;font-size:.85rem}
+table.keys td{padding:.2rem .3rem;border-bottom:1px solid #1a2b47}
+table.keys button{min-width:6rem;padding:.15rem .4rem;border:1px solid var(--line2);background:#0e1f3b;border-radius:.25rem;cursor:pointer}
+label.set{display:flex;align-items:center;gap:.6rem;margin:.4rem 0}
+#perf{position:fixed;right:.5rem;bottom:14.3rem;font-size:.75rem;color:var(--dim);z-index:4;background:#0008;padding:.2rem .4rem;border-radius:.2rem}
+#pausedBanner{position:fixed;left:50%;top:5.5rem;transform:translateX(-50%);padding:.35rem 1rem;border:1px solid var(--warn);background:#2a230cdd;border-radius:.3rem;z-index:6;letter-spacing:.2em}
+.legend{display:grid;grid-template-columns:auto 1fr;gap:.25rem .8rem;font-size:.88rem;color:#b9cbe6}
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+<div id="hud" class="hidden">
+  <div id="topbar">
+    <div class="chip" id="c-data" title="DATA — raw feedstock. Runners harvest it from glowing wells and carry it to your Core or a Data Cache. Spent on construction and turned into Code by Compilers."><span class="k"><i class="sw" style="background:var(--data)"></i>Data</span><span class="v mono" id="v-data">0</span><span class="s" id="s-data"></span></div>
+    <div class="chip" id="c-code" title="CODE — food for your programs. Every program eats Code (its upkeep). Compilers make it from Data; the Core trickles a little. Running out lowers Stability."><span class="k"><i class="sw" style="background:var(--code)"></i>Code</span><span class="v mono" id="v-code">0</span><span class="s" id="s-code"></span></div>
+    <div class="chip" id="c-hash" title="HASH CREDITS — match-local fictional currency mined by staffed Mining Rigs. Pays for combat programs, towers and the Fork power. Vault holds 600."><span class="k"><i class="sw" style="background:var(--hash)"></i>Hash</span><span class="v mono" id="v-hash">0</span><span class="s" id="s-hash"></span></div>
+    <div class="chip" id="c-compute" title="COMPUTE — a capacity, not a stockpile. Rigs (4), Towers (2) and a training Grid (3) draw on it. If demand exceeds supply, all of them slow down (brownout). Add Compute Nodes or pause Rigs."><span class="k"><i class="sw" style="background:var(--compute)"></i>Compute</span><span class="v mono" id="v-compute">0</span><span class="s" id="s-compute"></span></div>
+    <div class="chip" id="c-mem" title="MEMORY — your population limit. Each program occupies Memory (Runner 1, Bulwark 2, Breaker 3). Memory Banks add 6."><span class="k"><i class="sw" style="background:var(--mem)"></i>Memory</span><span class="v mono" id="v-mem">0</span><span class="s" id="s-mem"></span></div>
+    <div class="chip" id="c-stab" title="STABILITY — how well-fed and orderly your population is. It drifts toward a target set by rations and hunger. High Stability = faster work; below 20, programs start crashing (auto-suspend)."><span class="k">Stability</span><span class="v mono" id="v-stab">0</span><div id="rations"><button data-r="lean" title="Half upkeep, −25 Stability target">Lean</button><button data-r="standard" title="Normal upkeep">Std</button><button data-r="surplus" title="+50% upkeep, +15 Stability target">Surplus</button></div></div>
+    <div class="spacer"></div>
+    <div id="clock" class="mono">0:00</div>
+    <button class="tbtn" id="b-speed" title="Game speed">1×</button>
+    <button class="tbtn" id="b-pause" title="Pause (P)">Pause</button>
+    <button class="tbtn" id="b-menu" title="Menu (Esc)">Menu</button>
+  </div>
+  <div id="alerts"></div>
+  <div id="objectives"><h3><span>Objectives</span><button id="b-obj">hide</button></h3><div id="objlist"></div></div>
+  <div id="bottom">
+    <canvas id="mini" width="192" height="192"></canvas>
+    <div id="sel"></div>
+    <div id="cmds"></div>
+  </div>
+  <div id="perf" class="mono hidden"></div>
+  <div id="pausedBanner" class="hidden">PAUSED — you can still give orders</div>
+</div>
+<div id="toast" style="opacity:0"></div>
+<div id="modal" class="modal"><div class="card" id="modalCard"></div></div>
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>
