@@ -10,6 +10,8 @@ export class Nav {
   blockOwner: Int8Array;  // owner of that building
   gate: Int8Array;        // owner id if an open, built gate occupies the tile
   version = 0;
+  /** Node expansions spent this tick (per-tick pathfinding budget, reset by the game loop). */
+  spent = 0;
   // A* scratch
   private g: Float64Array; private came: Int32Array; private stamp: Int32Array; private closed: Int32Array; private gen = 0;
   private heapI: Int32Array; private heapF: Float64Array; private heapN = 0;
@@ -82,7 +84,7 @@ export class Nav {
     };
     const inGoal = (x: number, y: number) => x >= x0 && x <= x1 && y >= y0 && y <= y1;
     this.g[start] = 0; this.stamp[start] = gen; this.came[start] = -1;
-    this.push(start, hfn(sx, sy));
+    this.push(start, 1.15 * hfn(sx, sy));
     let best = start, bestH = hfn(sx, sy), bestG = 0;
     let found = -1;
     let usedBreach = false;
@@ -96,6 +98,7 @@ export class Nav {
       const cur = this.pop();
       if (this.closed[cur] === gen) continue;
       this.closed[cur] = gen;
+      this.spent++;
       const cx = cur % w, cy = (cur - cx) / w;
       if (inGoal(cx, cy) && (cur === start || cost(cur) === 0)) { found = cur; break; }
       const hc = hfn(cx, cy);
@@ -113,7 +116,7 @@ export class Nav {
         const ng = this.g[cur] + (dx !== 0 && dy !== 0 ? 1.41421356 : 1) + c;
         if (this.stamp[ni] !== gen || ng < this.g[ni]) {
           this.stamp[ni] = gen; this.g[ni] = ng; this.came[ni] = cur;
-          this.push(ni, ng + hfn(nx, ny));
+          this.push(ni, ng + 1.15 * hfn(nx, ny)); // mildly weighted A*: fewer expansions, near-optimal paths
         }
       }
     }

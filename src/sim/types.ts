@@ -66,7 +66,7 @@ export interface Entity {
   // ---- unit ----
   order?: Order;
   path?: number[]; pathI?: number; pathPartial?: boolean; pathBreach?: boolean; pathGoal?: number[]; // goal rect x0,y0,x1,y1
-  repathT?: number; stuckT?: number; navVer?: number; stuckN?: number; lastX?: number; lastY?: number;
+  repathT?: number; stuckT?: number; navVer?: number; pathDeferred?: boolean; stuckN?: number; lastX?: number; lastY?: number;
   cd?: number; carry?: number; kills?: number; rank?: number;
   engaged?: number;                // current combat target id
   suspended?: boolean; crashed?: boolean;

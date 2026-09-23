@@ -1,0 +1,121 @@
+{
+ "date": "2026-09-23T19:56:51.450Z",
+ "results": [
+  {
+   "name": "title screen renders with New match button",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "HUD visible after New match",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "drag box selects the 4 starting Runners",
+   "ok": true,
+   "detail": "selected 4"
+  },
+  {
+   "name": "right-click on a well orders harvest",
+   "ok": true,
+   "detail": "4 harvesting"
+  },
+  {
+   "name": "C key enters Compiler placement with a Runner selected",
+   "ok": true,
+   "detail": "compiler"
+  },
+  {
+   "name": "left-click places the Compiler site",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "placement on the Core is rejected with a reason",
+   "ok": true,
+   "detail": "Space is occupied."
+  },
+  {
+   "name": "insufficient Data shows a readable toast",
+   "ok": true,
+   "detail": "Need 95 more Data"
+  },
+  {
+   "name": "Compiler built and auto-staffed; Code produced; Data harvested",
+   "ok": true,
+   "detail": "{\"built\":true,\"staffed\":true,\"code\":75,\"data\":340}"
+  },
+  {
+   "name": "Q queues a Runner at the Core",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "clicking the queue item cancels it with a full refund",
+   "ok": true,
+   "detail": "code 140.0→140.0"
+  },
+  {
+   "name": "P pauses the simulation",
+   "ok": true,
+   "detail": "1505→1505"
+  },
+  {
+   "name": "P again resumes it",
+   "ok": true,
+   "detail": "1505→1512"
+  },
+  {
+   "name": "Esc opens the pause menu",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Quick save + Quick load restores the exact state (hash)",
+   "ok": true,
+   "detail": "0aff071c vs 0aff071c"
+  },
+  {
+   "name": "UI scale setting applies",
+   "ok": true,
+   "detail": "1.3"
+  },
+  {
+   "name": "key rebinding works (Stop → X)",
+   "ok": true,
+   "detail": "x"
+  },
+  {
+   "name": "battle with 100+ spawned combat units renders (container, software GPU)",
+   "ok": true,
+   "detail": "{\"fps\":60.00393468424153,\"avgStep\":1.2613930318162516,\"units\":132}"
+  },
+  {
+   "name": "destroying the Rival Core shows VICTORY",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Play again restarts a fresh match",
+   "ok": true,
+   "detail": "{\"tick\":3,\"over\":false}"
+  },
+  {
+   "name": "losing your Core shows DEFEAT",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "no page errors or console errors",
+   "ok": true,
+   "detail": ""
+  }
+ ],
+ "perf": {
+  "fps": 60.00393468424153,
+  "avgStep": 1.2613930318162516,
+  "units": 132
+ },
+ "errors": []
+}

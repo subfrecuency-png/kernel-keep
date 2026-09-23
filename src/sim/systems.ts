@@ -206,9 +206,14 @@ export function issueMove(w: World, u: Entity, x: number, y: number, type: 'move
   u.order = { type, x, y }; u.engaged = undefined; u.path = undefined; u.stuckN = 0;
 }
 
+/** Per-tick A* budget (node expansions). Requests over budget are deferred to a later tick: the unit waits. */
+export const PATH_BUDGET = 12000;
+
 export function setPath(w: World, u: Entity, goal: number[], breach: boolean) {
+  u.pathGoal = goal; u.pathBreach = breach;
+  if (w.nav.spent >= PATH_BUDGET) { u.path = []; u.pathI = 0; u.pathPartial = false; u.pathDeferred = true; return; }
   const r = w.nav.findPath(Math.floor(u.x), Math.floor(u.y), goal, u.owner, breach);
-  u.path = r.tiles; u.pathI = 0; u.pathPartial = r.partial; u.pathBreach = r.breach; u.pathGoal = goal;
+  u.path = r.tiles; u.pathI = 0; u.pathPartial = r.partial; u.pathBreach = r.breach; u.pathDeferred = false;
   u.navVer = w.nav.version; u.repathT = 5; u.stuckT = 0; u.lastX = u.x; u.lastY = u.y;
 }
 
@@ -217,6 +222,10 @@ type MoveResult = 'arrived' | 'moving' | { blockedBy: number };
 /** Advance along the current path. Handles repath on nav changes and obstruction. */
 function followPath(w: World, u: Entity, speedMult = 1): MoveResult {
   if (!u.path) return 'arrived';
+  if (u.pathDeferred) {
+    setPath(w, u, u.pathGoal!, !!u.pathBreach);
+    if (u.pathDeferred) return 'moving'; // still waiting for budget
+  }
   if (u.repathT! > 0) u.repathT!--;
   // Nav changed (gate toggled, wall built/destroyed): re-plan partial paths or paths now crossing blocked tiles.
   if (u.navVer !== w.nav.version && u.repathT! <= 0 && u.pathGoal) {
@@ -329,7 +338,7 @@ function combat(w: World, u: Entity, t: Entity, allowChase: boolean): boolean {
   // chase: re-plan periodically toward a moving target, breaching walls when no open route exists
   if (!u.path || (u.repathT! <= 0 && t.kind === 'unit')) {
     setPath(w, u, w.goalFor(t), false);
-    if (u.pathPartial) setPath(w, u, w.goalFor(t), true);
+    if (u.pathPartial && !u.pathDeferred) setPath(w, u, w.goalFor(t), true);
     u.repathT = 10;
   }
   const res = followPath(w, u);
@@ -372,7 +381,7 @@ export function stepUnits(w: World) {
         if (!u.path) {
           setPath(w, u, goal, false);
           // no open route: attack-moving programs chew through enemy structures instead
-          if (u.pathPartial && canBreach) setPath(w, u, goal, true);
+          if (u.pathPartial && canBreach && !u.pathDeferred) setPath(w, u, goal, true);
         }
         const r = followPath(w, u);
         if (typeof r === 'object') { if (canBreach) u.engaged = r.blockedBy; else { u.order = { type: 'idle' }; u.path = undefined; } }

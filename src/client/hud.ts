@@ -76,8 +76,10 @@ export const OBJECTIVES: Objective[] = [
   { text: 'Destroy the Rival Core', hint: 'The Rival attacks around 5:30. Hold, then push with Bulwarks in front, Lancers behind and Breakers to crack hardened walls, towers and the Core. F = Fork: temporary copies of selected fighters.', done: cs => cs.game.world.winner === cs.me },
 ];
 let objKey = '';
+const latched = new Set<number>();
 export function updateObjectives(cs: ClientState) {
-  const done = OBJECTIVES.map(o => o.done(cs));
+  // completed objectives stay completed (no flicker when e.g. harvesters are reassigned)
+  const done = OBJECTIVES.map((o, i) => { if (latched.has(i)) return true; const d = o.done(cs); if (d) latched.add(i); return d; });
   const cur = done.indexOf(false);
   const key = done.join() + cs.settings.showHints;
   if (key === objKey) return; objKey = key;
@@ -218,4 +220,4 @@ export function updateCommands(cs: ClientState, buttons: CmdButton[]) {
     box.appendChild(d);
   }
 }
-export function resetHudCaches() { lastHudKey = ''; objKey = ''; selKey = ''; cmdKey = ''; }
+export function resetHudCaches() { lastHudKey = ''; objKey = ''; selKey = ''; cmdKey = ''; latched.clear(); }

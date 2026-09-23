@@ -31,6 +31,7 @@ export class Game {
     if (w.winner) return;
     const t0 = now();
     w.events = [];
+    w.nav.spent = 0;
     stepFog(w);
     w.rebuildCells();
     stepEconomy(w);

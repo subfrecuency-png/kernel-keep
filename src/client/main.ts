@@ -7,6 +7,8 @@ import { render, renderMinimap, wallLine } from './render.ts';
 import { updateTopbar, updateAlerts, updateObjectives, updateSelection, updateCommands, resetHudCaches, CmdButton, fmtTime } from './hud.ts';
 import { loadSettings, saveSettings, ACTIONS, keyName, defaultSettings } from './settings.ts';
 import { sfx, setAudio } from './audio.ts';
+import { AIController } from '../sim/ai.ts';
+import { stateHash } from '../sim/game.ts';
 
 const canvas = document.getElementById('view') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
@@ -129,7 +131,7 @@ function handleEvents() {
         break;
       case 'built': if (ev.owner === me) { const e = w.get(ev.id); if (e) cs!.fx.push({ kind: 'ring', x: e.x, y: e.y, t: 0, life: 0.8, color: '#ffffff' }); if (e && !B.buildings[e.type].wall) sfx.built(); } break;
       case 'spawn': if (ev.owner === me) sfx.spawn(); break;
-      case 'deposit': if (ev.owner === me) cs!.fx.push({ kind: 'text', x: ev.x, y: ev.y - 0.4, t: 0, life: 0.9, color: '#7cc7ff', text: '+Data' }); break;
+      case 'deposit': if (ev.owner === me && cs!.cam.z >= 24) cs!.fx.push({ kind: 'text', x: ev.x, y: ev.y - 0.4, t: 0, life: 0.6, color: '#7cc7ff', text: '+10' }); break;
       case 'produce': if (ev.owner === me) { const e = w.get(ev.id); if (e) cs!.fx.push({ kind: 'text', x: e.x, y: e.y - 0.8, t: 0, life: 1.1, color: ev.res === 'code' ? '#9cff8a' : '#ffcf5a', text: ev.res === 'code' ? '+Code' : '+Hash' }); } break;
       case 'alert':
         if (ev.owner !== me) break;
@@ -581,6 +583,9 @@ function testHooks() {
     step: (n: number) => { for (let i = 0; i < n; i++) { cs!.game.step(); handleEvents(); } },
     save: () => saveGame(cs!.game), load: (s: SaveFile) => startMatch(loadGame(s)),
     newMatch, select: (ids: number[]) => { cs!.sel = new Set(ids); }, jump, startPlacing,
+    autopilot: () => { if (!cs!.game.ais.some(a => a.s.pid === cs!.me)) cs!.game.ais.push(new AIController(cs!.me, 'normal')); },
+    hash: () => stateHash(cs!.game.world),
+    worldToScreen: (x: number, y: number) => { const d = dpr(); return { x: (x - cs!.cam.x) * cs!.cam.z / d, y: (y - cs!.cam.y) * cs!.cam.z / d }; },
     pressCommand: (id: string) => { const b = commandButtons().find(x => x.id === id); if (b) b.run(); return !!b; },
   };
 }

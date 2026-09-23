@@ -5,11 +5,15 @@
 import { B, Command, CommandResult, Entity } from './types.ts';
 import { World } from './world.ts';
 import { canPlace } from './commands.ts';
+import { codeIncomeRate } from './systems.ts';
 
 export interface AIState {
   pid: number; difficulty: string;
   nextWaveTick: number; waveSize: number; attacking: boolean; attackIds: number[]; launched: number;
   compIdx: number; scoutId: number; scoutPhase: number; rigsPaused: number[];
+  /** Optional personality overrides (used by the economy simulation and future factions). */
+  plan?: [string, number][]; comp?: string[]; noAttack?: boolean; noMilitary?: boolean;
+  laborPaused?: number[];
 }
 
 const PLAN: [string, number][] = [
@@ -56,8 +60,9 @@ export class AIController {
 
     // ---------- economy upkeep decisions ----------
     const upkeep = units.filter(u => !u.suspended).reduce((a, u) => a + B.units[u.type].upkeep, 0) / B.economy.upkeepCycleSec;
-    if (p.code < 25 && p.ration !== 'lean' && upkeep > 0.3) cmd({ t: 'ration', level: 'lean' });
-    else if (p.code > 90 && p.ration === 'lean') cmd({ t: 'ration', level: 'standard' });
+    const income = codeIncomeRate(w, pid);
+    if (p.code < 15 && p.ration !== 'lean' && income < upkeep) cmd({ t: 'ration', level: 'lean' });
+    else if (p.ration === 'lean' && (p.code > 60 || income > upkeep * 1.3)) cmd({ t: 'ration', level: 'standard' });
     const crashed = units.filter(u => u.suspended);
     if (crashed.length && p.code > 40) cmd({ t: 'suspend', ids: crashed.map(u => u.id), on: false });
 
@@ -71,20 +76,38 @@ export class AIController {
       s.rigsPaused = [];
     }
 
+    // labour balance: if Data income collapses, pull operators off Code/Hash buildings back to harvesting
+    const harvesters = runners.filter(u => u.order?.type === 'harvest').length;
+    s.laborPaused = s.laborPaused ?? [];
+    if (p.data < 40 && harvesters < 4) {
+      const victim = buildings.filter(b => b.built && b.active && (b.type === 'rig' || b.type === 'compiler')).sort((a, b) => (a.type === 'rig' ? 0 : 1) - (b.type === 'rig' ? 0 : 1) || b.id - a.id)
+        .find(b => b.type === 'rig' || buildings.filter(c => c.type === 'compiler' && c.active).length > 1);
+      if (victim) { cmd({ t: 'toggleActive', building: victim.id }); s.laborPaused.push(victim.id); }
+    } else if (p.data > 180 && s.laborPaused.length) {
+      const id = s.laborPaused.pop()!; const b = w.get(id); if (b && !b.active) cmd({ t: 'toggleActive', building: id });
+    }
+
     // ---------- runners ----------
     const opBuildings = buildings.filter(b => B.buildings[b.type].operator).length;
     const runnerTarget = Math.min(18, 7 + opBuildings + 2);
     const caps = w.caps(pid);
     const memFree = caps.memory - w.memUsed(pid);
-    if (runners.length < runnerTarget && core.queue!.length < 2 && p.code >= 30 && memFree >= 1) cmd({ t: 'train', building: core.id, unit: 'runner' });
+    if (runners.length < runnerTarget && core.queue!.length < 2 && p.code >= 30 && memFree >= 1 && w.canAfford(pid, B.units.runner.cost)) cmd({ t: 'train', building: core.id, unit: 'runner' });
 
     // ---------- build plan (rebuilds losses automatically) ----------
     const sites = buildings.filter(b => !b.built);
     if (sites.length === 0) {
-      for (const [type, n] of PLAN) {
+      const plan = [...(s.plan ?? PLAN)];
+      // adapt: convert surplus Data into Code; spend surplus Hash on defence
+      if (!s.plan && count('grid') > 0) {
+        if (p.data > 0.8 * caps.dataCap && p.code < 60 && count('compiler') < 5) plan.unshift(['compiler', count('compiler') + 1]);
+        if (p.hash > 450 && count('tower') < 4) plan.unshift(['tower', count('tower') + 1]);
+        if (memFree <= 3 && count('bank') < 7) plan.unshift(['bank', count('bank') + 1]);
+      }
+      for (const [type, n] of plan) {
         if (count(type) >= n) continue;
         const d = B.buildings[type];
-        if (type === 'bank' && memFree > 4 && caps.memory < 40) continue; // not needed yet
+        if (type === 'bank' && memFree > 4) continue; // not needed yet
         if (!w.canAfford(pid, d.cost)) break;               // save up for it
         const spot = this.findSpot(w, core, type, enemyCore);
         if (!spot) continue;
@@ -102,12 +125,13 @@ export class AIController {
     // ---------- military production ----------
     const grid = buildings.find(b => b.type === 'grid' && b.built);
     let reserve = 0;
-    if (grid) {
+    if (grid && !s.noMilitary) {
       reserve = grid.queue!.filter(q => !q.started && B.units[q.unit].needsRunner).length;
       if (grid.queue!.length < 2) {
-        const want = COMP[s.compIdx % COMP.length];
+        const comp = s.comp ?? COMP;
+        const want = comp[s.compIdx % comp.length];
         const ud = B.units[want];
-        if (w.canAfford(pid, ud.cost) && p.code > (ud.cost.code ?? 0) + 20) {
+        if (w.canAfford(pid, ud.cost) && p.code > (ud.cost.code ?? 0) + 35) {
           const r = cmd({ t: 'train', building: grid.id, unit: want });
           if (r.ok) { s.compIdx++; reserve++; }
         }
@@ -150,9 +174,10 @@ export class AIController {
 
     // ---------- attack waves ----------
     const d = B.ai[s.difficulty] ?? B.ai.normal;
-    if (!s.attacking) {
+    if (!s.attacking && !s.noAttack) {
       const avail = fighters.filter(u => u.type !== 'ping');
-      if (w.tick >= s.nextWaveTick && avail.length >= s.waveSize && !underAttack) {
+      const capped = memFree < 2 && avail.length >= Math.ceil(s.waveSize * 0.6);
+      if (w.tick >= s.nextWaveTick && (avail.length >= s.waveSize || capped) && !underAttack) {
         s.attacking = true; s.attackIds = avail.map(u => u.id); s.launched = avail.length;
         s.nextWaveTick = w.tick + d.waveIntervalSec * B.tickRate; s.waveSize += d.waveGrowth;
         cmd({ t: 'attackMove', ids: s.attackIds, x: enemyCore.x, y: enemyCore.y });
