@@ -1,12 +1,14 @@
 // In-match HUD. Reads the engine snapshot only; every button calls an engine method that
 // goes through the validated command path. No game rules are duplicated here.
 import { Fragment, useState } from 'react';
-import { engine, MatchView } from '../client/engine.ts';
+import { engine, MatchView, RosterItem } from '../client/engine.ts';
 import { keyName } from '../client/settings.ts';
 import { PORTRAITS } from './assets.ts';
 import type { Ration } from '../sim/types.ts';
 
 const GLYPH: Record<string, string> = { data: '◇', code: '⌘', hash: '⬡', compute: '▦', memory: '▥' };
+/** Icons for commands that have no concept portrait (kit style: Move / Attack / Hold / Fork row). */
+const CMD_GLYPH: Record<string, string> = { attackMove: '⌖', hold: '◉', fork: '⑂', stop: '■', suspend: '⏸', decompile: '✕', toggle: '⏻', demolish: '✕', gate: '⇄', cancel: '↺' };
 
 function TopBar({ m }: { m: MatchView }) {
   const t = m.top;
@@ -64,7 +66,10 @@ function SidePanels({ m, hints }: { m: MatchView; hints: boolean }) {
 
 function Selection({ m }: { m: MatchView }) {
   const s = m.selection;
-  if (s.kind === 'none') return <div id="sel" className="panel sel"><h2>Nothing selected</h2><p className="role">Left-click or drag to select. Right-click to order. Press <b>F1</b> for controls.</p></div>;
+  if (s.kind === 'none') return <div id="sel" className="panel sel roster-panel">
+    <div className="panel-title"><span className="eyebrow">YOUR PROGRAMS</span><span className="dimtxt">Click a role to select all · F1 controls</span></div>
+    <Roster items={m.roster.filter(r => r.kind === 'unit')} />
+  </div>;
   if (s.kind === 'multi') return <div id="sel" className="panel sel">
     <h2>{s.count} selected</h2>
     <div className="multi">{s.groups!.map(g => <button key={g.type} className="mu" title="Select only these" onClick={() => engine.selectType(g.type)}>
@@ -89,16 +94,43 @@ function Selection({ m }: { m: MatchView }) {
   </div>;
 }
 
+function Roster({ items }: { items: RosterItem[] }) {
+  return <div className="roster">{items.map(r => <button key={r.type} className={`rc ${r.count ? '' : 'none'}`} data-roster={r.type} disabled={!r.count}
+    onClick={() => engine.focusType(r.type)} title={r.count ? `${r.name}: ${r.count} (${r.busy} working)` : `No ${r.name} yet`}>
+    {PORTRAITS[r.type] && <img src={PORTRAITS[r.type]} alt="" />}
+    <span className="rn">{r.name}</span><span className="rs">{r.sub} · <b className="mono">{r.count}</b></span>
+  </button>)}</div>;
+}
+
+function Overview({ m }: { m: MatchView }) {
+  const [tab, setTab] = useState<'structures' | 'economy'>('structures');
+  const st = m.stats;
+  return <div id="cmds" className="panel cmds overview">
+    <div className="tabs" role="tablist">{(['structures', 'economy'] as const).map(t =>
+      <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? 'on' : ''} onClick={() => setTab(t)}>{t === 'structures' ? 'Structures' : 'Economy'}</button>)}</div>
+    {tab === 'structures' ? <Roster items={m.roster.filter(r => r.kind === 'building')} /> :
+      <div className="econ kv">
+        <b>Data harvested</b><span className="mono">{Math.round(st.dataHarvested)}</span>
+        <b>Code produced / eaten</b><span className="mono">{Math.round(st.codeProduced)} / {Math.round(st.codeConsumed)}</span>
+        <b>Code net</b><span className="mono">{m.top.codeNetPerMin >= 0 ? '+' : ''}{m.top.codeNetPerMin}/min</span>
+        <b>Hash mined</b><span className="mono">{Math.round(st.hashMined)}</span>
+        <b>Programs trained / lost</b><span className="mono">{st.unitsTrained} / {st.unitsLost}</span>
+        <b>Kills · crashes</b><span className="mono">{st.kills} · {st.crashes}</span>
+      </div>}
+  </div>;
+}
+
 function Commands({ m }: { m: MatchView }) {
+  if (m.commands.length === 0) return <Overview m={m} />;
   return <div id="cmds" className="panel cmds" role="toolbar" aria-label="Commands">
     {m.commands.map((c, i) => <button key={c.id + i} className={`cb ${c.enabled ? '' : 'dis'}`} data-cmd={c.id} aria-disabled={!c.enabled}
       title={c.title + (c.costShort ? `\nCost: ${c.costShort}` : '')} onClick={e => { e.currentTarget.blur(); engine.runCommand(c.id); }}>
       {c.key && <span className="hk">{keyName(c.key)}</span>}
       {c.id.startsWith('build_') && PORTRAITS[c.id.slice(6)] && <img src={PORTRAITS[c.id.slice(6)]} alt="" />}
       {c.id.startsWith('train_') && PORTRAITS[c.id.slice(6)] && <img src={PORTRAITS[c.id.slice(6)]} alt="" />}
+      {CMD_GLYPH[c.id] && <span className="gl" aria-hidden="true">{CMD_GLYPH[c.id]}</span>}
       <span className="lbl">{c.label}</span>{c.costShort && <span className="cost">{c.costShort}</span>}
     </button>)}
-    {m.commands.length === 0 && <p className="empty">Select programs or a structure to see its commands.</p>}
   </div>;
 }
 
@@ -111,7 +143,10 @@ export function Hud({ m, hints }: { m: MatchView; hints: boolean }) {
     {(m.placing || m.mode) && <div className="banner mode">{m.placing ? `Placing — left-click to place${m.placing === 'wall' ? ' (drag for a line)' : ''}, right-click or Esc to cancel` : 'Attack-move — click a destination'}</div>}
     {m.perf && <div id="perf" className="perf mono">{m.perf}</div>}
     <section id="bottom" className="bottom">
-      <div className="panel mini-wrap"><canvas id="mini" width={192} height={192} ref={el => engine.attachMinimap(el)} aria-label="Minimap: click to move the camera, right-click to move the selection" /></div>
+      <div className="panel mini-wrap">
+        <div className="panel-title"><span className="eyebrow">SECTOR VIEW</span><span className="legend"><i className="lf" />You <i className="lr" />Rival</span></div>
+        <canvas id="mini" width={256} height={180} ref={el => engine.attachMinimap(el)} aria-label="Minimap: click to move the camera, right-click to move the selection" />
+      </div>
       <Selection m={m} />
       <Commands m={m} />
     </section>

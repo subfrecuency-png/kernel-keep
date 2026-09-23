@@ -106,7 +106,7 @@ export function recoveryView(w: World, pid: number): RecoveryIssue[] {
 export interface Objective { text: string; hint: string; done: (w: World, pid: number) => boolean }
 const count = (w: World, pid: number, f: (e: Entity) => boolean) => w.entities.filter(e => !e.dead && e.owner === pid && f(e)).length;
 export const OBJECTIVES: Objective[] = [
-  { text: 'Harvest Data', hint: 'Drag a box around your Runners (small circles), then right-click a glowing hexagon well.', done: (w, p) => count(w, p, e => e.type === 'runner' && e.order?.type === 'harvest') > 0 },
+  { text: 'Harvest Data', hint: 'Drag a box around your Runners (the small worker bots carrying a cube), then right-click a blue Data crystal well.', done: (w, p) => count(w, p, e => e.type === 'runner' && e.order?.type === 'harvest') > 0 },
   { text: 'Build a Compiler', hint: 'Select a Runner, press C (or click Compiler in the command card), then click open ground near your Core.', done: (w, p) => count(w, p, e => e.type === 'compiler') > 0 },
   { text: 'Feed your programs', hint: 'A finished Compiler pulls in a Runner as its operator and turns Data into Code. Code is food: every program eats it.', done: (w, p) => w.entities.some(e => e.owner === p && e.type === 'compiler' && w.operatorPresent(e)) },
   { text: 'Grow to 7 Runners', hint: 'Select the Core and press Q to compile Runners (Data + Code). More hands = more Data.', done: (w, p) => count(w, p, e => e.type === 'runner') >= 7 },

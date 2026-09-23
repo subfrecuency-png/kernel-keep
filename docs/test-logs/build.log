@@ -1,5 +1,5 @@
 
-> kernel-keep@0.1.0 build
+> kernel-keep@0.3.0 build
 > node tools/build.mjs
 
-dist/kernel-keep.html  1314.4 KiB  (cache fca339c7e86a)
+dist/kernel-keep.html  2489.7 KiB  (cache 73af2aed13e2)

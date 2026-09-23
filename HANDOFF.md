@@ -1,3 +1,37 @@
+# HANDOFF — session 3 (2026-09-23): concept art integrated into the battlefield → prototype 0.3
+
+**Request:** "full integration between the imagery and the units and layout in the game." Ryan chose:
+- an isometric camera;
+- red-shifted Rival art;
+- sprites cut from the existing sheets (free and offline; no generation credits used).
+
+**Where it is:** branch `iso-art-0.3` (on top of `react-hud-0.2`) in `~/Downloads/kernel-keep`. It is checked out there. `master` (0.1) and `react-hud-0.2` are unchanged.
+
+| Area | Status |
+|---|---|
+| 32 sprites (16 types × 2 teams) cut from the concept sheets (`tools/art/cut_sprites.py`) | Implemented |
+| Isometric projection for drawing, picking, box select, placement, camera and minimap (`src/client/iso.ts`) | Tested (e2e 36/36) |
+| Program sprites: facing, bob, recoil, hit flash, carry cube, suspended/fork looks | Implemented |
+| Structure sprites: hologram construction, grey when off, working pulse, sparks, gate barrier, selection glow | Implemented |
+| Firewalls as procedural panels and pillars in the concept's material | Implemented |
+| HUD aligned with the kit: cut-out portraits, card-style commands with icons, program roster, Structures/Economy tabs, Sector view | Tested (roster e2e) |
+| Simulation untouched (hash `e232a74a`) | Tested |
+
+**Known issues (new in 0.3):**
+1. Each program has one pose; there are no walk or attack frames yet.
+2. Tall structures can hide programs behind them. Selected programs show a silhouette, but unselected ones do not.
+3. Firewall art is procedural rather than cut from the sheet, so that any drawn line joins cleanly.
+4. The build is 2.49 MB.
+5. Container fps is lower than 0.2's on software rendering. Measure on the Air.
+6. The generated art still needs rights clearance before any public release.
+
+**Next:**
+1. Play on the Air with F3 open.
+2. If you want more poses and angles, generate dedicated sprite turnarounds. That would use paid generation, so confirm costs first.
+3. Merge `iso-art-0.3` when you're happy with it.
+
+---
+
 # HANDOFF — session 2 (2026-09-23): Master v0.2 kit integrated → prototype 0.2
 
 **Request:** dissect `~/Downloads/Kernel_Keep_Master_v0.2` and integrate it into the game. The chosen approach was *rebuild the HUD in React now*.

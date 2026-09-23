@@ -1,4 +1,12 @@
-# START HERE — Kernel Keep (provisional title), prototype 0.2
+# START HERE — Kernel Keep (provisional title), prototype 0.3
+
+> **0.3** (branch `iso-art-0.3`) puts the concept art into the game.
+> - The battlefield is now **isometric**.
+> - Every program and structure on the map is its concept render. Rival art is red-shifted.
+> - The HUD (portraits, command cards, the program roster, the structures and economy tabs, the sector-view minimap) uses the same images.
+> - The simulation is unchanged, and the replay hash is identical to 0.2.
+>
+> See ART_AND_UI_GUIDE.md §1–4 and ARCHITECTURE.md §7.
 
 > **0.2** (branch `react-hud-0.2`) integrates the *Kernel Keep Master v0.2* kit. It adds a React HUD driven by the real simulation, a recovery panel, concept-art portraits, an art codex, an optional offline install and an optional (untested) Tauri shell. It also fixes the AI-vs-AI id-order fairness bias. What was used, what was rejected and why: **INTEGRATION_NOTES.md**. The untouched 0.1 is on `master`.
 
@@ -14,7 +22,7 @@ It isn't a cryptocurrency product: nothing mines, trades or connects to anything
 
 ## Play it (no install)
 
-Open **`dist/kernel-keep.html`** in Chrome, Edge or another Chromium browser: double-click the file, or drag it onto the browser. It's one self-contained file (~1.3 MB in 0.2, because the React UI and concept art are inlined) and runs fully offline. Then:
+Open **`dist/kernel-keep.html`** in Chrome, Edge or another Chromium browser: double-click the file, or drag it onto the browser. It's one self-contained file (~2.5 MB in 0.3: the React UI and 32 sprites are inlined) and runs fully offline. Then:
 1. **New match** (Easy or Normal).
 2. Follow the Objectives panel on the right.
 3. **F1** lists every control; **Esc** opens the menu (save, load, settings).
@@ -29,7 +37,7 @@ It was tested in headless Chromium only. Safari and Firefox should work but have
 - A rule-based Rival AI that plays by the same rules and fog of war as you.
 - Fog of war, minimap, save/load/autosave, pause-and-order, a guided tutorial, rebindable keys, UI scale, and reduced flashing.
 - 0.2: React HUD with a recovery panel (real shortages, one-click fixes that are existing commands), concept portraits, and an Art codex.
-- Evidence (0.2): 32 simulation/view tests, 32 browser end-to-end checks, a PWA offline smoke test, replay and save/load determinism, a fairness experiment, and benchmarks. See TEST_REPORT.md.
+- Evidence (0.3): 32 simulation/view tests, 36 browser end-to-end checks (including sprite-pixel and hit-box checks), a PWA offline smoke test, replay and save/load determinism, a fairness experiment, and benchmarks. See TEST_REPORT.md.
 
 **Not built yet:** a desktop installer (.app/.exe) — the Tauri shell in `desktop/` is scaffolded but has never been compiled; production world art (the concept art is UI-only); designed audio and music; extra factions; campaign; multiplayer. See BUILD_PLAN.md.
 

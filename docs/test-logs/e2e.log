@@ -1,10 +1,10 @@
 
-> kernel-keep@0.1.0 e2e
+> kernel-keep@0.3.0 e2e
 > node --import tsx e2e/e2e.mjs
 
 PASS  title screen renders with New match button
 PASS  HUD visible after New match
-PASS  React StrictMode mounts ONE simulation loop that runs at ~10 ticks/s  — loops 1, 10.0 ticks/s
+PASS  React StrictMode mounts ONE simulation loop that runs at ~10 ticks/s  — loops 1, 10.5 ticks/s
 PASS  drag box selects the 4 starting Runners  — selected 4
 PASS  right-click on a well orders harvest  — 4 harvesting
 PASS  C key enters Compiler placement with a Runner selected  — compiler
@@ -17,17 +17,21 @@ PASS  clicking the queue item cancels it with a full refund  — code 139.7→13
 PASS  P pauses the simulation  — 1527→1527
 PASS  P again resumes it  — 1527→1534
 PASS  Esc opens the pause menu
-PASS  Quick save + Quick load restores the exact state (hash)  — 3f8cd452 vs 3f8cd452
+PASS  Quick save + Quick load restores the exact state (hash)  — 6c6886e1 vs 6c6886e1
 PASS  UI scale setting applies  — 1.3
 PASS  key rebinding works (Stop → X)  — x
-PASS  recovery panel reports the real Code shortage (starving or low reserve)  — starving,memory · engine code 0, unmet 0.86
+PASS  recovery panel reports the real Code shortage (starving or low reserve)  — starving,memory · engine code 0, unmet 0.85
 PASS  recovery button "Switch to Lean rations" issues the real ration command  — lean
 PASS  brownout issue shows the engine demand/supply  — △ Compute brownout · 28/26Rigs, towers a · engine 28/26
 PASS  suspended programs appear in the recovery panel
 PASS  "Resume all" resumes them through the command path  — 0 still suspended
-PASS  selection panel shows the Runner portrait (decoded image)  — naturalWidth 320
-PASS  art codex shows 16 portraits + 2 concept sheets, all decoded  — 18 images
-PASS  battle with 100+ spawned combat units renders (container, software GPU)  — {"fps":47.21621089907527,"avgStep":3.0699618109896845,"units":164}
+PASS  selection panel shows the Runner portrait (decoded image)  — naturalWidth 242
+PASS  art codex shows 16 programs/structures in both team colours + 2 concept sheets, all decoded  — 34 images
+PASS  your program is drawn as its concept sprite (lit, cyan-dominant pixels above its feet)  — {"lit":749,"red":11,"blue":481}
+PASS  the Rival program uses the red-shifted sprite  — {"lit":402,"red":205,"blue":0}
+PASS  clicking a program's body selects it (sprite hit-box)  — [189]
+PASS  roster card selects all your Runners  — {"n":39,"all":39,"ok":true}
+PASS  battle with 100+ spawned combat units renders (container, software GPU)  — {"fps":40.33051347629345,"avgStep":2.2966957155957033,"units":163}
 PASS  destroying the Rival Core shows VICTORY
 PASS  Play again restarts a fresh match  — {"tick":4,"over":false}
 PASS  losing your Core shows DEFEAT
@@ -35,4 +39,4 @@ PASS  same seed, 3000 ticks: Node build and browser bundle produce the same stat
 PASS  no page errors or console errors
 PASS  fully offline: no network requests (file: and data: only)
 
-32/32 browser checks passed
+36/36 browser checks passed

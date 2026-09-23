@@ -20,7 +20,9 @@ src/
     engine.ts           EngineHost: the single rAF loop, camera, input, selection, commands, save/load,
                         settings, and an immutable Snapshot store for React (useSyncExternalStore)
     view.ts             pure view models: topView, recoveryView, selectionView, command card, objectives
-    render.ts           Canvas 2.5D renderer, fog overlay, minimap, placement ghost (unchanged from 0.1)
+    iso.ts              0.3: isometric projection, camera maths, sprite layout (anchors, rects), depth
+    sprites.ts          0.3: sprite images (inlined WebP) and pre-scaled/pre-filtered variant cache
+    render.ts           isometric renderer: ground / objects / overlay passes, picking, iso minimap
     settings.ts audio.ts state.ts index.html
   ui/                   ← React 19 components (0.2): App, Hud (top bar, alerts, recovery, objectives,
                         selection, command card), Menus (title, pause, settings, controls, codex, game over)
@@ -85,7 +87,23 @@ The client runs its own `requestAnimationFrame` loop. It accumulates real time �
 
 ## 7. Presentation
 
-Canvas 2D with a fake-3D ("2.5D") extrusion for buildings. The fog is a 64×64 ImageData scaled over the world with smoothing (one draw call). Hot paths are culled to the viewport, and the minimap redraws every 3rd frame. The renderer is replaceable: it only reads `World` and `ClientState`.
+**0.3: isometric sprite renderer (Implemented, Tested).** The simulation is unchanged and still uses its square tile grid. Only the view is projected. `src/client/iso.ts` holds the one projection used by drawing and input alike:
+
+```
+world (x, y) ─▶ iso plane  u = (x − y)·√½,  v = (x + y)·√½/2  ─▶ canvas  ((u − cam.x)·z, (v − cam.y)·z)
+```
+
+The camera lives in the iso plane, so panning, drag-panning and zoom-at-cursor stay linear. The inverse (`unproj`) turns clicks back into world coordinates. `render.ts` draws three passes:
+
+1. **Ground**, under a canvas transform that maps world units onto the iso ground: lattice, void, team pads, well rings, unit shadows and ownership rings (batched into a few `Path2D`s), selection, placement footprints and ground effects. Fog is projected into a small iso-space canvas once per tick, then drawn with a cheap axis-aligned scale, *under* the sprites so tall art stays legible.
+2. **Objects**, painter-sorted by depth (x + y): well crystals, structure sprites anchored to their footprint diamond, procedural Firewall prisms, and program sprites anchored at their ground point (facing, bob, recoil, hit flash).
+3. **Overlay**: bars, stall icons, ranks, beams at chest height, floating text, silhouettes of selected programs, drag box, cursors.
+
+Picking is done in screen space, front-most first: program sprite boxes, then structure sprites or footprints, then wells. Box selection tests projected ground points. The minimap is drawn as the same iso diamond, and its clicks go through the inverse transform.
+
+**Performance:** sprites are pre-scaled into 8% size buckets with their filters baked in (`sprites.ts`), so a frame never runs CSS filters or large downscales. Container figures are in TEST_REPORT.md; on software rendering the cost is in rasterisation, not JavaScript (a frame's JS is about 2–3 ms with 160 programs).
+
+**0.1 (history):** Canvas 2D top-down with a fake-3D extrusion for buildings.
 
 **0.2: React HUD behind an adapter (Implemented, Tested).** The DOM HUD from 0.1 (`hud.ts`, `main.ts`) is replaced by React components, and the simulation is untouched by this layer:
 

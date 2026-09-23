@@ -1,5 +1,35 @@
 # TEST_REPORT — Kernel Keep
 
+## 0.3 (branch `iso-art-0.3`: isometric view with the concept art on the map), 2026-09-23
+
+This build uses the same container as below. **Nothing was run on the Air.**
+
+| Check | Command | Result | Log |
+|---|---|---|---|
+| Type check | `npm run typecheck` | 0 errors | `typecheck.log` |
+| Simulation + view tests | `npm test` | **32 / 32 pass** | `unit-tests.log` |
+| Simulation unchanged | `git diff src/sim src/data` | empty; reference hash still **`e232a74a`** (seed 777, 3000 ticks, Node = browser) | `e2e.log` |
+| Build | `npm run build` | `dist/kernel-keep.html` **2.49 MB**, including 32 sprite WebPs | `build.log` |
+| Browser end-to-end | `npm run e2e` | **36 / 36 pass**, no console errors, fully offline | `e2e.log`, `e2e/out/*.png` |
+| PWA smoke | `npm run e2e:pwa` | pass | `pwa-smoke.log` |
+
+The four new browser checks sample canvas pixels and input:
+- Your Lancer's sprite box has lit, cyan-dominant pixels (749 lit, 481 blue-dominant, 11 red).
+- The Rival's Lancer is red-dominant (402 lit, 205 red, 0 blue).
+- Clicking a program's body (40% up the sprite) selects it.
+- The Runner roster card selects all your Runners.
+
+Existing checks were adapted to the isometric view and all still pass: box select, right-click a well, placement, rejection toast, quick save/load hash, and battle.
+
+**Frame rate** (container, software GPU, 1440×900):
+- The e2e battle at 165 units ran at **~41 fps** (0.2: 47 fps with the procedural shapes).
+- A denser 160-program fight at the default zoom ran at **~22–33 fps**.
+- JavaScript per frame is about 2–3 ms. The rest is software rasterisation, which a real GPU handles.
+
+Measure on the Air with **F3** before drawing any conclusion.
+
+---
+
 ## 0.2 (branch `react-hud-0.2`, React HUD + Master v0.2 kit integration) — 2026-09-23
 
 Same container as 0.1 (below): Linux x86_64, 2 vCPU, Node 22.22.2, headless Chromium (Playwright 1.56, software rendering). **Nothing was run on the MacBook Air, macOS, Safari or Windows.** Logs are in `docs/test-logs/` and were overwritten by this run.

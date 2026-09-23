@@ -7,7 +7,9 @@ import { Game, stateHash } from '../sim/game.ts';
 import { saveGame, loadGame, SaveFile } from '../sim/save.ts';
 import { AIController } from '../sim/ai.ts';
 import { ClientState, COLORS } from './state.ts';
-import { render, renderMinimap, wallLine } from './render.ts';
+import { render, renderMinimap, wallLine, pickAt, miniToWorld } from './render.ts';
+import { proj, unproj, toU, toV, mapBounds } from './iso.ts';
+import { preloadSprites } from './sprites.ts';
 import { loadSettings, saveSettings, defaultSettings, Settings } from './settings.ts';
 import { sfx, setAudio } from './audio.ts';
 import {
@@ -17,12 +19,15 @@ import {
 export type ModalId = 'title' | 'howto' | 'pause' | 'settings' | 'controls' | 'gameover' | 'codex';
 export interface AlertView { key: string; time: string; text: string; severity: 'info' | 'warn' | 'danger'; x?: number; y?: number }
 export interface ObjectiveView { text: string; hint: string; state: 'done' | 'current' | 'todo' }
+export interface RosterItem { type: string; kind: 'unit' | 'building'; name: string; sub: string; count: number; busy: number }
 export interface MatchView {
   tick: number; clock: string; seed: number; difficulty: 'easy' | 'normal';
   paused: boolean; speed: number; over: boolean; won: boolean;
   top: TopView; alerts: AlertView[]; objectives: ObjectiveView[]; recovery: RecoveryIssue[];
   selection: SelectionView; commands: CommandView[]; mode: 'attackMove' | null; placing: string | null;
   perf: string | null;
+  /** Own programs and structures by type (for the roster and structure tabs). */
+  roster: RosterItem[];
   stats: { dataHarvested: number; codeProduced: number; codeConsumed: number; hashMined: number; unitsTrained: number; unitsLost: number; kills: number; crashes: number };
 }
 export interface Snapshot {
@@ -120,8 +125,38 @@ export class EngineHost {
       commands: this.commandButtons().map(({ run, ...v }) => v),
       mode: cs.mode ?? null, placing: cs.placing?.type ?? null,
       perf: cs.showPerf ? `${cs.fps.toFixed(0)} fps · sim ${cs.game.perf.avgStepMs.toFixed(2)} ms/tick (max ${cs.game.perf.maxStepMs.toFixed(1)}) · ${units} units · tick ${w.tick}` : null,
+      roster: this.roster(),
       stats: { ...p.stats },
     };
+  }
+
+  private roster(): RosterItem[] {
+    const cs = this.cs!; const w = cs.game.world; const me = cs.me;
+    const count = new Map<string, number>(), busy = new Map<string, number>();
+    for (const e of w.entities) {
+      if (e.dead || e.owner !== me || (e.kind !== 'unit' && e.kind !== 'building')) continue;
+      count.set(e.type, (count.get(e.type) ?? 0) + 1);
+      const working = e.kind === 'unit' ? !!e.order && e.order.type !== 'idle' : !e.built || (e.queue?.length ?? 0) > 0 || w.operatorPresent(e);
+      if (working) busy.set(e.type, (busy.get(e.type) ?? 0) + 1);
+    }
+    const units = Object.entries(B.units).map(([type, d]) => ({ type, kind: 'unit' as const, name: d.name, sub: d.role.split(':')[0], count: count.get(type) ?? 0, busy: busy.get(type) ?? 0 }));
+    const blds = Object.entries(B.buildings).map(([type, d]) => ({ type, kind: 'building' as const, name: d.name, sub: `${d.w}×${d.h}`, count: count.get(type) ?? 0, busy: busy.get(type) ?? 0 }));
+    return [...units, ...blds];
+  }
+  /** Roster click: programs → select all of that role; structures → cycle through them. Camera follows. */
+  focusType(type: string) {
+    const cs = this.cs; if (!cs) return; const w = cs.game.world;
+    const own = w.entities.filter(e => !e.dead && e.owner === cs.me && e.type === type);
+    if (!own.length) return;
+    if (own[0].kind === 'unit') {
+      cs.sel = new Set(own.map(e => e.id));
+      const cx = own.reduce((a, e) => a + e.x, 0) / own.length, cy = own.reduce((a, e) => a + e.y, 0) / own.length;
+      this.jump(cx, cy);
+    } else {
+      const cur = own.findIndex(e => cs.sel.has(e.id)); const next = own[(cur + 1) % own.length];
+      cs.sel = new Set([next.id]); this.jump(next.x, next.y);
+    }
+    sfx.click(); this.publish();
   }
 
   // ------------------------------------------------------------------ lifecycle
@@ -145,7 +180,7 @@ export class EngineHost {
   attachMinimap(el: HTMLCanvasElement | null) {
     if (!el || el === this.mini) { if (!el) this.mini = null; return; }
     this.mini = el; this.mctx = el.getContext('2d')!;
-    const toWorld = (e: MouseEvent) => { const r = el.getBoundingClientRect(); const w = this.cs!.game.world; return { x: (e.clientX - r.left) / r.width * w.map.w, y: (e.clientY - r.top) / r.height * w.map.h }; };
+    const toWorld = (e: MouseEvent) => { const r = el.getBoundingClientRect(); return miniToWorld((e.clientX - r.left) / r.width * el.width, (e.clientY - r.top) / r.height * el.height); };
     el.addEventListener('contextmenu', e => e.preventDefault());
     el.addEventListener('mousedown', e => {
       if (!this.cs) return; const p = toWorld(e);
@@ -184,14 +219,16 @@ export class EngineHost {
 
   // ------------------------------------------------------------------ matches
   startMatch(game: Game) {
-    const w = game.world; const core = w.coreOf(1)!; const z = 30;
+    const w = game.world; const core = w.coreOf(1)!; const z = 46;
+    preloadSprites();
     this.cs = {
-      game, me: 1, cam: { x: core.x - innerWidth / z / 2, y: core.y - (innerHeight - 200) / z / 2, z }, sel: new Set(), groups: {}, prev: new Map(), alpha: 0,
+      game, me: 1, cam: { x: 0, y: 0, z }, sel: new Set(), groups: {}, prev: new Map(), alpha: 0,
       mouse: { sx: 0, sy: 0, wx: 0, wy: 0, inView: false }, fx: [], settings: this.settings, paused: false, speed: 1, showPerf: false, fps: 60, time: 0, hudDirty: true, over: !!w.winner,
     };
     this.latched.clear();
     this.modalStack = [];
     this.resize();
+    this.jump(core.x, core.y);
     this.publish();
   }
   newMatch(difficulty: 'easy' | 'normal' = this.difficulty, seed = (Date.now() % 100000)) {
@@ -288,7 +325,7 @@ export class EngineHost {
       switch (ev.t) {
         case 'shot': {
           if (!(w.isVisible(me, ev.x1, ev.y1) || w.isVisible(me, ev.x2, ev.y2))) break;
-          cs.fx.push({ kind: ev.heal ? 'heal' : ev.siege ? 'siege' : 'beam', x: ev.x1, y: ev.y1, x2: ev.x2, y2: ev.y2, t: 0, life: ev.siege ? 0.35 : 0.14, color: ev.heal ? '#6dffa8' : COLORS[ev.owner].main });
+          cs.fx.push({ kind: ev.heal ? 'heal' : ev.siege ? 'siege' : 'beam', x: ev.x1, y: ev.y1, x2: ev.x2, y2: ev.y2, t: 0, life: ev.siege ? 0.35 : 0.16, color: ev.heal ? '#6dffa8' : COLORS[ev.owner].main, from: ev.from, to: ev.to });
           if (!ev.heal) sfx.shot(ev.siege);
           break;
         }
@@ -324,39 +361,19 @@ export class EngineHost {
     this.canvas.style.width = innerWidth + 'px'; this.canvas.style.height = innerHeight + 'px';
   }
   dpr() { return this.canvas ? this.canvas.width / innerWidth : 1; }
-  screenToWorld(sx: number, sy: number) { const d = this.dpr(); const cs = this.cs!; return { x: cs.cam.x + sx * d / cs.cam.z, y: cs.cam.y + sy * d / cs.cam.z }; }
-  worldToScreen(x: number, y: number) { const d = this.dpr(); const cs = this.cs!; return { x: (x - cs.cam.x) * cs.cam.z / d, y: (y - cs.cam.y) * cs.cam.z / d }; }
+  screenToWorld(sx: number, sy: number) { const d = this.dpr(); return unproj(this.cs!.cam, sx * d, sy * d); }
+  worldToScreen(x: number, y: number) { const d = this.dpr(); const [sx, sy] = proj(this.cs!.cam, x, y); return { x: sx / d, y: sy / d }; }
   private tileAt(sx: number, sy: number) { const p = this.screenToWorld(sx, sy); return { tx: Math.floor(p.x), ty: Math.floor(p.y) }; }
   private clampCam() {
     const cs = this.cs; if (!cs || !this.canvas) return; const w = cs.game.world; const vw = this.canvas.width / cs.cam.z, vh = this.canvas.height / cs.cam.z;
-    cs.cam.x = Math.max(-vw * 0.3, Math.min(w.map.w - vw * 0.7, cs.cam.x));
-    cs.cam.y = Math.max(-vh * 0.3, Math.min(w.map.h - vh * 0.5, cs.cam.y));
+    const b = mapBounds(w.map.w, w.map.h); // camera lives in the iso plane (see iso.ts)
+    cs.cam.x = Math.max(b.u0 - vw * 0.3, Math.min(b.u1 - vw * 0.7, cs.cam.x));
+    cs.cam.y = Math.max(b.v0 - vh * 0.3, Math.min(b.v1 - vh * 0.5, cs.cam.y));
   }
-  jump(x: number, y: number) { const cs = this.cs; if (!cs || !this.canvas) return; cs.cam.x = x - this.canvas.width / cs.cam.z / 2; cs.cam.y = y - this.canvas.height / cs.cam.z / 2 + 2; }
+  jump(x: number, y: number) { const cs = this.cs; if (!cs || !this.canvas) return; cs.cam.x = toU(x, y) - this.canvas.width / cs.cam.z / 2; cs.cam.y = toV(x, y) - this.canvas.height * 0.42 / cs.cam.z; }
 
   // ------------------------------------------------------------------ picking / selection
-  private pick(sx: number, sy: number): Entity | undefined {
-    const cs = this.cs!; const w = cs.game.world; const p = this.screenToWorld(sx, sy);
-    let best: Entity | undefined, bd = 0.8;
-    for (const e of w.entities) {
-      if (e.dead || e.kind !== 'unit') continue;
-      if (e.owner !== cs.me && !w.canSee(cs.me, e)) continue;
-      const d = Math.sqrt((e.x - p.x) * (e.x - p.x) + (e.y - p.y) * (e.y - p.y)) - B.units[e.type].radius;
-      if (d < bd) { bd = d; best = e; }
-    }
-    if (best) return best;
-    for (const e of w.entities) {
-      if (e.dead) continue;
-      if (e.kind === 'building') {
-        if (e.owner !== cs.me && !w.canSee(cs.me, e)) continue;
-        if (p.x >= e.tx! && p.x < e.tx! + e.w! && p.y >= e.ty! - 0.4 && p.y < e.ty! + e.h!) return e;
-      } else if (e.kind === 'well') {
-        if (!w.players[cs.me].explored[Math.floor(e.y) * w.map.w + Math.floor(e.x)]) continue;
-        if ((e.x - p.x) * (e.x - p.x) + (e.y - p.y) * (e.y - p.y) < 0.6) return e;
-      }
-    }
-    return undefined;
-  }
+  private pick(sx: number, sy: number): Entity | undefined { const d = this.dpr(); return pickAt(this.cs!, sx * d, sy * d); }
   selectedOwn(): Entity[] { const cs = this.cs; if (!cs) return []; const w = cs.game.world; return [...cs.sel].map(id => w.get(id)).filter((e): e is Entity => !!e && e.owner === cs.me); }
   select(ids: number[]) { if (!this.cs) return; this.cs.sel = new Set(ids); this.publish(); }
   selectType(type: string) { const cs = this.cs; if (!cs) return; cs.sel = new Set([...cs.sel].filter(id => cs.game.world.get(id)?.type === type)); this.publish(); }
@@ -394,10 +411,10 @@ export class EngineHost {
     });
     canvas.addEventListener('wheel', e => {
       const cs = this.cs; if (!cs) return; e.preventDefault();
-      const before = this.screenToWorld(e.clientX, e.clientY);
-      cs.cam.z = Math.max(12, Math.min(64, cs.cam.z * (e.deltaY < 0 ? 1.12 : 1 / 1.12)));
-      const after = this.screenToWorld(e.clientX, e.clientY);
-      cs.cam.x += before.x - after.x; cs.cam.y += before.y - after.y;
+      const d = this.dpr(); const px = e.clientX * d, py = e.clientY * d;
+      const u = cs.cam.x + px / cs.cam.z, v = cs.cam.y + py / cs.cam.z; // keep the iso point under the cursor fixed
+      cs.cam.z = Math.max(18, Math.min(110, cs.cam.z * (e.deltaY < 0 ? 1.12 : 1 / 1.12)));
+      cs.cam.x = u - px / cs.cam.z; cs.cam.y = v - py / cs.cam.z;
     }, { passive: false });
   }
   private onMouseUp(e: MouseEvent) {
@@ -421,8 +438,9 @@ export class EngineHost {
     const box = cs.box; cs.box = undefined;
     const add = e.shiftKey;
     if (box && Math.abs(box.x1 - box.x0) + Math.abs(box.y1 - box.y0) > 8) {
-      const a = this.screenToWorld(Math.min(box.x0, box.x1) / d, Math.min(box.y0, box.y1) / d), b = this.screenToWorld(Math.max(box.x0, box.x1) / d, Math.max(box.y0, box.y1) / d);
-      const inBox = cs.game.world.entities.filter(u => u.kind === 'unit' && !u.dead && u.owner === cs.me && u.x >= a.x && u.x <= b.x && u.y >= a.y && u.y <= b.y);
+      const bx0 = Math.min(box.x0, box.x1), bx1 = Math.max(box.x0, box.x1), by0 = Math.min(box.y0, box.y1), by1 = Math.max(box.y0, box.y1);
+      const lift = cs.cam.z * 0.45; // a box around the body (not just the feet) should catch the program
+      const inBox = cs.game.world.entities.filter(u => { if (u.kind !== 'unit' || u.dead || u.owner !== cs.me) return false; const [sx, sy] = proj(cs.cam, u.x, u.y); return sx >= bx0 && sx <= bx1 && sy >= by0 && sy - lift <= by1; });
       const combat = inBox.filter(u => u.type !== 'runner');
       const chosen = combat.length && combat.length < inBox.length && !add ? combat : inBox;
       if (!add) cs.sel.clear();
@@ -432,8 +450,8 @@ export class EngineHost {
       const hit = this.pick(e.clientX, e.clientY);
       const now = performance.now();
       if (hit && this.lastClick.id === hit.id && now - this.lastClick.t < 350 && hit.owner === cs.me) {
-        const vw = this.canvas!.width / cs.cam.z, vh = this.canvas!.height / cs.cam.z;
-        for (const u of cs.game.world.entities) if (!u.dead && u.owner === cs.me && u.type === hit.type && u.x >= cs.cam.x && u.x <= cs.cam.x + vw && u.y >= cs.cam.y && u.y <= cs.cam.y + vh) cs.sel.add(u.id);
+        const cw = this.canvas!.width, ch = this.canvas!.height;
+        for (const u of cs.game.world.entities) { if (u.dead || u.owner !== cs.me || u.type !== hit.type) continue; const [sx, sy] = proj(cs.cam, u.x, u.y); if (sx >= 0 && sx <= cw && sy >= 0 && sy <= ch) cs.sel.add(u.id); }
       } else {
         if (!add) cs.sel.clear();
         if (hit) { if (add && cs.sel.has(hit.id)) cs.sel.delete(hit.id); else cs.sel.add(hit.id); sfx.click(); }

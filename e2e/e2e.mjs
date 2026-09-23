@@ -66,8 +66,9 @@ check('placement on the Core is rejected with a reason', !invalid.ok && /occupie
 
 // ---- insufficient resources feedback via UI ----
 await ev(() => { window.__kk.cs.game.world.players[1].data = 5; window.__kk.cs.game.world.players[1].explored.fill(1); });
-await page.mouse.click(r0.x, r0.y); await page.keyboard.press('t');
-await ev(() => { const k = window.__kk; const p = k.worldToScreen(15, 46); return p; }).then(async p => { await page.mouse.move(p.x, p.y); await page.mouse.click(p.x, p.y); });
+{ const rr = await ev(() => { const k = window.__kk; const u = k.cs.game.world.entities.find(e => e.owner === 1 && e.type === 'runner' && !e.dead); return k.worldToScreen(u.x, u.y); }); await page.mouse.click(rr.x, rr.y - 8); }
+await page.keyboard.press('t');
+await ev(() => { const k = window.__kk; const p = k.worldToScreen(12, 46.5); return p; }).then(async p => { await page.mouse.move(p.x, p.y); await page.mouse.click(p.x, p.y); });
 await settle(); const toast = await page.textContent('#toast');
 check('insufficient Data shows a readable toast', /Need .*Data/.test(toast), toast);
 await page.keyboard.press('Escape');
@@ -167,8 +168,33 @@ await page.click('#p-resume');
   check('selection panel shows the Runner portrait (decoded image)', portrait > 100, `naturalWidth ${portrait}`);
   await page.keyboard.press('Escape'); await page.click('#p-codex'); await settle();
   const imgs = await page.evaluate(() => [...document.querySelectorAll('#modalCard img')].map(i => i.naturalWidth));
-  check('art codex shows 16 portraits + 2 concept sheets, all decoded', imgs.length === 18 && imgs.every(w => w > 100), `${imgs.length} images`);
+  check('art codex shows 16 programs/structures in both team colours + 2 concept sheets, all decoded', imgs.length === 34 && imgs.every(w => w > 100), `${imgs.length} images`);
   await page.click('#c-back'); await settle(); await page.click('#p-resume'); await settle();
+}
+
+// ---- isometric battlefield with the concept sprites ----
+{
+  // put one program of each team side by side on open ground and look at the canvas pixels in their sprite boxes
+  const box = await ev(() => { const k = window.__kk; const w = k.cs.game.world; const a = w.spawnUnit('lancer', 1, 20, 40); const b = w.spawnUnit('lancer', 2, 22, 38);
+    for (const p of w.players) p.explored.fill(1); w.visible[1].fill(1); k.cs.paused = true; k.jump(21, 39); k.cs.sel.clear(); k.publish();
+    const r = e => { const g = k.worldToScreen(e.x, e.y); const h = 1.15 * k.cs.cam.z * 1.1 / (k.engine.dpr()); return { x: g.x, y: g.y, h, id: e.id }; };
+    return { a: r(a), b: r(b) }; });
+  await page.waitForTimeout(250);
+  const hue = await ev(bx => { const c = document.getElementById('view'); const g = c.getContext('2d'); const d = c.width / innerWidth;
+    const stat = p => { const img = g.getImageData(Math.round((p.x - p.h * 0.4) * d), Math.round((p.y - p.h) * d), Math.round(p.h * 0.8 * d), Math.round(p.h * 0.9 * d)).data;
+      let lit = 0, red = 0, blue = 0; for (let i = 0; i < img.length; i += 4) { const [r0, g0, b0] = [img[i], img[i + 1], img[i + 2]]; if (r0 + g0 + b0 > 160) { lit++; if (r0 > b0 + 40 && r0 > g0 + 30) red++; if (b0 > r0 + 40) blue++; } } return { lit, red, blue }; };
+    return { a: stat(bx.a), b: stat(bx.b) }; }, box);
+  check('your program is drawn as its concept sprite (lit, cyan-dominant pixels above its feet)', hue.a.lit > 60 && hue.a.blue > hue.a.red, JSON.stringify(hue.a));
+  check('the Rival program uses the red-shifted sprite', hue.b.lit > 60 && hue.b.red > hue.b.blue, JSON.stringify(hue.b));
+  // click the body (40% up the sprite), not the feet
+  await page.mouse.click(box.a.x, box.a.y - box.a.h * 0.4);
+  const picked = await ev(() => [...window.__kk.cs.sel]);
+  check('clicking a program\'s body selects it (sprite hit-box)', picked.length === 1 && picked[0] === box.a.id, JSON.stringify(picked));
+  await ev(() => { const k = window.__kk; k.cs.sel.clear(); k.cs.paused = false; k.publish(); }); await settle();
+  await page.click('[data-roster="runner"]'); await settle();
+  const rsel = await ev(() => { const k = window.__kk; const w = k.cs.game.world; const ids = [...k.cs.sel]; return { n: ids.length, all: w.entities.filter(e => !e.dead && e.owner === 1 && e.type === 'runner').length, ok: ids.every(id => w.get(id)?.type === 'runner') }; });
+  check('roster card selects all your Runners', rsel.ok && rsel.n === rsel.all && rsel.n > 0, JSON.stringify(rsel));
+  await ev(() => { window.__kk.cs.sel.clear(); window.__kk.publish(); });
 }
 
 // ---- battle + performance sample ----

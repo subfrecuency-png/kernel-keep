@@ -67,3 +67,17 @@ Save schema is unchanged (1). A 0.1 save still loads, but it plays forward under
 3. PWA install on Safari/macOS (Chromium is tested) (**Proposed**).
 4. Individual production sprites with pivots, to replace procedural shapes (the kit's P2) (**Proposed**).
 5. Air measurement and a human playtest (**Blocked**: needs the Mac and people).
+
+## 6. Follow-up (0.3): the imagery in the game world
+
+Ryan asked for full integration between the imagery, the units and the layout. That goes beyond the kit's guidance (*"concept sheets are not production sprites"*), and here is how the gap was handled:
+
+| Kit caution | What 0.3 does |
+|---|---|
+| No pivots, alpha or world scale | Each cell is matted (rembg IS-Net), trimmed and given a measured ground anchor (`sprites.json`). Programs are scaled from their radius; structures from their footprint diamond. |
+| Isometric art vs a top-down map | The view is now isometric (2:1) to match the art. Only presentation changed, and the simulation hash is unchanged (`e232a74a`). |
+| Cosmetic size must not change collision | Sprites are drawn from simulation positions and footprints, and hit-testing only chooses what you click. Gameplay never reads image sizes. |
+| Rival readability | Red-shifted variants (blue→crimson), square ground markers and dashed pads |
+| One pose | Movement is suggested with facing, bob, recoil and flash; frames are Proposed |
+
+The legacy boards are still rejected. The roster is still 6 roles and 10 structures.

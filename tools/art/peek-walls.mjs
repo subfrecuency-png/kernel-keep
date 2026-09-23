@@ -1,0 +1,23 @@
+import { chromium } from 'playwright';
+import { pathToFileURL } from 'node:url';
+const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+await p.goto(pathToFileURL('dist/kernel-keep.html').href);
+await p.evaluate(() => window.__kkBoot.newMatch('normal', 4242)); await p.waitForTimeout(300);
+await p.evaluate(() => { const k = window.__kk; const w = k.cs.game.world; for (const p of w.players) p.explored.fill(1); const P = w.players[1]; P.data = 5000; P.code = 400; P.hash = 400;
+  const run = w.entities.filter(e => e.owner === 1 && e.type === 'runner').map(e => e.id);
+  const place = (b, tx, ty) => k.cs.game.issue({ t: 'place', building: b, tx, ty, ids: run, player: 1 });
+  const res = []; for (let i = 0; i < 5; i++) res.push(place('wall', 12 + i, 46)); res.push(place('gate', 17, 46)); for (let i = 0; i < 3; i++) res.push(place('wall', 18 + i, 46)); res.push(place('wall', 20, 47), place('wall', 20, 48));
+  res.push(place('tower', 14, 48)); res.push(place('bank', 17, 49)); window.__res = res;
+  for (const e of w.entities) if (e.kind === 'building' && e.owner === 1 && !e.built) { e.progress = window.KB ? 0 : 0; }
+  for (let i = 0; i < 12; i++) w.spawnUnit('runner', 1, 14 + (i % 4), 47.5 + Math.floor(i / 4) * 0.5);
+  const more = w.entities.filter(e => e.owner === 1 && e.type === 'runner').map(e => e.id);
+  for (const e of w.entities) if (e.kind === 'building' && e.owner === 1 && !e.built) k.cs.game.issue({ t: 'assist', ids: more, target: e.id, player: 1 });
+  k.step(900);
+  const site = place('grid', 12, 42); k.step(30);
+  for (let i = 0; i < 4; i++) w.spawnUnit('lancer', 2, 14 + i, 43.5);
+  for (const p of w.players) p.explored.fill(1);
+  k.step(25); k.cs.cam.z = 64; k.jump(16, 46); });
+console.log(JSON.stringify(await p.evaluate(() => window.__res.map(r => r.ok ? 'ok' : r.reason))));
+await p.waitForTimeout(500);
+await p.screenshot({ path: process.argv[2] });
+await b.close();

@@ -4,7 +4,7 @@ import { engine, Snapshot } from '../client/engine.ts';
 import { ACTIONS, keyName } from '../client/settings.ts';
 import { B } from '../sim/types.ts';
 import { costText } from '../sim/commands.ts';
-import { ART, PORTRAITS } from './assets.ts';
+import { ART, PORTRAITS, RIVAL_PORTRAITS } from './assets.ts';
 
 /** Accessible modal card: focus moves in, Tab stays inside, Esc is handled by the engine (Back). */
 function Card({ children, wide, label }: { children: ReactNode; wide?: boolean; label: string }) {
@@ -48,15 +48,15 @@ export function Title({ snap }: { snap: Snapshot }) {
         <button id="t-set" onClick={() => engine.openModal('settings')}>Settings</button>
       </div>
     </div>
-    <footer className="title-footer"><span><i className="status-dot" /> OFFLINE · NO ACCOUNT · HASH CREDITS ARE FICTIONAL AND MATCH-LOCAL</span><span>MERIDIAN DIVIDE · PROTOTYPE 0.2 · PROVISIONAL TITLE</span></footer>
+    <footer className="title-footer"><span><i className="status-dot" /> OFFLINE · NO ACCOUNT · HASH CREDITS ARE FICTIONAL AND MATCH-LOCAL</span><span>MERIDIAN DIVIDE · PROTOTYPE 0.3 · PROVISIONAL TITLE</span></footer>
   </main>;
 }
 
 export function HowTo() {
   return <Card label="How to play" wide><p className="eyebrow">FIELD MANUAL</p><h2>How to play</h2>
     <div className="legend">
-      <b>Goal</b><span>Destroy the Rival Core (top-right). Lose your Core and you lose.</span>
-      <b>Data</b><span>Runners harvest glowing hexagon wells and carry Data to the Core or a Data Cache. Wells run dry; fight for the centre.</span>
+      <b>Goal</b><span>Destroy the Rival Core (east, across the glowing rift). Lose your Core and you lose. Your programs are cyan; the Rival's are crimson.</span>
+      <b>Data</b><span>Runners harvest the blue Data crystal wells and carry Data to the Core or a Data Cache. Wells run dry; fight for the centre.</span>
       <b>Code = food</b><span>Every program eats Code. Compilers (staffed by a Runner) turn Data into Code. If Code runs out, Stability falls; below 20 programs crash (auto-suspend). Recover with Lean rations, more Compilers, or by Suspending idle programs — the Stability panel offers these as buttons.</span>
       <b>Hash</b><span>Mining Rigs mine fictional Hash Credits. Each extra Rig yields 15% less, and every Rig needs an operator and 4 Compute.</span>
       <b>Compute</b><span>Rigs, Towers and a training Grid share Compute. Over-demand causes a brownout that slows all of them. Switch a Rig off (O) in a siege.</span>
@@ -119,11 +119,11 @@ export function Codex() {
   return <Card label="Art codex" wide><p className="eyebrow">THE VISUAL LANGUAGE · STATS FROM THE LIVE BALANCE FILE</p><h2>Codex</h2>
     <h3>Six program roles</h3>
     <div className="codex-grid">{ROLE_ORDER.map(t => { const u = B.units[t]; return <figure key={t} className="codex-item">
-      <img src={PORTRAITS[t]} alt={`${u.name} concept`} /><figcaption><b>{u.name}</b><span>{u.role}</span>
+      <div className="pair"><img src={PORTRAITS[t]} alt={`${u.name} (yours)`} /><img src={RIVAL_PORTRAITS[t]} alt={`${u.name} (Rival)`} /></div><figcaption><b>{u.name}</b><span>{u.role}</span>
         <small>{costText(u.cost)}{u.needsRunner ? ' + a Runner' : ''} · HP {u.hp} · Mem {u.mem} · upkeep {u.upkeep}{u.attack ? ` · ${u.attack.dmg} dmg / ${u.attack.cd}s, range ${u.attack.range}` : ''}{u.heal ? ` · heals ${u.heal.amt}/${u.heal.cd}s` : ''}</small></figcaption></figure>; })}</div>
     <h3>Ten structures</h3>
     <div className="codex-grid">{STRUCT_ORDER.map(t => { const b = B.buildings[t]; return <figure key={t} className="codex-item">
-      <img src={PORTRAITS[t]} alt={`${b.name} concept`} /><figcaption><b>{b.name}</b><span>{b.desc}</span>
+      <div className="pair"><img src={PORTRAITS[t]} alt={`${b.name} (yours)`} /><img src={RIVAL_PORTRAITS[t]} alt={`${b.name} (Rival)`} /></div><figcaption><b>{b.name}</b><span>{b.desc}</span>
         <small>{b.buildable === false ? 'starting structure' : costText(b.cost)} · HP {b.hp} · {b.w}×{b.h}{b.hardened ? ' · hardened' : ''}</small></figcaption></figure>; })}</div>
     <h3>Concept sheets</h3>
     <p className="tag">Generated concept art from the Kernel_Keep_Master_v0.2 kit. These are portraits and direction — the battlefield still uses the readable procedural shapes until production sprites exist.</p>
