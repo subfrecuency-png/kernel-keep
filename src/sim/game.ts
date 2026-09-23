@@ -2,7 +2,7 @@
 import { B, Command, CommandResult } from './types.ts';
 import { World, WorldOptions } from './world.ts';
 import { applyCommand } from './commands.ts';
-import { stepEconomy, stepBuildings, stepUnits, stepSeparation, stepFog } from './systems.ts';
+import { stepEconomy, stepBuildings, stepUnits, stepSeparation, stepFog, applyHits } from './systems.ts';
 import { AIController } from './ai.ts';
 
 export interface LoggedCommand { tick: number; cmd: Command }
@@ -15,7 +15,11 @@ export class Game {
 
   constructor(opts: WorldOptions, world?: World) {
     this.world = world ?? new World(opts);
-    for (const p of this.world.players) if (p.id > 0 && p.ai) this.ais.push(new AIController(p.id, this.world.difficulty));
+    for (const p of this.world.players) if (p.id > 0 && p.ai) {
+      const ai = new AIController(p.id, this.world.difficulty);
+      if (opts.aiPhase?.[p.id] !== undefined) ai.s.phase = opts.aiPhase[p.id];
+      this.ais.push(ai);
+    }
     if (!world) stepFog(this.world); // loaded worlds restore their saved visibility
   }
 
@@ -37,6 +41,7 @@ export class Game {
     stepEconomy(w);
     stepBuildings(w);
     stepUnits(w);
+    applyHits(w);
     w.rebuildCells();
     stepSeparation(w);
     w.compact();

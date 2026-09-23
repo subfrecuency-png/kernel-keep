@@ -1,0 +1,206 @@
+
+> kernel-keep@0.1.0 test
+> node --import tsx --test tests/*.test.ts
+
+TAP version 13
+# Subtest: attack order: target dies, cooldown respected, attacker returns to idle; no friendly fire
+ok 1 - attack order: target dies, cooldown respected, attacker returns to idle; no friendly fire
+  ---
+  duration_ms: 29.953708
+  type: 'test'
+  ...
+# Subtest: cannot target what you cannot see (fog-limited commands)
+ok 2 - cannot target what you cannot see (fog-limited commands)
+  ---
+  duration_ms: 1.268802
+  type: 'test'
+  ...
+# Subtest: hardened walls: non-siege attacks deal 25%, Breakers full damage
+ok 3 - hardened walls: non-siege attacks deal 25%, Breakers full damage
+  ---
+  duration_ms: 45.76253
+  type: 'test'
+  ...
+# Subtest: gates: owner passes when open, is blocked when closed; enemies never pass; routes recalculate
+ok 4 - gates: owner passes when open, is blocked when closed; enemies never pass; routes recalculate
+  ---
+  duration_ms: 198.252434
+  type: 'test'
+  ...
+# Subtest: unreachable destination: unit walks to the closest reachable point and stops (no wandering)
+ok 5 - unreachable destination: unit walks to the closest reachable point and stops (no wandering)
+  ---
+  duration_ms: 68.200448
+  type: 'test'
+  ...
+# Subtest: obstruction recovery: a building placed on top of units ejects them to open ground
+ok 6 - obstruction recovery: a building placed on top of units ejects them to open ground
+  ---
+  duration_ms: 6.295958
+  type: 'test'
+  ...
+# Subtest: siege routing: attack-move into a walled base breaches the wall instead of giving up
+ok 7 - siege routing: attack-move into a walled base breaches the wall instead of giving up
+  ---
+  duration_ms: 338.700685
+  type: 'test'
+  ...
+# Subtest: victory and defeat: destroying a Core ends the match and further commands are rejected
+ok 8 - victory and defeat: destroying a Core ends the match and further commands are rejected
+  ---
+  duration_ms: 1.368191
+  type: 'test'
+  ...
+# Subtest: fork: temporary copies use no memory, expire, and die with their source
+ok 9 - fork: temporary copies use no memory, expire, and die with their source
+  ---
+  duration_ms: 61.249106
+  type: 'test'
+  ...
+# Subtest: towers fire slower in a brownout
+ok 10 - towers fire slower in a brownout
+  ---
+  duration_ms: 175.60577
+  type: 'test'
+  ...
+# Subtest: demolishing a Training Grid mid-training refunds and returns the absorbed Runner
+ok 11 - demolishing a Training Grid mid-training refunds and returns the absorbed Runner
+  ---
+  duration_ms: 32.774802
+  type: 'test'
+  ...
+# Subtest: Patchers keep healing while attack-moving with an army
+ok 12 - Patchers keep healing while attack-moving with an army
+  ---
+  duration_ms: 25.690694
+  type: 'test'
+  ...
+# Subtest: same seed + same commands => identical state hash (repeated seeded scenario)
+ok 13 - same seed + same commands => identical state hash (repeated seeded scenario)
+  ---
+  duration_ms: 4299.73822
+  type: 'test'
+  ...
+# Subtest: command-log replay reproduces a human+AI match exactly
+ok 14 - command-log replay reproduces a human+AI match exactly
+  ---
+  duration_ms: 638.918845
+  type: 'test'
+  ...
+# Subtest: save/load mid-match (queues, orders, rng, timers) continues bit-identically
+ok 15 - save/load mid-match (queues, orders, rng, timers) continues bit-identically
+  ---
+  duration_ms: 7990.869463
+  type: 'test'
+  ...
+# Subtest: save schema is versioned and rejects unknown versions
+ok 16 - save schema is versioned and rejects unknown versions
+  ---
+  duration_ms: 7.633391
+  type: 'test'
+  ...
+# Subtest: AI plays within its information and command rules
+ok 17 - AI plays within its information and command rules
+  ---
+  duration_ms: 1606.619811
+  type: 'test'
+  ...
+# Subtest: extended AI-vs-AI run: 30 simulated minutes without NaN, leaks or stuck state
+ok 18 - extended AI-vs-AI run: 30 simulated minutes without NaN, leaks or stuck state
+  ---
+  duration_ms: 5328.633669
+  type: 'test'
+  ...
+# Subtest: bootstrap: starting core + 4 runners can harvest, build a compiler and produce code without prior production
+ok 19 - bootstrap: starting core + 4 runners can harvest, build a compiler and produce code without prior production
+  ---
+  duration_ms: 276.909543
+  type: 'test'
+  ...
+# Subtest: idle start never enters a crash spiral: core trickle keeps a small population above the crash line
+ok 20 - idle start never enters a crash spiral: core trickle keeps a small population above the crash line
+  ---
+  duration_ms: 803.035522
+  type: 'test'
+  ...
+# Subtest: starvation is staged: warning, stability decline, crashes that auto-suspend, then recovery with Lean + resume
+ok 21 - starvation is staged: warning, stability decline, crashes that auto-suspend, then recovery with Lean + resume
+  ---
+  duration_ms: 350.073227
+  type: 'test'
+  ...
+# Subtest: data conservation: wells + carried + stock is constant while only harvesting (no duplicate rewards)
+ok 22 - data conservation: wells + carried + stock is constant while only harvesting (no duplicate rewards)
+  ---
+  duration_ms: 130.270452
+  type: 'test'
+  ...
+# Subtest: storage caps: data stock never exceeds cap; hash vault caps at 600
+ok 23 - storage caps: data stock never exceeds cap; hash vault caps at 600
+  ---
+  duration_ms: 1.035518
+  type: 'test'
+  ...
+# Subtest: mining: diminishing returns per rig and compute brownout throttles yield
+ok 24 - mining: diminishing returns per rig and compute brownout throttles yield
+  ---
+  duration_ms: 113.428738
+  type: 'test'
+  ...
+# Subtest: insufficient resources and invalid placement give readable reasons and change nothing
+ok 25 - insufficient resources and invalid placement give readable reasons and change nothing
+  ---
+  duration_ms: 13.672066
+  type: 'test'
+  ...
+# Subtest: cancel construction refunds fully; demolish refunds 25%
+ok 26 - cancel construction refunds fully; demolish refunds 25%
+  ---
+  duration_ms: 1.076474
+  type: 'test'
+  ...
+# Subtest: training queue: cap, cancellation refunds and returns the specialized Runner; population accounting stays exact
+ok 27 - training queue: cap, cancellation refunds and returns the specialized Runner; population accounting stays exact
+  ---
+  duration_ms: 237.013331
+  type: 'test'
+  ...
+# Subtest: memory cap blocks training until a Memory Bank exists
+ok 28 - memory cap blocks training until a Memory Bank exists
+  ---
+  duration_ms: 74.956216
+  type: 'test'
+  ...
+# Subtest: blocked spawn waits (no loss) and resumes once space clears
+ok 29 - blocked spawn waits (no loss) and resumes once space clears
+  ---
+  duration_ms: 94.871665
+  type: 'test'
+  ...
+# Subtest: top bar: values come from the engine; a reserve estimate exists only for a negative net Code rate
+ok 30 - top bar: values come from the engine; a reserve estimate exists only for a negative net Code rate
+  ---
+  duration_ms: 48.553189
+  type: 'test'
+  ...
+# Subtest: recovery panel: starvation, brownout, suspension and memory issues mirror engine state; actions map to real commands
+ok 31 - recovery panel: starvation, brownout, suspension and memory issues mirror engine state; actions map to real commands
+  ---
+  duration_ms: 46.829528
+  type: 'test'
+  ...
+# Subtest: selection view: facts, stall explanation and queue reflect the entity
+ok 32 - selection view: facts, stall explanation and queue reflect the entity
+  ---
+  duration_ms: 2.192484
+  type: 'test'
+  ...
+1..32
+# tests 32
+# suites 0
+# pass 32
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 25088.406561

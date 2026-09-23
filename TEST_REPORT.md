@@ -1,4 +1,41 @@
-# TEST_REPORT — Kernel Keep prototype 0.1
+# TEST_REPORT — Kernel Keep
+
+## 0.2 (branch `react-hud-0.2`, React HUD + Master v0.2 kit integration) — 2026-09-23
+
+Same container as 0.1 (below): Linux x86_64, 2 vCPU, Node 22.22.2, headless Chromium (Playwright 1.56, software rendering). **Nothing was run on the MacBook Air, macOS, Safari or Windows.** Logs are in `docs/test-logs/` and were overwritten by this run.
+
+| Check | Command | Result | Log |
+|---|---|---|---|
+| Type check (strict, now incl. TSX) | `npm run typecheck` | 0 errors | `typecheck.log` |
+| Simulation + view-model tests | `npm test` | **32 / 32 pass** (29 from 0.1, plus 3 new `view.test.ts`) | `unit-tests.log` |
+| Build | `npm run build` | `dist/kernel-keep.html` **1314 KiB** (React + concept art inlined), plus optional `index.html`, `manifest.webmanifest`, `sw.js`, icons | `build.log` |
+| Browser end-to-end | `npm run e2e` | **32 / 32 pass**. New checks: one loop under StrictMode, recovery panel vs engine, Lean/Resume through the command path, portraits and codex images decode, no network requests. No console errors. | `e2e.log`, `e2e/out/` |
+| Node ↔ browser determinism | (in e2e) | seed 777, 3000 ticks: `e232a74a` = `e232a74a` | `e2e.log` |
+| Optional PWA | `npm run e2e:pwa` | SW installs, cache `kernel-keep-<hash>`, page reloads **offline**, 0 console errors | `pwa-smoke.log` |
+| Economy scenarios | `npm run econ` | 5 scenarios, 0 crashes, lowest Stability 25 (scenario E) | `econ.log` |
+| Simulation benchmark | `npm run bench` | worst tick ≤ 36 ms at every size, avg 1.5–6.3 ms (see below) | `bench.log` |
+| AI-vs-AI (seed 7) | `npx tsx tools/aivai.ts 7` | P1 wins at 17:03 (0.1 build: P2 at 13:53) | `aivai-seed7.log` |
+| Mirror fairness | `npx tsx tools/fairness.ts 12 25` | id-order bias **fixed** (setup order no longer changes any outcome). **Residual P1 advantage 18–6** over 24 paired games (p≈0.02): open | `docs/FAIRNESS_RESULTS.md`, `docs/fairness.json` |
+| Tauri shell | — | **Not built** (no Rust toolchain in the container) | — |
+
+**Hash change, deliberate:** the fairness fixes changed simulation behaviour, so the reference hash moved from `0e3de02e` (0.1 and the presentation-only React step) to `e232a74a`. See INTEGRATION_NOTES.md §4.
+
+**Bench 0.2** (per 100 ms tick, container; the separation pass is now two-phase):
+
+| Per side | avg ms | p95 ms | max ms |
+|---|---|---|---|
+| 25 | 1.53 | 6.89 | 35.6 (warm-up) |
+| 50 | 2.58 | 9.58 | 26.0 |
+| 100 | 3.14 | 9.58 | 18.8 |
+| 200 | 6.34 | 13.4 | 23.1 |
+
+The browser battle check now spawns **164 units** (0.1: 134) and measured **47 fps** with software rendering, down from the 60 fps cap in 0.1. React adds a DOM update ~10×/s. This is a container number; measure on the Air with F3 before drawing conclusions.
+
+**Still not verified in 0.2:** the Tauri build; PWA in Safari; human playtest; Air performance; a fog-leak test specific to the new React panels (they use the same fog-filtered queries as 0.1).
+
+---
+
+# 0.1 results (history, 2026-09-23)
 
 **Date:** 2026-09-23. **Where:** Linux x86_64 cloud container (2 vCPU Xeon 2.8 GHz, 7 GB RAM, no GPU), Node 22.22.2, Chromium 1194 (Playwright 1.56, headless, software rendering). **Nothing was run on your MacBook Air M4, on macOS, or on Windows.** Raw logs are in `docs/test-logs/`.
 
@@ -69,7 +106,7 @@ Before the pathfinding budget (ADR-005), the 100-per-side worst tick was **about
 - Audio: WebAudio calls run without errors in headless Chromium, but nobody has listened to them.
 - Edge-scroll, middle-drag pan, the minimap right-click and control groups are implemented but not covered by e2e.
 - Long human sessions: memory growth in the browser over an hour hasn't been profiled.
-- The mirror AI isn't perfectly fair: player 2 won the current seeded AI-vs-AI match (it was player 1 in an earlier build). Randomness only affects crash selection, so seeds barely change AI-vs-AI outcomes. Possible causes are update-order bias and building-placement tie-breaks (to investigate).
+- The mirror AI isn't perfectly fair: player 2 won the current seeded AI-vs-AI match (it was player 1 in an earlier build). Randomness only affects crash selection, so seeds barely change AI-vs-AI outcomes. Possible causes are update-order bias and building-placement tie-breaks (to investigate). *(0.2: investigated. The id-order bias is fixed; a residual P1 advantage remains. See docs/FAIRNESS_RESULTS.md.)*
 
 ## 5. Human playtest script (15–20 minutes)
 

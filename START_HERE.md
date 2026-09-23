@@ -1,4 +1,6 @@
-# START HERE — Kernel Keep (provisional title), prototype 0.1
+# START HERE — Kernel Keep (provisional title), prototype 0.2
+
+> **0.2** (branch `react-hud-0.2`) integrates the *Kernel Keep Master v0.2* kit. It adds a React HUD driven by the real simulation, a recovery panel, concept-art portraits, an art codex, an optional offline install and an optional (untested) Tauri shell. It also fixes the AI-vs-AI id-order fairness bias. What was used, what was rejected and why: **INTEGRATION_NOTES.md**. The untouched 0.1 is on `master`.
 
 An original, offline, single-player fortress RTS. You rule a luminous civilization of programs:
 - harvest **Data**;
@@ -12,7 +14,7 @@ It isn't a cryptocurrency product: nothing mines, trades or connects to anything
 
 ## Play it (no install)
 
-Open **`dist/kernel-keep.html`** in Chrome, Edge or another Chromium browser: double-click the file, or drag it onto the browser. It's one self-contained ~118 KB file and runs fully offline. Then:
+Open **`dist/kernel-keep.html`** in Chrome, Edge or another Chromium browser: double-click the file, or drag it onto the browser. It's one self-contained file (~1.3 MB in 0.2, because the React UI and concept art are inlined) and runs fully offline. Then:
 1. **New match** (Easy or Normal).
 2. Follow the Objectives panel on the right.
 3. **F1** lists every control; **Esc** opens the menu (save, load, settings).
@@ -26,21 +28,25 @@ It was tested in headless Chromium only. Safari and Firefox should work but have
 - Fork, the commander power.
 - A rule-based Rival AI that plays by the same rules and fog of war as you.
 - Fog of war, minimap, save/load/autosave, pause-and-order, a guided tutorial, rebindable keys, UI scale, and reduced flashing.
-- Evidence: 29 simulation tests, 23 browser end-to-end checks, replay and save/load determinism, and benchmarks. See TEST_REPORT.md.
+- 0.2: React HUD with a recovery panel (real shortages, one-click fixes that are existing commands), concept portraits, and an Art codex.
+- Evidence (0.2): 32 simulation/view tests, 32 browser end-to-end checks, a PWA offline smoke test, replay and save/load determinism, a fairness experiment, and benchmarks. See TEST_REPORT.md.
 
-**Not built yet:** a desktop installer (.app/.exe), authored art, audio and music, extra factions, campaign, multiplayer. See BUILD_PLAN.md.
+**Not built yet:** a desktop installer (.app/.exe) — the Tauri shell in `desktop/` is scaffolded but has never been compiled; production world art (the concept art is UI-only); designed audio and music; extra factions; campaign; multiplayer. See BUILD_PLAN.md.
 
 ## Develop
 
 ```bash
-npm install          # dev tools only: esbuild, typescript, tsx, playwright, @types/node (versions pinned)
+npm install          # react/react-dom 19.3.0 + dev tools: esbuild, typescript, tsx, playwright, @types/* (pinned)
 npm run build        # → dist/kernel-keep.html
-npm test             # 29 simulation tests (node:test)
+npm test             # 32 simulation + view-model tests (node:test)
 npm run e2e          # browser test (needs Playwright's Chromium: npx playwright install chromium)
 npm run verify       # typecheck + tests + build + e2e
 npm run econ         # economy scenarios → docs/ECON_SIM_RESULTS.md
 npm run bench        # simulation ms/tick at 25–200 units per side
 npm run aivai        # AI-vs-AI match report: npx tsx tools/aivai.ts [seed] [minutes]
+npm run fairness     # mirror-match experiment → docs/FAIRNESS_RESULTS.md (~5 min)
+npm run serve        # optional: http://127.0.0.1:4173/?pwa for the offline-install path
+npm run e2e:pwa      # PWA smoke test
 ```
 
 You need Node 22+ (it was developed on 22.22.2). The balance lives in `src/data/balance.json`: edit it, run `npm run build`, and reload.
@@ -57,3 +63,7 @@ You need Node 22+ (it was developed on 22.22.2). The balance lives in `src/data/
 | BUILD_PLAN.md | milestone status, next tasks, backlog |
 | TEST_REPORT.md | what ran, results, performance, what's untested, human playtest script |
 | HANDOFF.md | files, known issues, blockers, exact next steps |
+| INTEGRATION_NOTES.md | 0.2: dissection of the Master v0.2 kit — used / adapted / rejected, gates, hash change |
+| docs/FAIRNESS_RESULTS.md | 0.2: mirror-match experiment and fixes |
+| desktop/README.md | optional Tauri shell (untested) |
+| THIRD_PARTY_NOTICES.md | React licences |

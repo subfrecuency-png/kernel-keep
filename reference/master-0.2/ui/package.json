@@ -1,0 +1,32 @@
+{
+  "name": "kernel-keep-ui-lab",
+  "version": "0.2.0",
+  "description": "Isolated React HUD and presentation lab; original game simulation not included",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "npm run build && node scripts/serve.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "node scripts/browser-test.mjs",
+    "tauri": "tauri"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED",
+  "type": "module",
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.11.5",
+    "@types/node": "26.6.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "ajv": "8.17.1",
+    "esbuild": "0.28.2",
+    "playwright": "1.62.1",
+    "typescript": "7.0.2"
+  },
+  "private": true
+}

@@ -35,9 +35,18 @@ Status as of 2026-09-23 (end of session 1). Labels: **Tested** (automated eviden
 | Windows smoke test | **Blocked here** (needs a Windows machine or CI runner) |
 | Cross-engine determinism check in Safari/WebKit (Playwright WebKit) | Proposed |
 | Replace procedural placeholders with authored art/SFX (see manifest) | Proposed |
-| Mirror-AI fairness investigation (P2 wins the current AI-vs-AI) | Proposed |
+| Mirror-AI fairness investigation | **Tested (0.2)**: the id-order bias is fixed. The residual P1 advantage (18–6) is **open**. |
+| React HUD behind an engine adapter (Master v0.2 kit) | **Tested (0.2)** |
+| Concept art in the UI (menu, portraits, codex) | **Implemented (0.2)**. Not world sprites. |
+| Optional offline install (PWA) | **Tested (0.2)**, Chromium only |
+| Optional Tauri 2 shell (`desktop/`) | **Proposed / untested** (no Rust here). Replaces the Electron plan as the lighter option, per the kit's review. |
 
-## Exact next tasks (ordered)
+## Exact next tasks (ordered) — updated for 0.2
+
+0. **0.2:** open `dist/kernel-keep.html` on the Air, play one Normal match, and check the new HUD: the recovery panel, portraits and codex. Then fix the residual mirror advantage (fixed-point positions, or tile-exact approach logic around wells; see docs/FAIRNESS_RESULTS.md). Build the Tauri shell only if a native window is wanted (`desktop/README.md`).
+
+The 0.1 list continues below. Item 4 (Electron) is superseded by the optional Tauri shell.
+
 1. **Play 2–3 matches yourself** on the Air with the playtest script. Export a save after each (Menu → Export save file) and note the F3 numbers.
 2. Tune from findings. The likely levers are `upkeepCycleSec`, the `ai.normal.firstAttackSec` / `firstWave` values, the Compiler cycle, and tower damage. Every change goes in `src/data/balance.json`; then run `npm run verify` and `npm run econ`.
 3. Add an **Easy-first onboarding drill** (AoE-style, RESEARCH #12): a 5-minute "Feed the Keep" scenario with a medal.

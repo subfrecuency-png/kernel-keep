@@ -1,0 +1,1 @@
+{"identifier":"default","description":"Game window only; no filesystem, shell, HTTP or updater plugin permissions.","windows":["main"],"permissions":[]}

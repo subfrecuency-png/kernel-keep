@@ -12,6 +12,9 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 const errors = [];
 page.on('pageerror', e => errors.push(e.message));
 page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+const remote = []; page.on('request', r => { const u = r.url(); if (!u.startsWith('file:') && !u.startsWith('data:') && !u.startsWith('blob:')) remote.push(u); });
+const settle = () => page.waitForTimeout(160);
+const ev = (fn, arg) => page.evaluate(fn, arg);
 await page.goto('file://' + process.cwd() + '/dist/kernel-keep.html');
 await page.waitForTimeout(400);
 await page.screenshot({ path: `${OUT}/01-title.png` });
@@ -20,7 +23,14 @@ check('title screen renders with New match button', await page.isVisible('#t-new
 await page.click('#t-new');
 await page.waitForTimeout(500);
 check('HUD visible after New match', await page.isVisible('#topbar'));
-const ev = (fn, arg) => page.evaluate(fn, arg);
+// ---- React integration: exactly one simulation driver under StrictMode, advancing at the fixed 10 Hz ----
+{
+  const a = await ev(() => ({ tick: window.__kk.cs.game.world.tick, loops: window.__kk.engine.loopCount }));
+  await page.waitForTimeout(2000);
+  const b2 = await ev(() => window.__kk.cs.game.world.tick);
+  const rate = (b2 - a.tick) / 2;
+  check('React StrictMode mounts ONE simulation loop that runs at ~10 ticks/s', a.loops === 1 && rate > 7 && rate < 12.5, `loops ${a.loops}, ${rate.toFixed(1)} ticks/s`);
+}
 await ev(() => { window.__kk.cs.paused = true; });
 
 // ---- drag-select the four runners with the mouse ----
@@ -58,7 +68,7 @@ check('placement on the Core is rejected with a reason', !invalid.ok && /occupie
 await ev(() => { window.__kk.cs.game.world.players[1].data = 5; window.__kk.cs.game.world.players[1].explored.fill(1); });
 await page.mouse.click(r0.x, r0.y); await page.keyboard.press('t');
 await ev(() => { const k = window.__kk; const p = k.worldToScreen(15, 46); return p; }).then(async p => { await page.mouse.move(p.x, p.y); await page.mouse.click(p.x, p.y); });
-const toast = await page.textContent('#toast');
+await settle(); const toast = await page.textContent('#toast');
 check('insufficient Data shows a readable toast', /Need .*Data/.test(toast), toast);
 await page.keyboard.press('Escape');
 await ev(() => { window.__kk.cs.game.world.players[1].data = 150; });
@@ -72,12 +82,13 @@ check('Compiler built and auto-staffed; Code produced; Data harvested', eco.buil
 const core = await ev(() => { const k = window.__kk; const c = k.cs.game.world.coreOf(1); return { id: c.id, ...k.worldToScreen(c.x, c.y) }; });
 await ev(id => window.__kk.select([id]), core.id);
 const before = await ev(() => ({ ...window.__kk.cs.game.world.players[1] }));
+await settle();
 await page.keyboard.press('q');
-await page.waitForTimeout(150);
+await page.waitForTimeout(250);
 const q1 = await ev(id => window.__kk.cs.game.world.get(id).queue.length, core.id);
 check('Q queues a Runner at the Core', q1 === 1);
 await page.waitForTimeout(250);
-await page.click('.qi');
+await page.click('.qi'); await settle();
 const after = await ev(() => ({ ...window.__kk.cs.game.world.players[1] }));
 const q2 = await ev(id => window.__kk.cs.game.world.get(id).queue.length, core.id);
 check('clicking the queue item cancels it with a full refund', q2 === 0 && Math.abs(after.code - before.code) < 0.5 && Math.abs(after.data - before.data) < 0.5, `code ${before.code.toFixed(1)}→${after.code.toFixed(1)}`);
@@ -105,7 +116,7 @@ check('Esc opens the pause menu', await page.isVisible('#p-save'));
 await page.click('#p-save');
 const h1 = await ev(() => window.__kk.hash());
 await ev(() => window.__kk.step(50));
-await page.click('#p-load');
+await page.click('#p-load'); await settle();
 const h2 = await ev(() => window.__kk.hash());
 check('Quick save + Quick load restores the exact state (hash)', h1 === h2, `${h1} vs ${h2}`);
 
@@ -115,13 +126,50 @@ await page.fill('#s-scale', '1.3'); await page.dispatchEvent('#s-scale', 'input'
 const scale = await ev(() => getComputedStyle(document.documentElement).getPropertyValue('--ui-scale').trim());
 check('UI scale setting applies', scale === '1.3', scale);
 await page.check('#s-flash');
-await page.click('#s-keys');
+await page.click('#s-keys'); await settle();
 await page.click('table.keys button[data-a="stop"]');
-await page.keyboard.press('x');
+await page.keyboard.press('x'); await settle();
 const bound = await ev(() => window.__kk.cs.settings.keys.stop);
 check('key rebinding works (Stop → X)', bound === 'x', bound);
 await page.click('#k-back'); await page.click('#s-reset'); await page.click('#s-back');
 await page.click('#p-resume');
+
+// ---- Stability/recovery panel is driven by real engine state and its buttons issue real commands ----
+{
+  await ev(() => { const k = window.__kk; const w = k.cs.game.world; k.cs.game.ais = k.cs.game.ais.filter(a => a.s.pid !== 1); w.players[1].code = 0; w.players[1].ration = 'standard';
+    for (const b of w.entities.filter(e => e.owner === 1 && e.type === 'compiler' && e.active)) k.issue({ t: 'toggleActive', building: b.id });
+    const c = w.coreOf(1); for (let i = 0; i < 25; i++) w.spawnUnit('runner', 1, c.x + 4 + (i % 5) * 0.6, c.y - 4 - Math.floor(i / 5) * 0.6); k.step(40); });
+  await settle();
+  const issue = await ev(() => [...document.querySelectorAll('#recovery [data-issue]')].map(e => e.dataset.issue));
+  const eng = await ev(() => { const w = window.__kk.cs.game.world; return { code: +w.players[1].code.toFixed(1), unmet: +w.players[1].unmet.toFixed(2) }; });
+  check('recovery panel reports the real Code shortage (starving or low reserve)', issue.includes('starving') || issue.includes('codeLow'), `${issue.join(',')} · engine code ${eng.code}, unmet ${eng.unmet}`);
+  await page.click('#recovery [data-action="ration-lean"]'); await settle();
+  const ration = await ev(() => window.__kk.cs.game.world.players[1].ration);
+  check('recovery button "Switch to Lean rations" issues the real ration command', ration === 'lean', ration);
+  await ev(() => { const k = window.__kk; const w = k.cs.game.world; w.players[1].code = 200; w.players[1].surgeUntil = w.tick + 5000;
+    for (let i = 0; i < 2; i++) { const b = w.spawnBuilding('tower', 1, 3 + i * 3, 44, true); } k.step(1); });
+  await settle();
+  const brown = await page.textContent('#recovery [data-issue="brownout"]').catch(() => null);
+  const demand = await ev(() => ({ d: window.__kk.cs.game.world.computeDemand(1), s: window.__kk.cs.game.world.caps(1).compute }));
+  check('brownout issue shows the engine demand/supply', !!brown && brown.includes(`${demand.d}/${demand.s}`), `${brown?.slice(0, 40)} · engine ${demand.d}/${demand.s}`);
+  await ev(() => { const k = window.__kk; const w = k.cs.game.world; w.players[1].surgeUntil = 0; const r = w.entities.filter(e => e.owner === 1 && e.type === 'runner').slice(0, 3).map(e => e.id); k.issue({ t: 'suspend', ids: r, on: true }); k.step(1); });
+  await settle();
+  check('suspended programs appear in the recovery panel', await page.isVisible('#recovery [data-issue="suspended"]'));
+  await page.click('#recovery [data-action="resume-all"]'); await settle();
+  const still = await ev(() => window.__kk.cs.game.world.entities.filter(e => e.owner === 1 && e.suspended).length);
+  check('"Resume all" resumes them through the command path', still === 0, `${still} still suspended`);
+}
+// ---- art from the master kit: selection portrait + codex ----
+{
+  const rid = await ev(() => window.__kk.cs.game.world.entities.find(e => e.owner === 1 && e.type === 'runner').id);
+  await ev(id => window.__kk.select([id]), rid); await settle();
+  const portrait = await page.evaluate(() => { const i = document.querySelector('#sel img.portrait'); return i ? i.naturalWidth : 0; });
+  check('selection panel shows the Runner portrait (decoded image)', portrait > 100, `naturalWidth ${portrait}`);
+  await page.keyboard.press('Escape'); await page.click('#p-codex'); await settle();
+  const imgs = await page.evaluate(() => [...document.querySelectorAll('#modalCard img')].map(i => i.naturalWidth));
+  check('art codex shows 16 portraits + 2 concept sheets, all decoded', imgs.length === 18 && imgs.every(w => w > 100), `${imgs.length} images`);
+  await page.click('#c-back'); await settle(); await page.click('#p-resume'); await settle();
+}
 
 // ---- battle + performance sample ----
 await ev(() => {
@@ -162,6 +210,7 @@ check('losing your Core shows DEFEAT', /DEFEAT/.test(await page.textContent('#mo
 }
 
 check('no page errors or console errors', errors.length === 0, errors.join(' | '));
+check('fully offline: no network requests (file: and data: only)', remote.length === 0, remote.slice(0, 3).join(' '));
 writeFileSync(`${OUT}/results.json`, JSON.stringify({ date: new Date().toISOString(), results, perf, errors }, null, 1));
 await browser.close();
 console.log(`\n${results.length - failed}/${results.length} browser checks passed`);

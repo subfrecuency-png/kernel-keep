@@ -1,4 +1,39 @@
-# HANDOFF — end of session 1 (2026-09-23)
+# HANDOFF — session 2 (2026-09-23): Master v0.2 kit integrated → prototype 0.2
+
+**Request:** dissect `~/Downloads/Kernel_Keep_Master_v0.2` and integrate it into the game. The chosen approach was *rebuild the HUD in React now*.
+
+**Where it is:**
+- Branch `react-hud-0.2` in `~/Downloads/kernel-keep`. `master` is unchanged (0.1).
+- The same tree is in the zip sent in chat.
+
+**Done:**
+
+| Area | Status |
+|---|---|
+| React 19 HUD + menus driven by the real sim through `EngineHost` (`src/client/engine.ts`, `view.ts`, `src/ui/`) | Tested (e2e 32/32, unit 32/32) |
+| Recovery panel (starvation, low Code, brownout, suspension, memory, crash risk → existing commands) | Tested |
+| Concept art: menu background, 16 portraits, codex sheets (UI only) | Tested (images decode) |
+| Optional PWA (`?pwa` over http) | Tested in Chromium |
+| Optional Tauri 2 shell (`desktop/src-tauri`) | **Blocked here**: never compiled |
+| Fairness: id-order bias found and fixed (separation, simultaneous hits, mirrored tie-breaks, arrival epsilon) | Tested |
+| Licences / notices | Done |
+
+**Known issues (new in 0.2):**
+1. **Residual P1 mirror advantage**: 18–6 over 24 paired AI games. The cause traced so far is float positions that aren't mirror-exact, amplified at crowded wells. See `docs/FAIRNESS_RESULTS.md` for the suspects.
+2. **Reference hash changed** from `0e3de02e` to `e232a74a`, on purpose, because of the fairness fixes. A 0.1 save loads, but it plays on under the 0.2 rules.
+3. **Build size** is 1.31 MB (was 118 KB). The biggest piece is the menu art.
+4. **Container browser battle fps** is 47 with 164 units (software GPU). Measure on the Air.
+5. The concept art was generated with a user-supplied style reference. Clear its rights before any public release.
+
+**Next:**
+1. Play `dist/kernel-keep.html` on the Air and check the HUD, with F3 open.
+2. Decide whether to merge `react-hud-0.2` into `master`.
+3. Fix the residual fairness bias.
+4. Optionally run `cd desktop && cargo tauri dev` (needs Rust).
+
+---
+
+# HANDOFF — end of session 1 (2026-09-23) (0.1, kept for history)
 
 ## What was built
 

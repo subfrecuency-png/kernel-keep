@@ -1,0 +1,512 @@
+[
+ {
+  "part": "A",
+  "seed": 1,
+  "setupOrder": "p1first",
+  "phases": [
+   3,
+   6
+  ],
+  "winner": 1,
+  "durationTicks": 10239,
+  "firstContactTick": 2467,
+  "p1Lost": 27,
+  "p2Lost": 48,
+  "p1Data": 4840,
+  "p2Data": 4250,
+  "finalHash": "f9e7636e"
+ },
+ {
+  "part": "A",
+  "seed": 1,
+  "setupOrder": "p2first",
+  "phases": [
+   3,
+   6
+  ],
+  "winner": 1,
+  "durationTicks": 10239,
+  "firstContactTick": 2467,
+  "p1Lost": 27,
+  "p2Lost": 48,
+  "p1Data": 4840,
+  "p2Data": 4250,
+  "finalHash": "eac9351f"
+ },
+ {
+  "part": "A",
+  "seed": 1,
+  "setupOrder": "p1first",
+  "phases": [
+   6,
+   3
+  ],
+  "winner": 1,
+  "durationTicks": 10245,
+  "firstContactTick": 2467,
+  "p1Lost": 30,
+  "p2Lost": 46,
+  "p1Data": 5330,
+  "p2Data": 3780,
+  "finalHash": "c96d61a8"
+ },
+ {
+  "part": "A",
+  "seed": 1,
+  "setupOrder": "p2first",
+  "phases": [
+   6,
+   3
+  ],
+  "winner": 1,
+  "durationTicks": 10245,
+  "firstContactTick": 2467,
+  "p1Lost": 30,
+  "p2Lost": 46,
+  "p1Data": 5330,
+  "p2Data": 3780,
+  "finalHash": "5e9b40ff"
+ },
+ {
+  "part": "A",
+  "seed": 1,
+  "setupOrder": "p1first",
+  "phases": [
+   0,
+   0
+  ],
+  "winner": 2,
+  "durationTicks": 7429,
+  "firstContactTick": 2560,
+  "p1Lost": 47,
+  "p2Lost": 12,
+  "p1Data": 3510,
+  "p2Data": 4050,
+  "finalHash": "c302f22f"
+ },
+ {
+  "part": "A",
+  "seed": 1,
+  "setupOrder": "p2first",
+  "phases": [
+   0,
+   0
+  ],
+  "winner": 2,
+  "durationTicks": 7429,
+  "firstContactTick": 2560,
+  "p1Lost": 47,
+  "p2Lost": 12,
+  "p1Data": 3510,
+  "p2Data": 4050,
+  "finalHash": "65533352"
+ },
+ {
+  "part": "B",
+  "seed": 1,
+  "setupOrder": "p1first",
+  "phases": [
+   6,
+   7
+  ],
+  "winner": 2,
+  "durationTicks": 7423,
+  "firstContactTick": 2575,
+  "p1Lost": 45,
+  "p2Lost": 15,
+  "p1Data": 3480,
+  "p2Data": 4090,
+  "finalHash": "aaf4b628"
+ },
+ {
+  "part": "B",
+  "seed": 1,
+  "setupOrder": "p1first",
+  "phases": [
+   7,
+   6
+  ],
+  "winner": 1,
+  "durationTicks": 7450,
+  "firstContactTick": 2584,
+  "p1Lost": 13,
+  "p2Lost": 46,
+  "p1Data": 4080,
+  "p2Data": 3450,
+  "finalHash": "028dcccc"
+ },
+ {
+  "part": "B",
+  "seed": 2,
+  "setupOrder": "p1first",
+  "phases": [
+   8,
+   9
+  ],
+  "winner": 1,
+  "durationTicks": 10237,
+  "firstContactTick": 2491,
+  "p1Lost": 29,
+  "p2Lost": 66,
+  "p1Data": 5250,
+  "p2Data": 4752,
+  "finalHash": "30fa87b6"
+ },
+ {
+  "part": "B",
+  "seed": 2,
+  "setupOrder": "p1first",
+  "phases": [
+   9,
+   8
+  ],
+  "winner": 2,
+  "durationTicks": 7883,
+  "firstContactTick": 2491,
+  "p1Lost": 37,
+  "p2Lost": 11,
+  "p1Data": 3941,
+  "p2Data": 4250,
+  "finalHash": "1aaa626c"
+ },
+ {
+  "part": "B",
+  "seed": 3,
+  "setupOrder": "p1first",
+  "phases": [
+   9,
+   1
+  ],
+  "winner": 2,
+  "durationTicks": 7578,
+  "firstContactTick": 2578,
+  "p1Lost": 48,
+  "p2Lost": 12,
+  "p1Data": 3230,
+  "p2Data": 4120,
+  "finalHash": "f78b3973"
+ },
+ {
+  "part": "B",
+  "seed": 3,
+  "setupOrder": "p1first",
+  "phases": [
+   1,
+   9
+  ],
+  "winner": 1,
+  "durationTicks": 7501,
+  "firstContactTick": 2578,
+  "p1Lost": 12,
+  "p2Lost": 41,
+  "p1Data": 4130,
+  "p2Data": 3030,
+  "finalHash": "47321111"
+ },
+ {
+  "part": "B",
+  "seed": 4,
+  "setupOrder": "p1first",
+  "phases": [
+   0,
+   7
+  ],
+  "winner": 1,
+  "durationTicks": 7439,
+  "firstContactTick": 2560,
+  "p1Lost": 13,
+  "p2Lost": 38,
+  "p1Data": 4090,
+  "p2Data": 2940,
+  "finalHash": "31e83251"
+ },
+ {
+  "part": "B",
+  "seed": 4,
+  "setupOrder": "p1first",
+  "phases": [
+   7,
+   0
+  ],
+  "winner": 1,
+  "durationTicks": 8428,
+  "firstContactTick": 2560,
+  "p1Lost": 22,
+  "p2Lost": 55,
+  "p1Data": 4480,
+  "p2Data": 4040,
+  "finalHash": "78c5469d"
+ },
+ {
+  "part": "B",
+  "seed": 5,
+  "setupOrder": "p1first",
+  "phases": [
+   3,
+   8
+  ],
+  "winner": 1,
+  "durationTicks": 7663,
+  "firstContactTick": 2467,
+  "p1Lost": 12,
+  "p2Lost": 38,
+  "p1Data": 3940,
+  "p2Data": 2950,
+  "finalHash": "010bbf69"
+ },
+ {
+  "part": "B",
+  "seed": 5,
+  "setupOrder": "p1first",
+  "phases": [
+   8,
+   3
+  ],
+  "winner": 1,
+  "durationTicks": 9843,
+  "firstContactTick": 2467,
+  "p1Lost": 29,
+  "p2Lost": 47,
+  "p1Data": 4970,
+  "p2Data": 4058,
+  "finalHash": "b29808eb"
+ },
+ {
+  "part": "B",
+  "seed": 6,
+  "setupOrder": "p1first",
+  "phases": [
+   2,
+   4
+  ],
+  "winner": 2,
+  "durationTicks": 7862,
+  "firstContactTick": 4103,
+  "p1Lost": 52,
+  "p2Lost": 15,
+  "p1Data": 3718,
+  "p2Data": 4060,
+  "finalHash": "ccc50bb0"
+ },
+ {
+  "part": "B",
+  "seed": 6,
+  "setupOrder": "p1first",
+  "phases": [
+   4,
+   2
+  ],
+  "winner": 1,
+  "durationTicks": 7909,
+  "firstContactTick": 2598,
+  "p1Lost": 16,
+  "p2Lost": 46,
+  "p1Data": 4280,
+  "p2Data": 3390,
+  "finalHash": "57fc9c48"
+ },
+ {
+  "part": "B",
+  "seed": 7,
+  "setupOrder": "p1first",
+  "phases": [
+   6,
+   3
+  ],
+  "winner": 1,
+  "durationTicks": 10245,
+  "firstContactTick": 2467,
+  "p1Lost": 30,
+  "p2Lost": 46,
+  "p1Data": 5330,
+  "p2Data": 3780,
+  "finalHash": "9e6bcad6"
+ },
+ {
+  "part": "B",
+  "seed": 7,
+  "setupOrder": "p1first",
+  "phases": [
+   3,
+   6
+  ],
+  "winner": 1,
+  "durationTicks": 10239,
+  "firstContactTick": 2467,
+  "p1Lost": 27,
+  "p2Lost": 48,
+  "p1Data": 4840,
+  "p2Data": 4250,
+  "finalHash": "5d46f634"
+ },
+ {
+  "part": "B",
+  "seed": 8,
+  "setupOrder": "p1first",
+  "phases": [
+   6,
+   3
+  ],
+  "winner": 1,
+  "durationTicks": 10245,
+  "firstContactTick": 2467,
+  "p1Lost": 30,
+  "p2Lost": 46,
+  "p1Data": 5330,
+  "p2Data": 3780,
+  "finalHash": "988605ab"
+ },
+ {
+  "part": "B",
+  "seed": 8,
+  "setupOrder": "p1first",
+  "phases": [
+   3,
+   6
+  ],
+  "winner": 1,
+  "durationTicks": 10239,
+  "firstContactTick": 2467,
+  "p1Lost": 27,
+  "p2Lost": 48,
+  "p1Data": 4840,
+  "p2Data": 4250,
+  "finalHash": "fa81bb63"
+ },
+ {
+  "part": "B",
+  "seed": 9,
+  "setupOrder": "p1first",
+  "phases": [
+   7,
+   8
+  ],
+  "winner": 1,
+  "durationTicks": 7608,
+  "firstContactTick": 2580,
+  "p1Lost": 12,
+  "p2Lost": 43,
+  "p1Data": 4150,
+  "p2Data": 3310,
+  "finalHash": "87d53452"
+ },
+ {
+  "part": "B",
+  "seed": 9,
+  "setupOrder": "p1first",
+  "phases": [
+   8,
+   7
+  ],
+  "winner": 1,
+  "durationTicks": 7782,
+  "firstContactTick": 2658,
+  "p1Lost": 19,
+  "p2Lost": 50,
+  "p1Data": 4040,
+  "p2Data": 3730,
+  "finalHash": "487260e4"
+ },
+ {
+  "part": "B",
+  "seed": 10,
+  "setupOrder": "p1first",
+  "phases": [
+   4,
+   5
+  ],
+  "winner": 1,
+  "durationTicks": 7651,
+  "firstContactTick": 2578,
+  "p1Lost": 14,
+  "p2Lost": 45,
+  "p1Data": 4160,
+  "p2Data": 3550,
+  "finalHash": "5aafc1c0"
+ },
+ {
+  "part": "B",
+  "seed": 10,
+  "setupOrder": "p1first",
+  "phases": [
+   5,
+   4
+  ],
+  "winner": 2,
+  "durationTicks": 7948,
+  "firstContactTick": 2417,
+  "p1Lost": 54,
+  "p2Lost": 16,
+  "p1Data": 3570,
+  "p2Data": 4150,
+  "finalHash": "9a03a40e"
+ },
+ {
+  "part": "B",
+  "seed": 11,
+  "setupOrder": "p1first",
+  "phases": [
+   3,
+   1
+  ],
+  "winner": 1,
+  "durationTicks": 7565,
+  "firstContactTick": 2467,
+  "p1Lost": 13,
+  "p2Lost": 48,
+  "p1Data": 3920,
+  "p2Data": 3680,
+  "finalHash": "b0b4dc19"
+ },
+ {
+  "part": "B",
+  "seed": 11,
+  "setupOrder": "p1first",
+  "phases": [
+   1,
+   3
+  ],
+  "winner": 1,
+  "durationTicks": 7311,
+  "firstContactTick": 2467,
+  "p1Lost": 13,
+  "p2Lost": 46,
+  "p1Data": 4060,
+  "p2Data": 3218,
+  "finalHash": "f7f17659"
+ },
+ {
+  "part": "B",
+  "seed": 12,
+  "setupOrder": "p1first",
+  "phases": [
+   8,
+   4
+  ],
+  "winner": 2,
+  "durationTicks": 7733,
+  "firstContactTick": 2588,
+  "p1Lost": 44,
+  "p2Lost": 12,
+  "p1Data": 3180,
+  "p2Data": 4030,
+  "finalHash": "3fa3d4f0"
+ },
+ {
+  "part": "B",
+  "seed": 12,
+  "setupOrder": "p1first",
+  "phases": [
+   4,
+   8
+  ],
+  "winner": 1,
+  "durationTicks": 7750,
+  "firstContactTick": 2576,
+  "p1Lost": 17,
+  "p2Lost": 44,
+  "p1Data": 4200,
+  "p2Data": 3580,
+  "finalHash": "0160ed0b"
+ }
+]

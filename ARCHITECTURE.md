@@ -17,12 +17,17 @@ src/
     game.ts             fixed-tick orchestrator, command log, replay, state hash, perf counters
     save.ts             versioned save/load (schema 1)
   client/               ← presentation only; reads the World, sends Commands
-    main.ts             menus, input, camera, main loop, command card, save/load UI, test hooks
-    render.ts           Canvas 2.5D renderer, fog overlay, minimap, placement ghost
-    hud.ts              DOM HUD: resources, alerts, objectives, selection panel, command card
+    engine.ts           EngineHost: the single rAF loop, camera, input, selection, commands, save/load,
+                        settings, and an immutable Snapshot store for React (useSyncExternalStore)
+    view.ts             pure view models: topView, recoveryView, selectionView, command card, objectives
+    render.ts           Canvas 2.5D renderer, fog overlay, minimap, placement ghost (unchanged from 0.1)
     settings.ts audio.ts state.ts index.html
+  ui/                   ← React 19 components (0.2): App, Hud (top bar, alerts, recovery, objectives,
+                        selection, command card), Menus (title, pause, settings, controls, codex, game over)
+    assets.ts           concept-art crops imported as data URLs; styles.css uses the kit's design tokens
 tests/                  node:test suites run against the real simulation (no mocks)
-tools/                  build (esbuild → single HTML), econ_sim, bench
+tools/                  build (esbuild → single HTML + optional PWA files), econ_sim, bench, aivai, fairness, serve
+desktop/src-tauri/      optional Tauri 2 shell (untested; see desktop/README.md)
 e2e/                    Playwright browser test driving real mouse/keyboard input
 ```
 
@@ -80,7 +85,21 @@ The client runs its own `requestAnimationFrame` loop. It accumulates real time �
 
 ## 7. Presentation
 
-Canvas 2D with a fake-3D ("2.5D") extrusion for buildings. The fog is a 64×64 ImageData scaled over the world with smoothing (one draw call). Hot paths are culled to the viewport, and the minimap redraws every 3rd frame. The DOM HUD updates only when a cache key changes. See ART_AND_UI_GUIDE.md. The renderer is replaceable: it only reads `World` and `ClientState`.
+Canvas 2D with a fake-3D ("2.5D") extrusion for buildings. The fog is a 64×64 ImageData scaled over the world with smoothing (one draw call). Hot paths are culled to the viewport, and the minimap redraws every 3rd frame. The renderer is replaceable: it only reads `World` and `ClientState`.
+
+**0.2: React HUD behind an adapter (Implemented, Tested).** The DOM HUD from 0.1 (`hud.ts`, `main.ts`) is replaced by React components, and the simulation is untouched by this layer:
+
+```
+ React (src/ui)  ──intents──▶  EngineHost (src/client/engine.ts) ──Command──▶ applyCommand() ─▶ World
+      ▲                              │  one rAF loop: fixed 10 Hz sim steps + Canvas render
+      └── useSyncExternalStore ◀─────┘  publishes a frozen Snapshot ~10×/s when dirty (view.ts)
+```
+
+- `EngineHost.mount()` is idempotent, so React StrictMode's double mount cannot start a second loop. The e2e test asserts exactly one loop at 10 ticks/s.
+- Components never read `World` directly. They render view models from `view.ts`, which the unit tests (`tests/view.test.ts`) check against the engine's own queries.
+- Every button is an existing command, or a camera/selection action. The recovery panel adds no mechanics.
+- Keyboard input goes through `EngineHost.onKeyDown`. It ignores form fields, key-repeat (except panning) and key capture while rebinding.
+- Build: esbuild bundles TSX (automatic JSX runtime) plus webp/svg as data URLs into one `dist/kernel-keep.html` (~1.31 MB). `file://` stays the default launch. The PWA files are used only when served over http(s) with `?pwa`.
 
 ## 8. Saving
 

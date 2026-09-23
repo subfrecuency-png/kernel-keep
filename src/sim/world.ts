@@ -7,7 +7,13 @@ import { buildMap, MapDef } from './map.ts';
 /** Square via multiplication (exactly rounded everywhere; avoids Math.pow). */
 const sq = (v: number) => v * v;
 
-export interface WorldOptions { seed: number; players?: { name: string; ai: boolean }[]; difficulty?: 'easy' | 'normal' }
+export interface WorldOptions {
+  seed: number; players?: { name: string; ai: boolean }[]; difficulty?: 'easy' | 'normal';
+  /** Fairness experiments only: create player 2's start entities first (gives them the lower entity ids). */
+  setupOrder?: 'p1first' | 'p2first';
+  /** Fairness experiments only: per-player AI update phase within each 10-tick cycle (default pid*3). */
+  aiPhase?: Record<number, number>;
+}
 
 export class World {
   tick = 0;
@@ -21,7 +27,10 @@ export class World {
   nav: Nav;
   winner = 0;                          // 0 = ongoing
   difficulty: 'easy' | 'normal';
+  setupOrder: 'p1first' | 'p2first';
   events: SimEvent[] = [];
+  /** Hits/heals queued during a tick and applied together by applyHits() (never saved: empty between ticks). */
+  hits: { target: number; from: number; amount: number }[] = [];
   // derived, rebuilt each tick
   visible: Uint8Array[] = [];
   cellHead: Int32Array; cellNext: Int32Array = new Int32Array(0); cellEnts: Entity[] = [];
@@ -32,6 +41,7 @@ export class World {
     this.map = buildMap();
     this.nav = new Nav(this.map.w, this.map.h, this.map.terrain);
     this.difficulty = opts.difficulty ?? 'normal';
+    this.setupOrder = opts.setupOrder ?? 'p1first';
     this.cellHead = new Int32Array(this.map.w * this.map.h);
     const n = this.map.w * this.map.h;
     this.visible = [new Uint8Array(n), new Uint8Array(n), new Uint8Array(n)];
@@ -43,7 +53,9 @@ export class World {
 
   private setup() {
     for (const wl of this.map.wells) this.spawnWell(wl.x, wl.y, wl.amount);
-    this.map.cores.forEach((c, i) => {
+    const order = this.setupOrder === 'p2first' ? [1, 0] : [0, 1];
+    order.forEach(i => {
+      const c = this.map.cores[i];
       const owner = i + 1;
       const core = this.spawnBuilding('core', owner, c.tx, c.ty, true);
       for (let k = 0; k < B.start.runners; k++) {
@@ -167,7 +179,11 @@ export class World {
     let seen = 0;
     for (let r = 1; r <= 4; r++) {
       const x0 = b.tx! - r, y0 = b.ty! - r, x1 = b.tx! + b.w! - 1 + r, y1 = b.ty! + b.h! - 1 + r;
-      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      // Scan in the owner's mirrored frame (player 2 starts from the opposite corner) so spawn
+      // positions are point-symmetric between the two sides.
+      const flip = owner === 2;
+      for (let yy = y0; yy <= y1; yy++) for (let xx = x0; xx <= x1; xx++) {
+        const y = flip ? y0 + y1 - yy : yy, x = flip ? x0 + x1 - xx : xx;
         if (x !== x0 && x !== x1 && y !== y0 && y !== y1) continue;
         if (!this.nav.passableXY(x, y, owner)) continue;
         const i = y * this.map.w + x;

@@ -1,0 +1,266 @@
+{
+  "date": "2026-09-23",
+  "assets": [
+    {
+      "path": "art/legacy/01-battle-hud.png",
+      "bytes": 3098840,
+      "sha256": "39c1e2044dd5d23ab84442e246505c568cf9b5f34b7b915d85b9ebf6a2a32b0a",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "source": "Built-in image generation using user-supplied visual reference",
+      "status": "legacy concept; noncanonical roster",
+      "license_note": "Generated for this project; no third-party asset license asserted"
+    },
+    {
+      "path": "art/legacy/02-construction-hud.png",
+      "bytes": 3012240,
+      "sha256": "a422c5a932a8ca97e885823a71f54bef0e58f9108a0b3ad2272fd92866251c9f",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "source": "Built-in image generation using user-supplied visual reference",
+      "status": "legacy concept; noncanonical roster",
+      "license_note": "Generated for this project; no third-party asset license asserted"
+    },
+    {
+      "path": "art/legacy/03-architecture.png",
+      "bytes": 2677984,
+      "sha256": "2dfa0b706ecfe0695623c04cf2e6d3cd5138890053477193f0a9632a0402de86",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "source": "Built-in image generation using user-supplied visual reference",
+      "status": "legacy concept; noncanonical roster",
+      "license_note": "Generated for this project; no third-party asset license asserted"
+    },
+    {
+      "path": "art/legacy/04-units.png",
+      "bytes": 2344194,
+      "sha256": "97d2454c1335f03208f7ee371cecc50a21b9d456f6403e2a09dbd33ca7b88a3e",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "source": "Built-in image generation using user-supplied visual reference",
+      "status": "legacy concept; noncanonical roster",
+      "license_note": "Generated for this project; no third-party asset license asserted"
+    },
+    {
+      "path": "art/legacy/05-world-kit.png",
+      "bytes": 2947329,
+      "sha256": "3134ee51d5b4f27463d3e1ecd99d9a26c7b6ba0502c76140409e64d478afcad0",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "source": "Built-in image generation using user-supplied visual reference",
+      "status": "legacy concept; noncanonical roster",
+      "license_note": "Generated for this project; no third-party asset license asserted"
+    },
+    {
+      "path": "art/legacy/06-hud-components.png",
+      "bytes": 1949398,
+      "sha256": "18bb141ff635d1296e09f23c506e67ef53d2e34c706c78e3ae628c0c6293e002",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "source": "Built-in image generation using user-supplied visual reference",
+      "status": "legacy concept; noncanonical roster",
+      "license_note": "Generated for this project; no third-party asset license asserted"
+    },
+    {
+      "path": "art/kernel-keep/kernel-menu-background.png",
+      "bytes": 2333482,
+      "sha256": "61ac7558961c37cffb0dfd9986663256807a7740328649ff83d13ecd8fc29102",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "source": "Built-in image generation using user-supplied visual reference",
+      "status": "UI asset or evidence",
+      "license_note": "Generated for this project; no third-party asset license asserted"
+    },
+    {
+      "path": "art/kernel-keep/kernel-six-roles.png",
+      "bytes": 2242530,
+      "sha256": "dd2b73ac61806399ae2e1ce25230e768b412b6ccef84b1ee4124d8cd553af34c",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "source": "Built-in image generation using user-supplied visual reference",
+      "status": "concept sheet; not production sprite",
+      "license_note": "Generated for this project; no third-party asset license asserted"
+    },
+    {
+      "path": "art/kernel-keep/kernel-ten-structures.png",
+      "bytes": 2416630,
+      "sha256": "16dc1de38091d04804796f3a73e1bfc0c9090ff964bef3b8650c332c6a3b292b",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "source": "Built-in image generation using user-supplied visual reference",
+      "status": "concept sheet; not production sprite",
+      "license_note": "Generated for this project; no third-party asset license asserted"
+    },
+    {
+      "path": "original-inputs/original-reference.png",
+      "bytes": 3166704,
+      "sha256": "17c2730b77541febffc64ec5016ea445ace218d66dceaa8042eee1c408a8f2db",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "source": "User-supplied reference",
+      "status": "UI asset or evidence",
+      "license_note": "User-supplied; rights not independently audited"
+    },
+    {
+      "path": "evidence/01-menu.png",
+      "bytes": 1832947,
+      "sha256": "03857a3c8bb93f70c4e703c27ecbcfa853c02810c6476e9819102f7a4323015c",
+      "dimensions": [
+        1440,
+        1000
+      ],
+      "source": "Actual UI browser screenshot",
+      "status": "UI asset or evidence",
+      "license_note": "Produced in this task"
+    },
+    {
+      "path": "evidence/02-stable-hud.png",
+      "bytes": 392872,
+      "sha256": "cb7958f20afdf5f97f2d04479954cdfa67f503c169c34b12eaf767399e186ae1",
+      "dimensions": [
+        1440,
+        1000
+      ],
+      "source": "Actual UI browser screenshot",
+      "status": "UI asset or evidence",
+      "license_note": "Produced in this task"
+    },
+    {
+      "path": "evidence/03-code-shortage.png",
+      "bytes": 389556,
+      "sha256": "73f994e5d1cbfcf09cb56299289be7bbcdf6898580caad296724d14486b12f33",
+      "dimensions": [
+        1440,
+        1000
+      ],
+      "source": "Actual UI browser screenshot",
+      "status": "UI asset or evidence",
+      "license_note": "Produced in this task"
+    },
+    {
+      "path": "evidence/04-brownout.png",
+      "bytes": 395673,
+      "sha256": "43c35fc03c31390feca5e4f47083bbf130f84889a0e438ad82ee072b087cd2b0",
+      "dimensions": [
+        1440,
+        1000
+      ],
+      "source": "Actual UI browser screenshot",
+      "status": "UI asset or evidence",
+      "license_note": "Produced in this task"
+    },
+    {
+      "path": "evidence/05-suspended.png",
+      "bytes": 396024,
+      "sha256": "d025e3ca558423b610401e775aada21d1273e3143cd4261f763319cfa69125bf",
+      "dimensions": [
+        1440,
+        1000
+      ],
+      "source": "Actual UI browser screenshot",
+      "status": "UI asset or evidence",
+      "license_note": "Produced in this task"
+    },
+    {
+      "path": "evidence/06-compact-hud.png",
+      "bytes": 171252,
+      "sha256": "72f146c250502f0dc18ce278e0c86e1d6de226520653e56c9b489a976e8765e8",
+      "dimensions": [
+        390,
+        1297
+      ],
+      "source": "Actual UI browser screenshot",
+      "status": "UI asset or evidence",
+      "license_note": "Produced in this task"
+    },
+    {
+      "path": "ui/public/assets/icon-192.png",
+      "bytes": 3019,
+      "sha256": "0bd21357a87525e7b2517a1b5de250a11d2797e2644da367b63e398608fa4c6c",
+      "dimensions": [
+        192,
+        192
+      ],
+      "source": "Original code-authored UI icon",
+      "status": "UI asset or evidence",
+      "license_note": "Produced in this task"
+    },
+    {
+      "path": "ui/public/assets/icon-512.png",
+      "bytes": 12268,
+      "sha256": "eafef1a8ff0b55d96345886ee5198d21469faca9c9ac5975e59af23a0c357625",
+      "dimensions": [
+        512,
+        512
+      ],
+      "source": "Original code-authored UI icon",
+      "status": "UI asset or evidence",
+      "license_note": "Produced in this task"
+    },
+    {
+      "path": "ui/public/assets/icon.svg",
+      "bytes": 448,
+      "sha256": "b2a13bd3e586e0fa4d7db05ab81956c4f7b0296f01e9ff7055a918df99435eed",
+      "dimensions": null,
+      "source": "Original code-authored UI icon",
+      "status": "UI asset or evidence",
+      "license_note": "Produced in this task"
+    },
+    {
+      "path": "ui/public/assets/kernel-menu-background.png",
+      "bytes": 2333482,
+      "sha256": "61ac7558961c37cffb0dfd9986663256807a7740328649ff83d13ecd8fc29102",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "source": "Built-in image generation using user-supplied visual reference",
+      "status": "UI asset or evidence",
+      "license_note": "Generated for this project; no third-party asset license asserted"
+    },
+    {
+      "path": "ui/public/assets/kernel-six-roles.png",
+      "bytes": 2242530,
+      "sha256": "dd2b73ac61806399ae2e1ce25230e768b412b6ccef84b1ee4124d8cd553af34c",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "source": "Built-in image generation using user-supplied visual reference",
+      "status": "concept sheet; not production sprite",
+      "license_note": "Generated for this project; no third-party asset license asserted"
+    },
+    {
+      "path": "ui/public/assets/kernel-ten-structures.png",
+      "bytes": 2416630,
+      "sha256": "16dc1de38091d04804796f3a73e1bfc0c9090ff964bef3b8650c332c6a3b292b",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "source": "Built-in image generation using user-supplied visual reference",
+      "status": "concept sheet; not production sprite",
+      "license_note": "Generated for this project; no third-party asset license asserted"
+    }
+  ]
+}

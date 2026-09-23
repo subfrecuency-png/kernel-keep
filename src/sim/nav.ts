@@ -77,6 +77,7 @@ export class Nav {
     const gen = ++this.gen;
     this.heapN = 0;
     const start = this.idx(sx, sy);
+    const sgn = player === 2 ? -1 : 1;
     const hfn = (x: number, y: number) => {
       const dx = x < x0 ? x0 - x : x > x1 ? x - x1 : 0;
       const dy = y < y0 ? y0 - y : y > y1 ? y - y1 : 0;
@@ -104,7 +105,8 @@ export class Nav {
       const hc = hfn(cx, cy);
       if (hc < bestH || (hc === bestH && this.g[cur] < bestG)) { bestH = hc; best = cur; bestG = this.g[cur]; }
       for (let d = 0; d < 8; d++) {
-        const dx = DX[d], dy = DY[d];
+        // Player 2 expands neighbours in the point-mirrored order so equal-cost ties resolve symmetrically.
+        const dx = DX[d] * sgn, dy = DY[d] * sgn;
         const nx = cx + dx, ny = cy + dy;
         if (nx < 0 || ny < 0 || nx >= w || ny >= this.h) continue;
         const ni = ny * w + nx;
@@ -136,7 +138,9 @@ export class Nav {
     if (this.passableXY(cx, cy, player)) return this.idx(cx, cy);
     for (let r = 1; r <= maxR; r++) {
       let bestI = -1, bestD = 1e9;
-      for (let yy = cy - r; yy <= cy + r; yy++) for (let xx = cx - r; xx <= cx + r; xx++) {
+      const sgn = player === 2 ? -1 : 1; // mirrored scan order for player 2 (symmetric tie-breaks)
+      for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) {
+        const xx = cx + i * sgn, yy = cy + j * sgn;
         if (Math.max(Math.abs(xx - cx), Math.abs(yy - cy)) !== r) continue;
         if (!this.passableXY(xx, yy, player)) continue;
         const ddx = xx + 0.5 - x, ddy = yy + 0.5 - y; const d = ddx * ddx + ddy * ddy;

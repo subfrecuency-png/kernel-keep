@@ -244,7 +244,7 @@ function followPath(w: World, u: Entity, speedMult = 1): MoveResult {
       if (Math.floor(u.x) === tx && Math.floor(u.y) === ty) {
         const dx = u.order.x - u.x, dy = u.order.y! - u.y, dist = Math.sqrt(dx * dx + dy * dy);
         const step = B.units[u.type].speed * speedMult * DT;
-        if (dist > step) { u.x += dx / dist * step; u.y += dy / dist * step; return 'moving'; }
+        if (dist > step + 1e-6) { u.x += dx / dist * step; u.y += dy / dist * step; return 'moving'; }
         u.x = u.order.x; u.y = u.order.y!;
       }
     }
@@ -262,7 +262,7 @@ function followPath(w: World, u: Entity, speedMult = 1): MoveResult {
   const nx = (next % w.map.w) + 0.5, ny = Math.floor(next / w.map.w) + 0.5;
   const dx = nx - u.x, dy = ny - u.y, dist = Math.sqrt(dx * dx + dy * dy);
   const step = B.units[u.type].speed * speedMult * DT;
-  if (dist <= step) { u.x = nx; u.y = ny; u.pathI!++; }
+  if (dist <= step + 1e-6) { u.x = nx; u.y = ny; u.pathI!++; } // epsilon: mirrored float paths must arrive on the same tick
   else { u.x += dx / dist * step; u.y += dy / dist * step; }
   // stuck detection
   u.stuckT = (u.stuckT ?? 0) + 1;
@@ -319,10 +319,36 @@ function fire(w: World, a: Entity, t: Entity, atk: AttackDef, rankMult: number) 
     dmg *= atk.vsUnits ?? 1;
     dmg = Math.max(1, dmg - B.units[t.type].armor);
   }
-  t.hp -= dmg;
+  // Simultaneous resolution: damage is queued and applied once per tick in applyHits(), so the
+  // entity that happens to be processed first in a tick gains no first-strike advantage.
+  w.hits.push({ target: t.id, from: a.id, amount: dmg });
   w.events.push({ t: 'shot', from: a.id, to: t.id, x1: a.x, y1: a.y, x2: t.x, y2: t.y, owner: a.owner, siege: atk.siege });
   if (t.owner !== 0) w.alert(t.owner, 'attacked', t.kind === 'building' ? `${B.buildings[t.type].name} under attack!` : 'Your programs are under attack!', 'danger', t.x, t.y, 12);
-  if (t.hp <= 0) w.kill(t, a);
+}
+
+/**
+ * Apply every hit and heal queued this tick at once (order-independent). Net change per target is
+ * summed; a target at or below 0 dies, credited to the attacker that dealt it the most damage this
+ * tick (ties → lower id). Heals cannot lift a target that took lethal net damage.
+ */
+export function applyHits(w: World) {
+  if (!w.hits.length) return;
+  const net = new Map<number, { dmg: number; heal: number; by: Map<number, number> }>();
+  for (const h of w.hits) {
+    let n = net.get(h.target); if (!n) { n = { dmg: 0, heal: 0, by: new Map() }; net.set(h.target, n); }
+    if (h.amount >= 0) { n.dmg += h.amount; n.by.set(h.from, (n.by.get(h.from) ?? 0) + h.amount); } else n.heal -= h.amount;
+  }
+  w.hits = [];
+  for (const id of [...net.keys()].sort((a, b) => a - b)) {
+    const t = w.get(id); if (!t) continue;
+    const n = net.get(id)!;
+    t.hp = Math.min(t.maxHp, t.hp - n.dmg + n.heal);
+    if (t.hp <= 0 && n.dmg > 0) {
+      let killer = 0, best = -1;
+      for (const [from, d] of n.by) if (d > best || (d === best && from < killer)) { best = d; killer = from; }
+      w.kill(t, w.get(killer));
+    } else if (t.hp <= 0) t.hp = 1;
+  }
 }
 
 /** Engage target t: attack if in range, else move toward it. Returns false if the target is invalid. */
@@ -570,7 +596,7 @@ function healStep(w: World, u: Entity, allowMove: boolean): boolean {
   if (d <= hd.range) {
     u.path = undefined;
     if (u.cd! <= 0) {
-      t.hp = Math.min(t.maxHp, t.hp + hd.amt); u.cd = hd.cd;
+      w.hits.push({ target: t.id, from: u.id, amount: -hd.amt }); u.cd = hd.cd;
       w.events.push({ t: 'shot', from: u.id, to: t.id, x1: u.x, y1: u.y, x2: t.x, y2: t.y, owner: u.owner, heal: true });
     }
     return true;
@@ -585,6 +611,11 @@ function healStep(w: World, u: Entity, allowMove: boolean): boolean {
 // Separation: soft push so units do not stack; never pushes into blocked tiles.
 // =====================================================================
 export function stepSeparation(w: World) {
+  // Jacobi-style: every push is computed from start-of-step positions and applied afterwards, so the
+  // result does not depend on entity-id order (a Gauss-Seidel sweep favoured whichever side was
+  // pushed later — see docs/FAIRNESS_RESULTS.md).
+  const acc = new Map<Entity, [number, number]>();
+  const add = (e: Entity, dx: number, dy: number) => { const a = acc.get(e); if (a) { a[0] += dx; a[1] += dy; } else acc.set(e, [dx, dy]); };
   for (const u of w.cellEnts) {
     if (u.dead) continue;
     const ru = B.units[u.type].radius;
@@ -594,12 +625,14 @@ export function stepSeparation(w: World) {
       const dx = v.x - u.x, dy = v.y - u.y; const dd = dx * dx + dy * dy; const min = ru + rv;
       if (dd >= min * min) return;
       let dist = Math.sqrt(dd); let nx = 1, ny = 0;
-      if (dist > 1e-6) { nx = dx / dist; ny = dy / dist; } else { nx = (u.id % 2) ? 1 : -1; ny = 0; dist = 0; }
+      if (dist > 1e-6) { nx = dx / dist; ny = dy / dist; } else { nx = u.owner === 2 ? -1 : 1; ny = 0; dist = 0; } // exact overlap: mirrored fixed axis
       const push = (min - dist) * 0.25;
-      tryNudge(w, u, -nx * push, -ny * push);
-      tryNudge(w, v, nx * push, ny * push);
+      add(u, -nx * push, -ny * push);
+      add(v, nx * push, ny * push);
     });
   }
+  const moved = [...acc.entries()].sort((a, b) => a[0].id - b[0].id);
+  for (const [e, [dx, dy]] of moved) tryNudge(w, e, dx, dy);
 }
 function tryNudge(w: World, u: Entity, dx: number, dy: number) {
   if (u.suspended || (u.order?.type === 'operate' && u.order.phase === 'work')) return;

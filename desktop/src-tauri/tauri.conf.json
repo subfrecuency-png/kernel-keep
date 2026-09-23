@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Kernel Keep",
+  "version": "0.2.0",
+  "identifier": "com.kernelkeep.game",
+  "build": {
+    "beforeBuildCommand": "npm --prefix .. run build",
+    "frontendDist": "../../dist"
+  },
+  "app": {
+    "windows": [{ "label": "main", "title": "Kernel Keep", "width": 1440, "height": 900, "minWidth": 1024, "minHeight": 640 }],
+    "security": { "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ipc: http://ipc.localhost" }
+  },
+  "bundle": { "active": false, "icon": ["icons/icon.png"], "macOS": { "signingIdentity": "-" } }
+}

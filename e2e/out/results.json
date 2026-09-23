@@ -1,5 +1,5 @@
 {
- "date": "2026-09-23T20:14:10.189Z",
+ "date": "2026-09-23T22:05:17.675Z",
  "results": [
   {
    "name": "title screen renders with New match button",
@@ -10,6 +10,11 @@
    "name": "HUD visible after New match",
    "ok": true,
    "detail": ""
+  },
+  {
+   "name": "React StrictMode mounts ONE simulation loop that runs at ~10 ticks/s",
+   "ok": true,
+   "detail": "loops 1, 10.0 ticks/s"
   },
   {
    "name": "drag box selects the 4 starting Runners",
@@ -54,17 +59,17 @@
   {
    "name": "clicking the queue item cancels it with a full refund",
    "ok": true,
-   "detail": "code 140.0→140.0"
+   "detail": "code 139.7→139.7"
   },
   {
    "name": "P pauses the simulation",
    "ok": true,
-   "detail": "1505→1505"
+   "detail": "1527→1527"
   },
   {
    "name": "P again resumes it",
    "ok": true,
-   "detail": "1505→1512"
+   "detail": "1527→1534"
   },
   {
    "name": "Esc opens the pause menu",
@@ -74,7 +79,7 @@
   {
    "name": "Quick save + Quick load restores the exact state (hash)",
    "ok": true,
-   "detail": "7da57685 vs 7da57685"
+   "detail": "3f8cd452 vs 3f8cd452"
   },
   {
    "name": "UI scale setting applies",
@@ -87,9 +92,44 @@
    "detail": "x"
   },
   {
+   "name": "recovery panel reports the real Code shortage (starving or low reserve)",
+   "ok": true,
+   "detail": "starving,memory · engine code 0, unmet 0.86"
+  },
+  {
+   "name": "recovery button \"Switch to Lean rations\" issues the real ration command",
+   "ok": true,
+   "detail": "lean"
+  },
+  {
+   "name": "brownout issue shows the engine demand/supply",
+   "ok": true,
+   "detail": "△ Compute brownout · 28/26Rigs, towers a · engine 28/26"
+  },
+  {
+   "name": "suspended programs appear in the recovery panel",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "\"Resume all\" resumes them through the command path",
+   "ok": true,
+   "detail": "0 still suspended"
+  },
+  {
+   "name": "selection panel shows the Runner portrait (decoded image)",
+   "ok": true,
+   "detail": "naturalWidth 320"
+  },
+  {
+   "name": "art codex shows 16 portraits + 2 concept sheets, all decoded",
+   "ok": true,
+   "detail": "18 images"
+  },
+  {
    "name": "battle with 100+ spawned combat units renders (container, software GPU)",
    "ok": true,
-   "detail": "{\"fps\":59.014458542342865,\"avgStep\":1.232592561371492,\"units\":134}"
+   "detail": "{\"fps\":47.21621089907527,\"avgStep\":3.0699618109896845,\"units\":164}"
   },
   {
    "name": "destroying the Rival Core shows VICTORY",
@@ -109,18 +149,23 @@
   {
    "name": "same seed, 3000 ticks: Node build and browser bundle produce the same state hash",
    "ok": true,
-   "detail": "0e3de02e vs 0e3de02e"
+   "detail": "e232a74a vs e232a74a"
   },
   {
    "name": "no page errors or console errors",
    "ok": true,
    "detail": ""
+  },
+  {
+   "name": "fully offline: no network requests (file: and data: only)",
+   "ok": true,
+   "detail": ""
   }
  ],
  "perf": {
-  "fps": 59.014458542342865,
-  "avgStep": 1.232592561371492,
-  "units": 134
+  "fps": 47.21621089907527,
+  "avgStep": 3.0699618109896845,
+  "units": 164
  },
  "errors": []
 }

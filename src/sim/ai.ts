@@ -17,6 +17,8 @@ export interface AIState {
   /** Optional personality overrides (used by the economy simulation and future factions). */
   plan?: [string, number][]; comp?: string[]; noAttack?: boolean; noMilitary?: boolean;
   laborPaused?: number[];
+  /** Update phase within each 10-tick cycle (default pid*3). */
+  phase?: number;
 }
 
 const PLAN: [string, number][] = [
@@ -37,7 +39,7 @@ export class AIController {
 
   update(w: World, issue: (c: Command) => CommandResult) {
     const s = this.s; const pid = s.pid;
-    if ((w.tick + pid * 3) % 10 !== 0) return;
+    if ((w.tick + (s.phase ?? pid * 3)) % 10 !== 0) return;
     const p = w.players[pid];
     if (p.defeated || w.winner) return;
     const core = w.coreOf(pid); if (!core) return;
@@ -234,7 +236,12 @@ export class AIController {
       if (type !== 'tower' && s < 9) continue;
       cands.push({ x: tx, y: ty, s });
     }
-    cands.sort((a, b) => a.s - b.s || a.y - b.y || a.x - b.x);
+    // Tie-break in the player's own mirrored frame so both sides of the point-symmetric map
+    // resolve equal-distance spots the same way (fairness experiment finding, 2026-09-23).
+    const W = w.map.w, H = w.map.h;
+    const lx = (c: { x: number }) => pid === 2 ? W - c.x - d.w : c.x;
+    const ly = (c: { y: number }) => pid === 2 ? H - c.y - d.h : c.y;
+    cands.sort((a, b) => a.s - b.s || ly(a) - ly(b) || lx(a) - lx(b));
     for (const c of cands) {
       // keep a one-tile lane around every structure
       let clear = true;

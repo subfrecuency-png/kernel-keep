@@ -1,0 +1,21 @@
+import {build} from 'esbuild';
+import {readFile,writeFile,mkdir,cp,rm} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+await rm('dist',{recursive:true,force:true});await mkdir('dist',{recursive:true});
+await cp('public','dist',{recursive:true});
+const result=await build({entryPoints:['src/main.tsx'],bundle:true,write:false,outdir:'dist',format:'iife',target:['chrome110','safari16'],minify:true,legalComments:'inline',define:{'process.env.NODE_ENV':'"production"'}});
+const js=result.outputFiles.find(f=>f.path.endsWith('.js')).text;
+const css=result.outputFiles.find(f=>f.path.endsWith('.css')).text;
+const html=`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07121c"><meta name="description" content="Kernel Keep interactive UI lab. Sample data; original game not connected."><link rel="icon" href="assets/icon.svg" type="image/svg+xml"><link rel="manifest" href="manifest.webmanifest"><title>Kernel Keep · UI Lab</title><style>${css}</style></head><body><div id="root"></div><script>${js.replaceAll('</script','<\\/script')}</script></body></html>`;
+await writeFile('dist/index.html',html);
+const digest=createHash('sha256').update(html);
+for(const name of ['manifest.webmanifest','assets/icon.svg','assets/icon-192.png','assets/icon-512.png','assets/kernel-menu-background.png','assets/kernel-six-roles.png','assets/kernel-ten-structures.png'])digest.update(await readFile('dist/'+name));
+const hash=digest.digest('hex').slice(0,12);
+await writeFile('dist/sw.js',`const CACHE='kernel-keep-ui-${hash}';
+const ASSETS=['./','./index.html','./manifest.webmanifest','./assets/icon.svg','./assets/icon-192.png','./assets/icon-512.png','./assets/kernel-menu-background.png','./assets/kernel-six-roles.png','./assets/kernel-ten-structures.png'];
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
+// No skipWaiting: a new worker does not replace a running session.
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('kernel-keep-ui-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET'||new URL(e.request.url).origin!==self.location.origin)return;e.respondWith(caches.match(e.request,{ignoreSearch:true}).then(hit=>hit||fetch(e.request)));});
+`);
+console.log(JSON.stringify({status:'built',htmlBytes:Buffer.byteLength(html),cacheVersion:hash,mode:'UI fixture only'}));
