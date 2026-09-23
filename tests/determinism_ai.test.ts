@@ -39,7 +39,8 @@ test('save/load mid-match (queues, orders, rng, timers) continues bit-identicall
   const b = loadGame(snap);
   assert.equal(stateHash(b.world), stateHash(a.world), 'identical right after load');
   // queues/timers present in the snapshot
-  assert.ok(snap.entities.some((e: any) => e.queue && e.queue.length > 0) || true);
+  assert.ok(snap.entities.some((e: any) => e.queue && e.queue.some((q: any) => q.started)), 'snapshot contains an in-progress training queue');
+  assert.ok(snap.entities.some((e: any) => e.kind === 'unit' && e.order && e.order.type !== 'idle'), 'snapshot contains active unit orders');
   a.run(3000); b.run(3000);
   assert.equal(stateHash(b.world), stateHash(a.world), 'identical 3000 ticks later');
   assert.equal(b.world.memUsed(1), a.world.memUsed(1), 'population accounting survives save/load');

@@ -169,3 +169,29 @@ test('towers fire slower in a brownout', () => {
   const slow = countShots(120);
   assert.ok(slow < full, `brownout shots ${slow} < ${full}`);
 });
+
+test('demolishing a Training Grid mid-training refunds and returns the absorbed Runner', async () => {
+  const { buildingsOf } = await import('./helpers.ts');
+  const g = humanGame(41); const w = g.world;
+  w.players[1].code = 200; w.players[1].hash = 200;
+  const grid = instantBuilding(w, 'grid', 1, 12, 48);
+  const r0 = units(w, 1, 'runner').length;
+  cmd(g, { t: 'train', building: grid.id, unit: 'lancer' });
+  g.step();
+  assert.equal(units(w, 1, 'runner').length, r0 - 1, 'runner absorbed');
+  const hash = w.players[1].hash;
+  assert.ok(cmd(g, { t: 'demolish', building: grid.id }).ok);
+  assert.equal(units(w, 1, 'runner').length, r0, 'runner returned');
+  assert.equal(w.players[1].hash, hash + 40, 'training cost refunded');
+  assert.equal(buildingsOf(w, 1, 'grid').length, 0);
+});
+
+test('Patchers keep healing while attack-moving with an army', () => {
+  const g = humanGame(42); const w = g.world;
+  const pa = w.spawnUnit('patcher', 1, 20.5, 50.5);
+  const hurt = w.spawnUnit('bulwark', 1, 21.5, 50.5); hurt.hp = 50;
+  assert.ok(cmd(g, { t: 'attackMove', ids: [pa.id, hurt.id], x: 30.5, y: 50.5 }).ok);
+  assert.equal(pa.order!.type, 'attackMove');
+  secs(g, 4);
+  assert.ok(hurt.hp > 50, `healed on the move (${hurt.hp})`);
+});

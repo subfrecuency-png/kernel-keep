@@ -139,7 +139,7 @@ export class Nav {
       for (let yy = cy - r; yy <= cy + r; yy++) for (let xx = cx - r; xx <= cx + r; xx++) {
         if (Math.max(Math.abs(xx - cx), Math.abs(yy - cy)) !== r) continue;
         if (!this.passableXY(xx, yy, player)) continue;
-        const d = (xx + 0.5 - x) ** 2 + (yy + 0.5 - y) ** 2;
+        const ddx = xx + 0.5 - x, ddy = yy + 0.5 - y; const d = ddx * ddx + ddy * ddy;
         if (d < bestD) { bestD = d; bestI = this.idx(xx, yy); }
       }
       if (bestI >= 0) return bestI;

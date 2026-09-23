@@ -4,6 +4,9 @@ import { Rng } from './rng.ts';
 import { Nav } from './nav.ts';
 import { buildMap, MapDef } from './map.ts';
 
+/** Square via multiplication (exactly rounded everywhere; avoids Math.pow). */
+const sq = (v: number) => v * v;
+
 export interface WorldOptions { seed: number; players?: { name: string; ai: boolean }[]; difficulty?: 'easy' | 'normal' }
 
 export class World {
@@ -149,7 +152,7 @@ export class World {
       return Math.sqrt(dx * dx + dy * dy);
     }
     const r = e.kind === 'unit' ? B.units[e.type].radius : 0;
-    return Math.max(0, Math.sqrt((e.x - x) ** 2 + (e.y - y) ** 2) - r);
+    return Math.max(0, Math.sqrt(sq(e.x - x) + sq(e.y - y)) - r);
   }
   /** Goal rect for pathing to interact with an entity. */
   goalFor(e: Entity): number[] {

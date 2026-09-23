@@ -2,7 +2,7 @@
   "name": "kernel-keep",
   "version": "0.1.0",
   "private": true,
-  "description": "Kernel Keep (provisional title) — offline single-player fortress RTS prototype in a luminous digital world.",
+  "description": "Kernel Keep (provisional title) \u2014 offline single-player fortress RTS prototype in a luminous digital world.",
   "type": "module",
   "scripts": {
     "build": "node tools/build.mjs",
@@ -10,8 +10,9 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "econ": "tsx tools/econ_sim.ts",
     "bench": "tsx tools/bench.ts",
-    "e2e": "node e2e/e2e.mjs",
-    "verify": "npm run typecheck && npm test && npm run build && npm run e2e"
+    "e2e": "node --import tsx e2e/e2e.mjs",
+    "verify": "npm run typecheck && npm test && npm run build && npm run e2e",
+    "aivai": "tsx tools/aivai.ts"
   },
   "devDependencies": {
     "@types/node": "^22.20.4",

@@ -7,6 +7,9 @@ import { World } from './world.ts';
 import { canPlace } from './commands.ts';
 import { codeIncomeRate } from './systems.ts';
 
+/** Square via multiplication (exactly rounded everywhere; avoids Math.pow). */
+const sq = (v: number) => v * v;
+
 export interface AIState {
   pid: number; difficulty: string;
   nextWaveTick: number; waveSize: number; attacking: boolean; attackIds: number[]; launched: number;
@@ -54,7 +57,7 @@ export class AIController {
     for (const e of w.entities) {
       if (e.dead || e.kind !== 'unit' || e.owner === pid || e.owner === 0) continue;
       if (!w.canSee(pid, e)) continue;
-      if (buildings.some(b => (b.x - e.x) ** 2 + (b.y - e.y) ** 2 < 14 * 14)) threats.push(e);
+      if (buildings.some(b => sq(b.x - e.x) + sq(b.y - e.y) < 14 * 14)) threats.push(e);
     }
     const underAttack = threats.length > 0;
 
@@ -165,10 +168,10 @@ export class AIController {
     const attackSet = new Set(s.attackIds);
     if (underAttack) {
       let nearest = threats[0], nd = 1e9;
-      for (const t of threats) { const d = (t.x - core.x) ** 2 + (t.y - core.y) ** 2; if (d < nd) { nd = d; nearest = t; } }
+      for (const t of threats) { const d = sq(t.x - core.x) + sq(t.y - core.y); if (d < nd) { nd = d; nearest = t; } }
       const home = fighters.filter(u => !attackSet.has(u.id) && (u.order?.type === 'idle' || u.order?.type === 'move'));
       if (home.length) cmd({ t: 'attackMove', ids: home.map(u => u.id), x: nearest.x, y: nearest.y });
-      const nearCore = threats.filter(t => (t.x - core.x) ** 2 + (t.y - core.y) ** 2 < 10 * 10).length;
+      const nearCore = threats.filter(t => sq(t.x - core.x) + sq(t.y - core.y) < 10 * 10).length;
       if (s.attacking && nearCore >= 3) { s.attacking = false; cmd({ t: 'attackMove', ids: s.attackIds, x: nearest.x, y: nearest.y }); s.attackIds = []; }
     }
 
@@ -201,7 +204,7 @@ export class AIController {
 
   private pickRunners(w: World, runners: Entity[], near: Entity, n: number, _excludeBuilders = false): Entity[] {
     const cands = runners.filter(u => !u.suspended && (u.order?.type === 'idle' || u.order?.type === 'harvest'));
-    cands.sort((a, b) => ((a.x - near.x) ** 2 + (a.y - near.y) ** 2) - ((b.x - near.x) ** 2 + (b.y - near.y) ** 2) || a.id - b.id);
+    cands.sort((a, b) => (sq(a.x - near.x) + sq(a.y - near.y)) - (sq(b.x - near.x) + sq(b.y - near.y)) || a.id - b.id);
     return cands.slice(0, n);
   }
 
@@ -211,7 +214,7 @@ export class AIController {
     for (const e of w.entities) {
       if (e.kind !== 'well' || e.dead) continue;
       if (!p.explored[Math.floor(e.y) * w.map.w + Math.floor(e.x)]) continue;
-      const d = Math.sqrt((e.x - core.x) ** 2 + (e.y - core.y) ** 2);
+      const d = Math.sqrt(sq(e.x - core.x) + sq(e.y - core.y));
       if (d > 26) continue;
       const s = d + (counts.get(e.id) ?? 0) * 4;
       if (s < bs) { bs = s; best = e; }
@@ -227,7 +230,7 @@ export class AIController {
     const cands: { x: number; y: number; s: number }[] = [];
     for (let ty = Math.floor(ay) - 12; ty <= Math.floor(ay) + 12; ty++) for (let tx = Math.floor(ax) - 12; tx <= Math.floor(ax) + 12; tx++) {
       const cx = tx + d.w / 2, cy = ty + d.h / 2;
-      const s = (cx - ax) ** 2 + (cy - ay) ** 2;
+      const s = sq(cx - ax) + sq(cy - ay);
       if (type !== 'tower' && s < 9) continue;
       cands.push({ x: tx, y: ty, s });
     }

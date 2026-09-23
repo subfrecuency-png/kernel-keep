@@ -55,7 +55,7 @@ export function canPlace(w: World, pid: number, type: string, tx: number, ty: nu
   // territory: must be near one of your structures
   let near = false;
   const cx = tx + d.w / 2, cy = ty + d.h / 2;
-  for (const e of w.entities) if (e.kind === 'building' && !e.dead && e.owner === pid && (e.x - cx) ** 2 + (e.y - cy) ** 2 <= 18 * 18) { near = true; break; }
+  for (const e of w.entities) if (e.kind === 'building' && !e.dead && e.owner === pid && (e.x - cx) * (e.x - cx) + (e.y - cy) * (e.y - cy) <= 18 * 18) { near = true; break; }
   if (!near) return fail('Too far from your structures (18 tiles).');
   if (!w.canAfford(pid, d.cost)) return fail(missing(w, pid, d.cost));
   return OK;
@@ -94,7 +94,7 @@ export function applyCommand(w: World, c: Command): CommandResult {
         const tx = t >= 0 ? (t % w.map.w) + 0.5 : c.x, ty = t >= 0 ? Math.floor(t / w.map.w) + 0.5 : c.y;
         issueMove(w, u, t >= 0 && Math.floor(pt.x) === Math.floor(tx) && Math.floor(pt.y) === Math.floor(ty) ? pt.x : tx,
           t >= 0 && Math.floor(pt.x) === Math.floor(tx) && Math.floor(pt.y) === Math.floor(ty) ? pt.y : ty,
-          c.t === 'attackMove' && B.units[u.type].attack ? 'attackMove' : 'move');
+          c.t === 'attackMove' && (B.units[u.type].attack || B.units[u.type].heal) ? 'attackMove' : 'move');
       });
       return OK;
     }
@@ -193,7 +193,11 @@ export function applyCommand(w: World, c: Command): CommandResult {
       const d = B.buildings[b.type];
       w.refund(pid, d.cost, c.t === 'cancelBuild' ? 1 : B.economy.demolishRefund);
       // return queued training
-      for (const q of b.queue ?? []) { w.refund(pid, q.paid); }
+      for (const q of b.queue ?? []) {
+        w.refund(pid, q.paid);
+        if (q.consumedRunner) { const t = w.nav.nearestPassable(b.x, b.y, pid, 8); if (t >= 0) w.spawnUnit('runner', pid, (t % w.map.w) + 0.5, Math.floor(t / w.map.w) + 0.5); }
+      }
+      b.queue = [];
       if (b.operator) { const op = w.get(b.operator); if (op) op.order = { type: 'idle' }; }
       b.dead = true;
       w.nav.setFootprint(b.tx!, b.ty!, b.w!, b.h!, 0, 0);

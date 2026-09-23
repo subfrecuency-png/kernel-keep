@@ -2,6 +2,7 @@
 // in headless Chromium (Playwright). Screenshots show appearance only; the assertions are the evidence.
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { Game, stateHash } from '../src/sim/game.ts';
 const OUT = 'e2e/out'; mkdirSync(OUT, { recursive: true });
 const results = []; let failed = 0;
 const check = (name, ok, detail = '') => { results.push({ name, ok, detail }); if (!ok) failed++; console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? '  — ' + detail : ''}`); };
@@ -149,6 +150,16 @@ check('Play again restarts a fresh match', fresh.tick < 30 && !fresh.over, JSON.
 await ev(() => { const w = window.__kk.cs.game.world; w.kill(w.coreOf(1)); });
 await page.waitForTimeout(500);
 check('losing your Core shows DEFEAT', /DEFEAT/.test(await page.textContent('#modalCard')));
+
+// ---- cross-runtime determinism: Node (tsx) vs the bundled build in Chromium ----
+{
+  const seed = 777, N = 3000;
+  const g = new Game({ seed, difficulty: 'normal', players: [{ name: 'You', ai: false }, { name: 'Rival Kernel', ai: true }] });
+  g.run(N);
+  const nodeHash = stateHash(g.world);
+  const browserHash = await ev(({ seed, N }) => { window.__kkBoot.newMatch('normal', seed); const k = window.__kk; k.cs.paused = true; k.step(N); return k.hash(); }, { seed, N });
+  check('same seed, 3000 ticks: Node build and browser bundle produce the same state hash', nodeHash === browserHash, `${nodeHash} vs ${browserHash}`);
+}
 
 check('no page errors or console errors', errors.length === 0, errors.join(' | '));
 writeFileSync(`${OUT}/results.json`, JSON.stringify({ date: new Date().toISOString(), results, perf, errors }, null, 1));

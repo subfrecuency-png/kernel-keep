@@ -1,8 +1,11 @@
 // Simulation systems: economy, buildings, units (orders, movement, combat), separation, fog.
 // Deterministic: iteration is in entity-id order, randomness only through world.rng,
-// and only + - * / sqrt floating-point operations are used.
+// and only + - * / sqrt floating-point operations are used (squares via multiplication, no Math.pow/trig).
 import { B, DT, Entity, AttackDef } from './types.ts';
 import { World } from './world.ts';
+
+/** Square via multiplication (exactly rounded everywhere; avoids Math.pow). */
+const sq = (v: number) => v * v;
 
 const EC = B.economy;
 
@@ -156,7 +159,7 @@ export function pickLaborer(w: World, owner: number, x: number, y: number): Enti
     if (u.kind !== 'unit' || u.dead || u.owner !== owner || u.type !== 'runner' || u.suspended || u.forkOf) continue;
     const t = u.order?.type;
     if (t !== 'idle' && t !== 'harvest') continue;
-    const s = (t === 'idle' ? 0 : 1e6 + (u.carry ?? 0) * 1e4) + (u.x - x) ** 2 + (u.y - y) ** 2;
+    const s = (t === 'idle' ? 0 : 1e6 + (u.carry ?? 0) * 1e4) + sq(u.x - x) + sq(u.y - y);
     if (s < bs) { bs = s; best = u; }
   }
   return best;
@@ -264,7 +267,7 @@ function followPath(w: World, u: Entity, speedMult = 1): MoveResult {
   // stuck detection
   u.stuckT = (u.stuckT ?? 0) + 1;
   if (u.stuckT >= 20) {
-    const moved = Math.sqrt((u.x - u.lastX!) ** 2 + (u.y - u.lastY!) ** 2);
+    const moved = Math.sqrt(sq(u.x - u.lastX!) + sq(u.y - u.lastY!));
     u.stuckT = 0; u.lastX = u.x; u.lastY = u.y;
     if (moved < 0.3 && u.pathGoal) {
       u.stuckN = (u.stuckN ?? 0) + 1;
@@ -298,7 +301,7 @@ export function acquire(w: World, a: Entity, r: number, atk: AttackDef, unitsOnl
       const bd = B.buildings[e.type];
       if ((bd.wall || bd.gate) && !siege) continue; // walls are breached via pathing, not auto-targeted
       const d = w.distTo(a.x, a.y, e);
-      if (d > r || d < minR) continue;
+      if (d > r) continue; // minimum range applies to programs only
       if (!w.canSee(a.owner, e)) continue;
       const s = d + (siege ? 0 : 3);
       if (s < bs || (s === bs && best && e.id < best.id)) { bs = s; best = e; }
@@ -434,7 +437,7 @@ function nearestWell(w: World, u: Entity, maxD: number): Entity | undefined {
   let best: Entity | undefined, bd = maxD * maxD;
   for (const e of w.entities) {
     if (e.kind !== 'well' || e.dead) continue;
-    const d = (e.x - u.x) ** 2 + (e.y - u.y) ** 2;
+    const d = sq(e.x - u.x) + sq(e.y - u.y);
     if (d < bd) { bd = d; best = e; }
   }
   return best;
@@ -496,7 +499,7 @@ function buildStep(w: World, u: Entity, o: NonNullable<Entity['order']>) {
     let best: Entity | undefined, bd = 100;
     for (const e of w.entities) {
       if (e.kind !== 'building' || e.dead || e.built || e.owner !== u.owner) continue;
-      const d = (e.x - u.x) ** 2 + (e.y - u.y) ** 2; if (d < bd) { bd = d; best = e; }
+      const d = sq(e.x - u.x) + sq(e.y - u.y); if (d < bd) { bd = d; best = e; }
     }
     if (!best) { u.order = { type: 'idle' }; u.path = undefined; return; }
     o.target = best.id; site = best; u.path = undefined;

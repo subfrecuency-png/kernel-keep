@@ -396,7 +396,8 @@ addEventListener('keydown', e => {
   if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
   if (e.key === 'F1') { e.preventDefault(); showControls(); return; }
   if (!cs) return;
-  const k = settings.keys; const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  const k = settings.keys; let key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  if (key === 'Backspace' && k.decompile === 'Delete') key = 'Delete'; // Mac keyboards label Backspace as "delete"
   held.add(key.length === 1 ? key : e.key);
   if (e.key === 'Escape') { if (cs.placing || cs.mode) { cs.placing = undefined; cs.mode = undefined; } else if ($('modal').classList.contains('hidden')) showPauseMenu(); else if (!cs.over) { hideModal(); } return; }
   if (!$('modal').classList.contains('hidden')) return;
@@ -482,12 +483,12 @@ function showHowTo(back: () => void) {
 }
 function showPauseMenu() {
   if (!cs) return;
-  const wasPaused = cs.paused; cs.paused = true;
+  cs.paused = true;
   modal(`<h2>Paused — ${fmtTime(cs.game.world.tick)}</h2>
   <div class="row"><button class="btn primary" id="p-resume">Resume</button><button class="btn" id="p-save">Quick save</button><button class="btn" id="p-load">Quick load</button><button class="btn" id="p-export">Export save file</button><button class="btn" id="p-import">Import save file</button></div>
   <div class="row"><button class="btn" id="p-restart">Restart match</button><button class="btn" id="p-how">How to play</button><button class="btn" id="p-set">Settings & controls</button><button class="btn" id="p-quit">Quit to title</button></div>
   <p class="tag">Seed ${cs.game.world.seed} · ${cs.game.world.difficulty} · build uses balance v${B.version}. Autosave every 60s.</p>`);
-  btn('p-resume', () => { hideModal(); cs!.paused = wasPaused && false; });
+  btn('p-resume', () => { hideModal(); cs!.paused = false; });
   btn('p-save', () => { try { localStorage.setItem(SLOT, JSON.stringify(saveGame(cs!.game))); toast('Saved.', true); } catch (err) { toast('Save failed: ' + (err as Error).message); } });
   btn('p-load', () => { try { const raw = localStorage.getItem(SLOT); if (!raw) { toast('No quick save yet.'); return; } startMatch(loadGame(JSON.parse(raw))); cs!.paused = true; toast('Loaded (paused).', true); } catch (err) { toast('Load failed: ' + (err as Error).message); } });
   btn('p-export', () => exportFile());

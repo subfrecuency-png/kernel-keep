@@ -73,7 +73,7 @@ export const OBJECTIVES: Objective[] = [
   { text: 'Build a Training Grid and 4 combat programs', hint: 'T = Training Grid. Select it: Q Ping, W Bulwark, E Lancer, R Patcher, T Breaker. Each consumes a free Runner and costs Hash.', done: cs => count(cs, e => e.kind === 'unit' && e.type !== 'runner' && !e.forkOf) >= 4 },
   { text: 'Fortify a pass', hint: 'Select Runners, press W and drag across a pass in the void rift to lay Firewalls; add a Gate (G) so your army can pass. Enemies cannot open your gates.', done: cs => count(cs, e => e.type === 'wall' && !!e.built) >= 4 && count(cs, e => e.type === 'gate' && !!e.built) >= 1 },
   { text: 'Raise a Sentry Tower', hint: 'R = Sentry Tower. Towers draw 2 Compute; if Compute runs short (brownout) they fire slower — pause a Rig (O) during a siege.', done: cs => count(cs, e => e.type === 'tower' && !!e.built) > 0 },
-  { text: 'Destroy the Rival Core', hint: 'The Rival attacks around 5:30. Hold, then push with Bulwarks in front, Lancers behind and Breakers to crack hardened walls, towers and the Core. F = Fork: temporary copies of selected fighters.', done: cs => cs.game.world.winner === cs.me },
+  { text: 'Destroy the Rival Core', hint: 'The first Rival wave usually comes around 6–7 minutes (never before 5:30). Hold, then push with Bulwarks in front, Lancers behind and Breakers to crack hardened walls, towers and the Core. F = Fork: temporary copies of selected fighters.', done: cs => cs.game.world.winner === cs.me },
 ];
 let objKey = '';
 const latched = new Set<number>();
