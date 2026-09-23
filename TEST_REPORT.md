@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Type check (strict TS) | `npm run typecheck` | 0 errors | `typecheck.log` |
 | Simulation tests (real sim, no mocks) | `npm test` | **29 / 29 pass** (≈13 s) | `unit-tests.log` |
-| Build single-file game | `npm run build` | `dist/kernel-keep.html`, 117.8 KiB | `build.log` |
+| Build single-file game | `npm run build` | `dist/kernel-keep.html`, 117.9 KiB | `build.log` |
 | Browser end-to-end (real mouse and keyboard in Chromium) | `npm run e2e` | **23 / 23 pass**, no page or console errors | `e2e.log`, `e2e/out/results.json`, screenshots `e2e/out/*.png` |
 | Simulation benchmark | `npm run bench` | see §3 | `bench.log` |
 | Economy simulation | `npm run econ` | 5 scenarios, 0 crashes, lowest Stability 25 | `econ.log`, `docs/ECON_SIM_RESULTS.md`, `docs/econ_sim.json` |
@@ -57,7 +57,7 @@
 
 Before the pathfinding budget (ADR-005), the 100-per-side worst tick was **about 233 ms** (an earlier console run in this session, not saved to a log). Since then it's been **9–13 ms** across runs.
 
-**Browser (e2e):** 134 units fighting while zoomed in, headless Chromium with *software* rendering: **60 fps** (the rAF cap), simulation about 1.2–1.5 ms/tick on average across runs (1.31 in `e2e.log`).
+**Browser (e2e):** 134 units fighting while zoomed in, headless Chromium with *software* rendering: **60 fps** (the rAF cap), simulation about 1.2–1.5 ms/tick on average across runs (1.23 in the final `e2e.log`).
 
 **Hypotheses for your M4 (unmeasured):** ≥ 60 fps at 1440p with 100–200 units, and simulation ≤ 5 ms/tick. **Check them with F3** in a real session.
 
