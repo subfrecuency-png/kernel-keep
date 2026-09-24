@@ -1,3 +1,16 @@
+# HANDOFF — session 7 (2026-09-23): 0.3.4 — animation follow-up (B + C)
+
+Committed on branch `anim-pilot`. Details and honest limits are in `docs/ANIMATION_PILOT.md` (follow-up section).
+
+| Item | Status |
+|---|---|
+| Rig, Core, Node and Grid working loops (B) | **Implemented, Tested.** 1,300 credits. Pilot total 10,905 of 11,000; 230 left on the account. |
+| Runner animated in the match: idle, walk, harvest, build, attack, death, 8 facings (C) | **Implemented, Tested.** The rig was rescued; the paid motions were not recoverable, so the clips were keyed by hand (0 credits). |
+| Other five roles | Stills with 0.3.1 motion (no frames yet) |
+| Hash / perf / size | `adb5621a` unchanged in Node, Chromium and WebKit · about 6% slower with 40 Runners in view · 9.15 MB single HTML |
+
+---
+
 # HANDOFF — session 6 (2026-09-23): 0.3.3 animation pilot
 
 Committed on branch `anim-pilot` (based on `iso-art-0.3`) in `~/Downloads/kernel-keep`, which is checked out there. Full write-up: `docs/ANIMATION_PILOT.md`.

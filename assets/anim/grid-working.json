@@ -1,0 +1,14 @@
+{
+ "type": "grid",
+ "clip": "working",
+ "frames": 40,
+ "fps": 8,
+ "loop": true,
+ "cell": [
+  256,
+  226
+ ],
+ "cols": 8,
+ "maxBaseShiftPx": 0,
+ "source": "grid.mp4"
+}

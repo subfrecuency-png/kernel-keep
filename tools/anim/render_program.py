@@ -17,12 +17,17 @@ job = json.load(open(sys.argv[sys.argv.index('--') + 1]))
 out = job['out']; os.makedirs(out, exist_ok=True)
 res = job.get('res', 256); facings = job.get('facings', ['s', 'se', 'e', 'ne', 'n']); root_mode = job.get('root', 'none')
 
-bpy.ops.wm.read_factory_settings(use_empty=True)
-bpy.ops.import_scene.gltf(filepath=job['glb'])
+if job['glb'].endswith('.blend'): bpy.ops.wm.open_mainfile(filepath=job['glb'])   # e.g. a rig from neutralize_rig.py
+else:
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.import_scene.gltf(filepath=job['glb'])
 arm = next(o for o in bpy.data.objects if o.type == 'ARMATURE')
 for o in list(bpy.data.objects):   # Meshy adds a helper "Icosphere"; keep only skinned meshes
     if o.type == 'MESH' and not any(m.type == 'ARMATURE' for m in o.modifiers): bpy.data.objects.remove(o)
 meshes = [o for o in bpy.data.objects if o.type == 'MESH']
+if job.get('rest'):   # show the bind pose
+    if arm.animation_data: arm.animation_data.action = None
+    for pb in arm.pose.bones: pb.matrix_basis.identity()
 root = bpy.data.objects.new('root', None); bpy.context.scene.collection.objects.link(root)
 arm.parent = root
 base_loc = arm.location.copy()

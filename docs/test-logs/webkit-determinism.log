@@ -1,5 +1,5 @@
 
-> kernel-keep@0.3.2 determinism:webkit
+> kernel-keep@0.3.3 determinism:webkit
 > tsx tools/hashes.ts && xvfb-run -a python3.12 tools/webkit_determinism.py
 
 {"engine":"Node v22.22.2 (V8)","ticks":3000,"hashes":{"1":"2bee4c0e","42":"788e4b85","777":"adb5621a"}}

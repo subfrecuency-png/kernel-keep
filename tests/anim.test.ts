@@ -48,25 +48,58 @@ test('program clip rules', () => {
   assert.equal(unitClip({ order: { type: 'idle' } }, false, false), 'idle');
 });
 
-test('structures animate only when built, powered, unpaused and staffed — checked on a live Compiler', () => {
-  assert.equal(buildingClip({ built: false, active: true }, true), null);
-  assert.equal(buildingClip({ built: true, active: false }, true), null);
-  assert.equal(buildingClip({ built: true, active: true, stall: 'paused' }, true), null);
-  assert.equal(buildingClip({ built: true, active: true }, false), null);
+test('structure loop rules: operated, training and ambient structures — checked on live buildings', () => {
+  const base = { built: true, active: true };
+  assert.equal(buildingClip({ type: 'compiler', ...base, built: false }, true), null, 'under construction');
+  assert.equal(buildingClip({ type: 'compiler', ...base, active: false }, true), null, 'switched off');
+  assert.equal(buildingClip({ type: 'rig', ...base, stall: 'paused' }, true), null, 'paused');
+  assert.equal(buildingClip({ type: 'rig', ...base }, false), null, 'no operator');
+  assert.equal(buildingClip({ type: 'rig', ...base }, true), 'working');
+  assert.equal(buildingClip({ type: 'core', ...base }, false), 'working', 'the Core always hums');
+  assert.equal(buildingClip({ type: 'node', ...base }, false), 'working');
+  assert.equal(buildingClip({ type: 'grid', ...base, queue: [] }, false), null, 'idle grid');
+  assert.equal(buildingClip({ type: 'tower', ...base }, false), null, 'no loop yet');
   const g = humanGame(5); const w = g.world;
   const c = instantBuilding(w, 'compiler', 1, 12, 49);
   assert.equal(buildingClip(c, w.operatorPresent(c)), null, 'unstaffed');
   cmd(g, { t: 'operate', ids: [units(w, 1, 'runner')[0].id], target: c.id }); secs(g, 6);
   assert.equal(buildingClip(c, w.operatorPresent(c)), 'working');
+  const grid = instantBuilding(w, 'grid', 1, 12, 44);
+  assert.equal(buildingClip(grid, w.operatorPresent(grid)), null);
+  w.players[1].data = 500; w.players[1].code = 500;
+  assert.ok(cmd(g, { t: 'train', building: grid.id, unit: 'ping' }).ok); secs(g, 4);
+  assert.ok(grid.queue!.some(q => q.started), 'training started (a Runner walked in)');
+  assert.equal(buildingClip(grid, w.operatorPresent(grid)), 'working', 'training grid animates');
 });
 
 test('shipped sheets are consistent with their atlas', () => {
-  const s = JSON.parse(readFileSync('assets/anim/compiler-working.json', 'utf8')) as AnimSheet;
-  const buf = readFileSync('assets/anim/compiler-working.webp');
-  // VP8X canvas size (webp extended header): 24-bit little-endian width-1 / height-1 at bytes 24..29
-  const W = 1 + buf.readUIntLE(24, 3), H = 1 + buf.readUIntLE(27, 3);
-  const [x, y, cw, ch] = cellRect(s, s.frames - 1);
-  assert.ok(x + cw <= W && y + ch <= H, `last cell ${x},${y} fits ${W}x${H}`);
-  assert.equal(Math.ceil(s.frames / s.cols) * ch, H);
-  assert.ok(s.loop && s.fps > 0);
+  const types = ['compiler', 'rig', 'core', 'node', 'grid'];
+  for (const t of types) {
+    const s = JSON.parse(readFileSync(`assets/anim/${t}-working.json`, 'utf8')) as AnimSheet;
+    const buf = readFileSync(`assets/anim/${t}-working.webp`);
+    // VP8X canvas size (webp extended header): 24-bit little-endian width-1 / height-1 at bytes 24..29
+    const W = 1 + buf.readUIntLE(24, 3), H = 1 + buf.readUIntLE(27, 3);
+    const [x, y, cw, ch] = cellRect(s, s.frames - 1);
+    assert.ok(x + cw <= W && y + ch <= H, `${t}: last cell ${x},${y} fits ${W}x${H}`);
+    assert.equal(Math.ceil(s.frames / s.cols) * ch, H, t);
+    assert.ok(s.loop && s.fps > 0 && s.type === t && s.clip === 'working', t);
+    // the loop is drawn in the still's rectangle, so the aspect ratios must agree (within 2%)
+    const still = JSON.parse(readFileSync('assets/art/sprites/sprites.json', 'utf8'))[t];
+    assert.ok(Math.abs(cw / ch - still.w / still.h) / (still.w / still.h) < 0.02, `${t} aspect ${cw}/${ch} vs ${still.w}/${still.h}`);
+  }
+});
+
+test('Runner clips: six sheets, five rendered facings each, shared pivot and standing height', () => {
+  const clips = { idle: true, walk: true, harvest: true, build: true, attack: false, death: false };
+  for (const [clip, loop] of Object.entries(clips)) {
+    const s = JSON.parse(readFileSync(`assets/anim/runner-${clip}.json`, 'utf8')) as AnimSheet;
+    const buf = readFileSync(`assets/anim/runner-${clip}.webp`);
+    const W = 1 + buf.readUIntLE(24, 3), H = 1 + buf.readUIntLE(27, 3);
+    assert.deepEqual(s.facings, ['s', 'se', 'e', 'ne', 'n'], clip);
+    assert.equal(s.loop, loop, clip);
+    assert.deepEqual(s.pivot, [64, 112]); assert.equal(s.standH, 64);
+    const [x, y, cw, ch] = cellRect(s, s.frames - 1, 'n');
+    assert.ok(x + cw <= W && y + ch <= H, `${clip}: last cell of the last facing fits the atlas`);
+    if (clip === 'attack') assert.equal(s.fire, 4, 'attack fire frame');
+  }
 });

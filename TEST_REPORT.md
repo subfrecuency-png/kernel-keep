@@ -1,5 +1,21 @@
 # TEST_REPORT — Kernel Keep
 
+## 0.3.4 animation follow-up B + C (branch `anim-pilot`), 2026-09-23
+
+This build uses the same container. **Nothing was run on the Air.**
+
+| Check | Result |
+|---|---|
+| Type check | 0 errors |
+| `npm test` | **41 / 41 pass**. The anim tests now cover the structure rules on live buildings: a staffed Compiler; a Training Grid that animates once training starts (and not before); Core and Node always animate; a Tower has no loop. They also check all 5 structure atlases (fit, and aspect within 2% of the still) and all 6 Runner sheets (5 facings, pivot, standing height, fire frame). |
+| `npm run e2e` | **41 / 41 pass**. New checks: the Rival Core plays its red-shifted loop; a gathering Runner plays its harvest clip mid-match; the Animation lab plays all 11 clips for both teams. The lab's second sample was moved from 600 ms to 450 ms, so a 0.6 s clip can't alias to the same frame. |
+| Simulation hash | **`adb5621a` unchanged**, and it matches across Node, Chromium and WebKitGTK (seeds 777 / 1 / 42 → `adb5621a` / `2bee4c0e` / `788e4b85`) |
+| A/B frame rate, 40 walking Runners in view, 1440×900, software GPU, 3 alternating rounds | 0.3.2: 45.7 / 47.6 / 44.1 fps · 0.3.4: 42.2 / 42.7 / 44.7 fps. That is about 6% slower, inside the plan's 10% gate. |
+| Build size | 9.15 MB single offline HTML (0.3.3: 3.77 MB; 0.3.2: 2.50 MB). The five structure atlases are about 4.4 MB of WebP. |
+| Runner clip review | See `docs/anim-pilot/runner-clips-contact.webp`. Weak point: harvest in the front facings. |
+
+---
+
 ## 0.3.3 animation pilot (branch `anim-pilot`), 2026-09-23
 
 This build uses the same container. **Nothing was run on the Air.**

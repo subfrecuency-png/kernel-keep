@@ -4,7 +4,7 @@ import { Settings } from './settings.ts';
 
 export interface Fx { kind: 'beam' | 'heal' | 'siege' | 'ring' | 'burst' | 'text' | 'marker' | 'derez' | 'spawn'; x: number; y: number; x2?: number; y2?: number; t: number; life: number; color: string; text?: string; from?: number; to?: number;
   /** derez / spawn: the entity's sprite type, owner, id and facing at the moment of the event */
-  type?: string; owner?: number; id?: number; face?: number }
+  type?: string; owner?: number; id?: number; face?: number; dir?: string }
 
 export interface Placement { type: string; tx: number; ty: number; ok: boolean; reason?: string; dragStart?: { tx: number; ty: number } }
 

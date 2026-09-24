@@ -11,6 +11,8 @@ export interface AnimSheet {
   type: string; clip: string; frames: number; fps: number; loop: boolean;
   cell: [number, number]; cols: number;
   facings?: Facing[]; fire?: number; pivot?: [number, number];
+  /** Standing height in cell pixels (programs): the frame is scaled so this matches the still's height. */
+  standH?: number;
 }
 export type Facing = 's' | 'se' | 'e' | 'ne' | 'n';
 export type Facing8 = Facing | 'sw' | 'w' | 'nw';
@@ -58,9 +60,19 @@ export function unitClip(u: Pick<Entity, 'order' | 'carry' | 'engaged' | 'dead'>
   return 'idle';
 }
 
-/** A structure plays its working loop when it is finished, powered, not paused and staffed. */
-export function buildingClip(b: Pick<Entity, 'built' | 'active' | 'stall'>, operatorPresent: boolean): 'working' | null {
-  return b.built && b.active && b.stall !== 'paused' && operatorPresent ? 'working' : null;
+/** When a structure plays its working loop (it always needs to be finished, switched on and not paused):
+ *  - Compiler, Mining Rig: only while a Runner operator is at work inside;
+ *  - Training Grid: only while it is actually training a program;
+ *  - Core, Compute Node: whenever they stand (they always supply).
+ *  Other structures have no loop yet and keep their still. */
+export const OPERATED = new Set(['compiler', 'rig']);
+export const AMBIENT = new Set(['core', 'node']);
+export function buildingClip(b: Pick<Entity, 'type' | 'built' | 'active' | 'stall' | 'queue'>, operatorPresent: boolean): 'working' | null {
+  if (!b.built || b.active === false || b.stall === 'paused') return null;
+  if (OPERATED.has(b.type)) return operatorPresent ? 'working' : null;
+  if (b.type === 'grid') return b.queue?.some(q => q.started) ? 'working' : null;
+  if (AMBIENT.has(b.type)) return 'working';
+  return null;
 }
 
 /** Source rectangle of frame `i` (in facing `f`) inside the atlas. */

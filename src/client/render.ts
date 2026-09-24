@@ -11,8 +11,8 @@ import { ClientState, COLORS, Fx } from './state.ts';
 import { canPlace } from '../sim/commands.ts';
 import { KU, KV, proj, unproj, groundMatrix, mapBounds, unitRect, buildingRect, depthOf, NATIVE_FACING, Rect, toU } from './iso.ts';
 import { sprite, scaledSprite } from './sprites.ts';
-import { animFrame } from './anim.ts';
-import { buildingClip } from './animlogic.ts';
+import { animFrame, sheetOf } from './anim.ts';
+import { buildingClip, unitClip, facing8, attackFrame, Facing8 } from './animlogic.ts';
 
 let fogCanvas: HTMLCanvasElement | null = null;
 let fogCtx: CanvasRenderingContext2D | null = null;
@@ -25,6 +25,52 @@ let miniBaseFor: World | null = null;
 const facing = new Map<number, number>();
 /** Last on-screen facing of a program (+1 right, −1 left), used when it de-rezzes. */
 export function unitFacing(id: number) { const f = facing.get(id); facing.delete(id); return f; }
+/** Eight-way facing of animated programs (screen space), kept per unit; handed to the death clip. */
+const facing8Of = new Map<number, Facing8>();
+export function unitFacing8(id: number) { const f = facing8Of.get(id); facing8Of.delete(id); return f; }
+const strideAcc = new Map<number, { d: number; t: number }>();
+/** Tiles walked per full 8-frame walk cycle (two steps); keeps feet from sliding at the Runner's speed. */
+const STRIDE_TILES = 1.15;
+
+/** Animated programs (animation pilot): draws the clip frame for this program's state and returns true, or
+ *  returns false so the caller falls back to the still sprite (no sheet, suspended, forked, materialising). */
+function drawProgramClip(ctx: CanvasRenderingContext2D, cs: ClientState, e: Entity, pos: [number, number, number, number], hit: boolean, fireDu: number | undefined, r: Rect): boolean {
+  if (e.suspended || e.forkOf) return false;
+  const [x, y, dx, dy] = pos; const w = cs.game.world;
+  const speed = Math.hypot(dx, dy); const moving = speed > 1e-4;
+  const tgt = e.engaged ? w.get(e.engaged) : undefined;
+  const atk = B.units[e.type].attack;
+  const fighting = !moving && !!tgt && !!atk && (fireDu !== undefined || w.distTo(x, y, tgt) - B.units[e.type].radius <= atk.range + 0.35);
+  const clip = unitClip(e, moving, fighting);
+  const sheet = sheetOf(e.type, clip === 'carry' ? 'walk' : clip); if (!sheet) return false;
+  // facing: toward the target while fighting, else along the movement, else keep the last one
+  let du = 0, dv = 0;
+  if (fighting && tgt) { du = (tgt.x - x - (tgt.y - y)) * KU; dv = (tgt.x - x + (tgt.y - y)) * KV; }
+  else if (moving) { du = (dx - dy) * KU; dv = (dx + dy) * KV; }
+  if (Math.abs(du) + Math.abs(dv) > 1e-6) facing8Of.set(e.id, facing8(du, dv).dir);
+  const dir = facing8Of.get(e.id) ?? (e.owner === 2 ? 'nw' : 'se');
+  const fz = facing8(...(DIR_VEC[dir]));
+  facing.set(e.id, DIR_VEC[dir][0] >= 0 ? 1 : -1);
+  let frame: number | undefined;
+  if (clip === 'walk' || clip === 'carry') {
+    const a = strideAcc.get(e.id) ?? { d: 0, t: cs.time };
+    a.d += speed * 10 * cs.speed * Math.max(0, Math.min(0.1, cs.time - a.t)); a.t = cs.time; strideAcc.set(e.id, a);
+    frame = Math.floor(a.d / STRIDE_TILES * sheet.frames) % sheet.frames;
+  } else { strideAcc.delete(e.id); }
+  if (clip === 'attack' && atk) frame = attackFrame(e.cd ?? 0, atk.cd, sheet.frames, sheet.fire ?? 4);
+  const f = animFrame(e.type, clip === 'carry' ? 'walk' : clip, e.owner, cs.time, { frame, phase: e.id * 2.3, facing: fz.draw });
+  if (!f) return false;
+  const [gx, gy] = proj(cs.cam, x, y);
+  const sc = r.h * 0.95 / (sheet.standH ?? sheet.cell[1] * 0.5);
+  const [px, py] = sheet.pivot ?? [sheet.cell[0] / 2, sheet.cell[1]];
+  ctx.save(); ctx.translate(gx, gy); if (fz.mirror) ctx.scale(-1, 1);
+  ctx.drawImage(f.img, f.sx, f.sy, f.sw, f.sh, -px * sc, -py * sc, sheet.cell[0] * sc, sheet.cell[1] * sc);
+  if (hit && !cs.settings.reducedFlash) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.4; ctx.drawImage(f.img, f.sx, f.sy, f.sw, f.sh, -px * sc, -py * sc, sheet.cell[0] * sc, sheet.cell[1] * sc); }
+  ctx.restore();
+  return true;
+}
+const S2 = Math.SQRT1_2;
+const DIR_VEC: Record<Facing8, [number, number]> = { e: [1, 0], se: [S2, S2], s: [0, 1], sw: [-S2, S2], w: [-1, 0], nw: [-S2, -S2], n: [0, -1], ne: [S2, -S2] };
 
 const DATA_C = '#7cc7ff', FRAG_C = '#c59bff';
 
@@ -373,6 +419,7 @@ function drawUnit(ctx: CanvasRenderingContext2D, cs: ClientState, e: Entity, pos
   const r = unitRect(cs.cam, e.type, x, y);
   if (r.x > ctx.canvas.width || r.y > ctx.canvas.height || r.x + r.w < 0 || r.y + r.h < 0) return;
   const rf = cs.settings.reducedFlash;
+  if (!(spawnK !== undefined && spawnK < 1) && drawProgramClip(ctx, cs, e, pos, hit, fireDu, r)) return;
   // facing: toward the current shot, else toward movement, else keep the last facing
   const du = fireDu ?? (dx - dy) * KU;
   if (Math.abs(du) > 0.002) facing.set(e.id, du > 0 ? 1 : -1);
@@ -428,6 +475,7 @@ function drawDerez(ctx: CanvasRenderingContext2D, cs: ClientState, f: Fx) {
   if (isUnit) r = unitRect(cs.cam, type, f.x, f.y);
   else { const d = B.buildings[type]; r = buildingRect(cs.cam, type, f.x - d.w / 2, f.y - d.h / 2, d.w, d.h); }
   if (r.x > ctx.canvas.width || r.y > ctx.canvas.height || r.x + r.w < 0 || r.y + r.h < 0) return;
+  if (isUnit && drawDeathClip(ctx, cs, f, type)) return;
   const img = scaledSprite(type, f.owner ?? 1, 'glow', r.w) as HTMLCanvasElement | null; if (!img) return;
   const flip = isUnit && (f.face ?? (f.owner === 2 ? -1 : 1)) * NATIVE_FACING[type] < 0;
   const rf = cs.settings.reducedFlash;
@@ -440,6 +488,28 @@ function drawDerez(ctx: CanvasRenderingContext2D, cs: ClientState, f: Fx) {
     ctx.drawImage(img, 0, sy, iw, sh, -r.w / 2 + off, r.h * sIdx / slices, r.w, r.h / slices + 1);
   }
   ctx.restore();
+}
+
+/** Programs with a death clip fall over (1 s), then the body de-rezzes: it fades while slices glitch. */
+function drawDeathClip(ctx: CanvasRenderingContext2D, cs: ClientState, f: Fx, type: string): boolean {
+  const sheet = sheetOf(type, 'death'); if (!sheet) return false;
+  const fz = facing8(...DIR_VEC[(f.dir as Facing8) ?? (f.owner === 2 ? 'nw' : 'se')]);
+  const playT = sheet.frames / sheet.fps;
+  const a = animFrame(type, 'death', f.owner ?? 1, f.t, { facing: fz.draw }); if (!a) return false;
+  const r = unitRect(cs.cam, type, f.x, f.y); const [gx, gy] = proj(cs.cam, f.x, f.y);
+  const sc = r.h * 0.95 / (sheet.standH ?? sheet.cell[1] * 0.5); const [px, py] = sheet.pivot ?? [sheet.cell[0] / 2, sheet.cell[1]];
+  const fade = Math.max(0, (f.t - playT) / Math.max(0.01, f.life - playT));
+  const rf = cs.settings.reducedFlash;
+  ctx.save(); ctx.translate(gx, gy); if (fz.mirror) ctx.scale(-1, 1);
+  ctx.globalAlpha = 1 - fade;
+  const slices = fade > 0 && !rf ? 6 : 1;
+  for (let k = 0; k < slices; k++) {
+    const off = slices > 1 ? Math.sin(k * 12.9898 + f.x * 78.233 + f.t * 40) * a.sw * sc * 0.12 * fade : 0;
+    const sy = a.sh * k / slices, sh = a.sh / slices;
+    ctx.drawImage(a.img, a.sx, a.sy + sy, a.sw, sh, -px * sc + off, (-py + sy) * sc, sheet.cell[0] * sc, sh * sc + 0.5);
+  }
+  ctx.restore();
+  return true;
 }
 
 // ---------------------------------------------------------------- overlay

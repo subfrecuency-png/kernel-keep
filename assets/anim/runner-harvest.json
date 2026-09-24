@@ -1,0 +1,24 @@
+{
+ "type": "runner",
+ "clip": "harvest",
+ "frames": 8,
+ "fps": 8,
+ "loop": true,
+ "cell": [
+  128,
+  128
+ ],
+ "cols": 16,
+ "facings": [
+  "s",
+  "se",
+  "e",
+  "ne",
+  "n"
+ ],
+ "pivot": [
+  64,
+  112
+ ],
+ "standH": 64
+}

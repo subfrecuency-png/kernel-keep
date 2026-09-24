@@ -1,0 +1,14 @@
+{
+ "type": "node",
+ "clip": "working",
+ "frames": 40,
+ "fps": 8,
+ "loop": true,
+ "cell": [
+  256,
+  273
+ ],
+ "cols": 8,
+ "maxBaseShiftPx": 0,
+ "source": "node.mp4"
+}

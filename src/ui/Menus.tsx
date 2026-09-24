@@ -51,7 +51,7 @@ export function Title({ snap }: { snap: Snapshot }) {
         <button id="t-perf" onClick={() => engine.runPerfTest()} title="Plays a fixed 40-second battle and measures frame and simulation times on this machine">Performance test</button>
       </div>
     </div>
-    <footer className="title-footer"><span><i className="status-dot" /> OFFLINE · NO ACCOUNT · HASH CREDITS ARE FICTIONAL AND MATCH-LOCAL</span><span>MERIDIAN DIVIDE · PROTOTYPE 0.3.3 · PROVISIONAL TITLE</span></footer>
+    <footer className="title-footer"><span><i className="status-dot" /> OFFLINE · NO ACCOUNT · HASH CREDITS ARE FICTIONAL AND MATCH-LOCAL</span><span>MERIDIAN DIVIDE · PROTOTYPE 0.3.4 · PROVISIONAL TITLE</span></footer>
   </main>;
 }
 

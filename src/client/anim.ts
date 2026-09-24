@@ -1,21 +1,52 @@
 // Animated sprite sheets (animation pilot, Phase 0). Presentation only.
 // Each sheet is one atlas image plus its JSON (see animlogic.ts for the format). Only the player-1 atlas ships;
-// the Rival copy is red-shifted once at load with the same hue rule as tools/art/cut_sprites.py, which keeps
+// the Rival copy is red-shifted once, on first use, with the same hue rule as tools/art/cut_sprites.py, which keeps
 // the single-file build ~1 MB smaller per sheet. If a sheet is missing or still decoding, callers fall back
 // to the still sprite, so an absent clip never breaks drawing.
 import compilerWorkingUrl from '../../assets/anim/compiler-working.webp';
 import compilerWorking from '../../assets/anim/compiler-working.json';
+import rigWorkingUrl from '../../assets/anim/rig-working.webp';
+import rigWorking from '../../assets/anim/rig-working.json';
+import coreWorkingUrl from '../../assets/anim/core-working.webp';
+import coreWorking from '../../assets/anim/core-working.json';
+import nodeWorkingUrl from '../../assets/anim/node-working.webp';
+import nodeWorking from '../../assets/anim/node-working.json';
+import gridWorkingUrl from '../../assets/anim/grid-working.webp';
+import gridWorking from '../../assets/anim/grid-working.json';
+import runnerIdleUrl from '../../assets/anim/runner-idle.webp';
+import runnerIdle from '../../assets/anim/runner-idle.json';
+import runnerWalkUrl from '../../assets/anim/runner-walk.webp';
+import runnerWalk from '../../assets/anim/runner-walk.json';
+import runnerHarvestUrl from '../../assets/anim/runner-harvest.webp';
+import runnerHarvest from '../../assets/anim/runner-harvest.json';
+import runnerBuildUrl from '../../assets/anim/runner-build.webp';
+import runnerBuild from '../../assets/anim/runner-build.json';
+import runnerAttackUrl from '../../assets/anim/runner-attack.webp';
+import runnerAttack from '../../assets/anim/runner-attack.json';
+import runnerDeathUrl from '../../assets/anim/runner-death.webp';
+import runnerDeath from '../../assets/anim/runner-death.json';
 import { AnimSheet, cellRect, frameAt, Facing } from './animlogic.ts';
 
-interface Entry { sheet: AnimSheet; url: string; img?: HTMLImageElement; rival?: HTMLCanvasElement }
+interface Entry { sheet: AnimSheet; url: string; img?: HTMLImageElement; rival?: HTMLCanvasElement; rivalQueued?: boolean }
 const ENTRIES: Entry[] = [
+  { sheet: coreWorking as unknown as AnimSheet, url: coreWorkingUrl },
   { sheet: compilerWorking as unknown as AnimSheet, url: compilerWorkingUrl },
+  { sheet: rigWorking as unknown as AnimSheet, url: rigWorkingUrl },
+  { sheet: nodeWorking as unknown as AnimSheet, url: nodeWorkingUrl },
+  { sheet: gridWorking as unknown as AnimSheet, url: gridWorkingUrl },
+  { sheet: runnerIdle as unknown as AnimSheet, url: runnerIdleUrl },
+  { sheet: runnerWalk as unknown as AnimSheet, url: runnerWalkUrl },
+  { sheet: runnerHarvest as unknown as AnimSheet, url: runnerHarvestUrl },
+  { sheet: runnerBuild as unknown as AnimSheet, url: runnerBuildUrl },
+  { sheet: runnerAttack as unknown as AnimSheet, url: runnerAttackUrl },
+  { sheet: runnerDeath as unknown as AnimSheet, url: runnerDeathUrl },
 ];
 const byKey = new Map(ENTRIES.map(e => [`${e.sheet.type}:${e.sheet.clip}`, e]));
 
 /** Every sheet that ships (for the Animation lab). */
 export function listSheets(): AnimSheet[] { return ENTRIES.map(e => e.sheet); }
 export function hasClip(type: string, clip: string): boolean { return byKey.has(`${type}:${clip}`); }
+export function sheetOf(type: string, clip: string): AnimSheet | undefined { return byKey.get(`${type}:${clip}`)?.sheet; }
 
 /** Blue/cyan hues → crimson; amber, greys and whites untouched (mirrors cut_sprites.py redshift()). */
 export function redshiftPixels(d: Uint8ClampedArray) {
@@ -37,26 +68,23 @@ function source(e: Entry, owner: number): CanvasImageSource | null {
   if (!e.img) { e.img = new Image(); e.img.decoding = 'async'; e.img.src = e.url; }
   if (!e.img.complete || !e.img.naturalWidth) return null;
   if (owner !== 2) return e.img;
-  if (!e.rival) {
-    const c = document.createElement('canvas'); c.width = e.img.naturalWidth; c.height = e.img.naturalHeight;
-    const g = c.getContext('2d', { willReadFrequently: true })!; g.drawImage(e.img, 0, 0);
-    try { const px = g.getImageData(0, 0, c.width, c.height); redshiftPixels(px.data); g.putImageData(px, 0, 0); }
-    catch { /* a tainted canvas can't happen with data: URLs; keep the unshifted copy if it ever does */ }
-    e.rival = c;
+  if (!e.rival && !e.rivalQueued) {
+    // Recolour once, the first time a Rival structure of this type is on screen, outside the frame being drawn
+    // (about 3 M pixels: a one-off few tens of ms). Until then the Rival keeps its still.
+    e.rivalQueued = true;
+    setTimeout(() => {
+      const img = e.img!; const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+      const g = c.getContext('2d', { willReadFrequently: true })!; g.drawImage(img, 0, 0);
+      try { const px = g.getImageData(0, 0, c.width, c.height); redshiftPixels(px.data); g.putImageData(px, 0, 0); }
+      catch { /* a tainted canvas can't happen with data: URLs; keep the unshifted copy if it ever does */ }
+      e.rival = c;
+    }, 0);
   }
-  return e.rival;
+  return e.rival ?? null;
 }
 
-/** Start decoding every sheet (called with preloadSprites). */
-export function preloadAnims() {
-  for (const e of ENTRIES) {
-    source(e, 1);
-    // build the Rival copy as soon as the atlas decodes, so the one-off recolour never lands mid-match
-    const img = e.img; if (!img) continue;
-    if (img.complete && img.naturalWidth) source(e, 2);
-    else img.addEventListener('load', () => source(e, 2), { once: true });
-  }
-}
+/** Start decoding every sheet (called with preloadSprites). Rival copies are made on first use. */
+export function preloadAnims() { for (const e of ENTRIES) source(e, 1); }
 
 export interface AnimDraw { img: CanvasImageSource; sx: number; sy: number; sw: number; sh: number; frame: number }
 /** The frame to draw for `type:clip` at time t, or null when the sheet is not available (use the still). */

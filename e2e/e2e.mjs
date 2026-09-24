@@ -90,6 +90,29 @@ check('Compiler built and auto-staffed; Code produced; Data harvested', eco.buil
   await page.waitForTimeout(300); const f1 = await grab(); await page.waitForTimeout(700); const f2 = await grab();
   let diff = 0; for (let i = 0; i < f1.v.length; i++) diff += Math.abs(f1.v[i] - f2.v[i]) > 24 ? 1 : 0;
   check('staffed Compiler plays its animated working loop (sprite pixels change over time)', f1.sum > 0 && diff > f1.v.length * 0.01, `${diff}/${f1.v.length} samples changed`);
+  // a Runner gathering at a well plays its harvest clip (the frames change while the simulation is paused)
+  const hb = await ev(() => { const k = window.__kk; const w = k.cs.game.world; let u;
+    for (let i = 0; i < 300 && !(u = w.entities.find(e => e.type === 'runner' && e.owner === 1 && e.order?.type === 'harvest' && e.order.phase === 'gather')); i++) k.step(1);
+    if (!u) return null; k.jump(u.x, u.y); k.publish(); const g = k.worldToScreen(u.x, u.y); return { x: g.x, y: g.y, z: k.cs.cam.z / k.engine.dpr() }; });
+  let hdiff = -1, hn = 0;
+  if (hb) {
+    const grabH = () => ev(b => { const c = document.getElementById('view'); const g = c.getContext('2d'); const d = c.width / innerWidth;
+      const img = g.getImageData(Math.round((b.x - b.z * 0.6) * d), Math.round((b.y - b.z * 1.3) * d), Math.round(b.z * 1.2 * d), Math.round(b.z * 1.4 * d)).data;
+      const v = []; for (let i = 0; i < img.length; i += 8) v.push(img[i] + img[i + 1] + img[i + 2]); return v; }, hb);
+    await page.waitForTimeout(300); const h1 = await grabH(); await page.waitForTimeout(450); const h2 = await grabH();
+    hdiff = 0; hn = h1.length; for (let i = 0; i < h1.length; i++) hdiff += Math.abs(h1[i] - h2[i]) > 24 ? 1 : 0;
+  }
+  check('a gathering Runner plays its harvest clip in the match', hdiff > hn * 0.01, `${hdiff}/${hn} samples changed`);
+  // the Rival Core hums with its red-shifted loop (the recolour is made on first sight, then pixels change)
+  const rb = await ev(() => { const k = window.__kk; const w = k.cs.game.world; const c = w.coreOf(2);
+    for (const p of w.players) p.explored.fill(1); w.visible[1].fill(1); k.jump(c.tx + 1.5, c.ty + 1.5); k.publish();
+    const g = k.worldToScreen(c.tx + 1.5, c.ty + 1.5); return { x: g.x, y: g.y, z: k.cs.cam.z / k.engine.dpr() }; });
+  const grabR = () => ev(b => { const c = document.getElementById('view'); const g = c.getContext('2d'); const d = c.width / innerWidth;
+    const img = g.getImageData(Math.round((b.x - b.z * 1.4) * d), Math.round((b.y - b.z * 2.2) * d), Math.round(b.z * 2.8 * d), Math.round(b.z * 2.2 * d)).data;
+    let red = 0, blue = 0; const v = []; for (let i = 0; i < img.length; i += 16) { v.push(img[i] + img[i + 1] + img[i + 2]); if (img[i] > img[i + 2] + 60) red++; if (img[i + 2] > img[i] + 60) blue++; } return { v, red, blue }; }, rb);
+  await page.waitForTimeout(500); const r1 = await grabR(); await page.waitForTimeout(700); const r2 = await grabR();
+  let rdiff = 0; for (let i = 0; i < r1.v.length; i++) rdiff += Math.abs(r1.v[i] - r2.v[i]) > 24 ? 1 : 0;
+  check('Rival Core plays its red-shifted working loop', r1.red > r1.blue && rdiff > r1.v.length * 0.01, `red ${r1.red} blue ${r1.blue}, ${rdiff}/${r1.v.length} samples changed`);
   await ev(() => { const k = window.__kk; k.cs.paused = false; k.publish(); });
 }
 
@@ -187,8 +210,9 @@ await page.click('#p-resume');
   const lab = async () => page.evaluate(() => [...document.querySelectorAll('.lab-item')].map(f => { const c = f.querySelector('canvas'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
     let lit = 0, red = 0, blue = 0; for (let i = 0; i < d.length; i += 16) { if (d[i + 3] > 0 && d[i] + d[i + 1] + d[i + 2] > 200) { lit++; if (d[i] > d[i + 2] + 40) red++; if (d[i + 2] > d[i] + 40) blue++; } }
     return { id: f.dataset.sheet, label: f.querySelector('.mono').textContent, lit, red, blue }; }));
-  await page.waitForTimeout(400); const l1 = await lab(); await page.waitForTimeout(600); const l2 = await lab();
-  check('Animation lab plays the Compiler working loop for both teams (frames advance; Rival copy red-shifted)', l1.length === 1 && l1[0].id === 'compiler:working' && l1[0].lit > 500 && l1[0].red > 50 && l1[0].blue > 50 && l1[0].label !== l2[0].label, JSON.stringify([l1[0], l2[0].label]));
+  await page.waitForTimeout(400); const l1 = await lab(); await page.waitForTimeout(450); const l2 = await lab();
+  const labOk = l1.length === 11 && l1.every((x, i) => x.lit > 100 && x.red > 10 && x.blue > 10 && x.label !== l2[i].label);
+  check('Animation lab plays all 11 clips (5 structure loops, 6 Runner clips) for both teams (frames advance; Rival copies red-shifted)', labOk, JSON.stringify(l1.map((x, i) => `${x.id} lit ${x.lit} red ${x.red} blue ${x.blue} ${x.label}→${l2[i].label}`)));
   await page.click('#c-back'); await settle(); await page.click('#p-resume'); await settle();
 }
 

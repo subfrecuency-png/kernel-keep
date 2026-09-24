@@ -1,0 +1,14 @@
+{
+ "type": "core",
+ "clip": "working",
+ "frames": 40,
+ "fps": 8,
+ "loop": true,
+ "cell": [
+  256,
+  258
+ ],
+ "cols": 8,
+ "maxBaseShiftPx": 0,
+ "source": "core.mp4"
+}

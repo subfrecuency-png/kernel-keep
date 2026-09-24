@@ -7,10 +7,10 @@ import { Game, stateHash } from '../sim/game.ts';
 import { saveGame, loadGame, SaveFile } from '../sim/save.ts';
 import { AIController } from '../sim/ai.ts';
 import { ClientState, COLORS } from './state.ts';
-import { render, renderMinimap, wallLine, pickAt, miniToWorld, unitFacing } from './render.ts';
+import { render, renderMinimap, wallLine, pickAt, miniToWorld, unitFacing, unitFacing8 } from './render.ts';
 import { proj, unproj, toU, toV, mapBounds } from './iso.ts';
 import { preloadSprites } from './sprites.ts';
-import { preloadAnims } from './anim.ts';
+import { preloadAnims, hasClip } from './anim.ts';
 import { PerfRecorder, PerfPhase, PerfResult, verdict, saveHistory } from './perftest.ts';
 import { loadSettings, saveSettings, defaultSettings, Settings } from './settings.ts';
 import { sfx, setAudio } from './audio.ts';
@@ -395,7 +395,7 @@ export class EngineHost {
           if (ev.type === 'absorbed') { cs.fx.push({ kind: 'ring', x: ev.x, y: ev.y, t: 0, life: 0.5, color: '#ffffff' }); break; }
           { // de-rez the sprite (presentation only): remember what died, where, and which way it faced
             const type = ev.kind === 'unit' ? (B.units[ev.type] ? ev.type : w.byId.get(ev.id)?.type) : ev.kind === 'building' ? ev.type : undefined;
-            if (type && (B.units[type] || (B.buildings[type] && !B.buildings[type].wall))) cs.fx.push({ kind: 'derez', x: ev.x, y: ev.y, t: 0, life: ev.kind === 'building' ? 1.1 : 0.7, color: COLORS[ev.owner]?.main ?? '#fff', type, owner: ev.owner, id: ev.id, face: unitFacing(ev.id) });
+            if (type && (B.units[type] || (B.buildings[type] && !B.buildings[type].wall))) cs.fx.push({ kind: 'derez', x: ev.x, y: ev.y, t: 0, life: ev.kind === 'building' ? 1.1 : hasClip(type, 'death') ? 1.5 : 0.7, color: COLORS[ev.owner]?.main ?? '#fff', type, owner: ev.owner, id: ev.id, face: unitFacing(ev.id), dir: unitFacing8(ev.id) });
           }
           cs.fx.push({ kind: 'burst', x: ev.x, y: ev.y, t: 0, life: ev.kind === 'building' ? 0.9 : 0.5, color: ev.kind === 'well' ? '#7cc7ff' : COLORS[ev.owner]?.main ?? '#fff' });
           if (ev.kind !== 'well') sfx.death();

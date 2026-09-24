@@ -1,0 +1,24 @@
+{
+ "type": "runner",
+ "clip": "death",
+ "frames": 10,
+ "fps": 10,
+ "loop": false,
+ "cell": [
+  128,
+  128
+ ],
+ "cols": 16,
+ "facings": [
+  "s",
+  "se",
+  "e",
+  "ne",
+  "n"
+ ],
+ "pivot": [
+  64,
+  112
+ ],
+ "standH": 64
+}

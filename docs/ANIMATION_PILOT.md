@@ -47,3 +47,58 @@ The plan estimated 2,800 credits per structure video; the real cost was **325**,
 | **C. Salvage the paid clips in Blender:** hand-built skeleton, automatic weights, neutral rest pose, then retarget the six clips | 0 | Time only; the outcome is uncertain on this mesh |
 
 Until one of these is chosen, programs keep the 0.3.1 motion (stride sway, recoil, lunge, spawn and derez effects) on their stills.
+
+---
+
+# Follow-up (0.3.4): options B and C, chosen by Ryan
+
+## B. Four more structure loops — Implemented, Tested
+
+| Structure | Loop plays when | Motion |
+|---|---|---|
+| Mining Rig | staffed (like the Compiler) | the drill arm pumps into the crystals; sparks rise |
+| Core | always, while it stands | the crystal core pulses; light runs down the seams |
+| Compute Node | always, while it stands | the fans spin; the chip pulses; the status lights blink |
+| Training Grid | only while it is training a program | a scan band sweeps the floor; the pylons pulse |
+
+Every loop is 40 frames at 8 fps, cut with `tools/anim/structure_loop.py`. The base shifted 0 px in all four. Each loop overlays its still exactly (aspect within 2%, which is unit-tested). The Rival copies are now recoloured **on first sight**, not at load, so memory is only spent for structure types the Rival actually has. Contact sheet: `docs/anim-pilot/structure-loops-contact.webp`.
+
+**Credits:** 4 × 325 = **1,300**, checked with `simulate_cost` first. **Pilot total: 10,905** (the cap was 11,000). The account has **230** left.
+
+## C. Salvage of the paid Runner clips — partly; the Runner now animates
+
+**1. The rig was rescued.** `tools/anim/neutralize_rig.py` does the following:
+- swings every bone of the Meshy rig onto a neutral A-pose;
+- re-chains the joints;
+- bakes the mesh into that pose and makes it the new rest pose.
+
+The Runner now stands upright in all facings.
+
+**2. The paid motions could not be recovered.** The script's second step retargets each clip onto the neutral rig, on the assumption that Meshy carried the rest-pose offset along. The result stood upright but moved wrongly:
+- the "idle" turns the torso 90°;
+- the carry-walk barely moves the legs.
+
+Meshy's clip data does not follow a convention that can be inverted reliably. The six paid clips therefore stay unused.
+
+**3. The clips were keyed by hand instead.** `tools/anim/runner_procedural.py` keys six clips on the rescued rig from a few poses each, all in the Runner's own body frame:
+- **idle:** 8 frames, 6 fps;
+- **walk:** 8 frames, driven by distance, so the feet don't slide;
+- **harvest:** 8 frames, 8 fps;
+- **build:** 8 frames, 10 fps, the tool arm hammering;
+- **attack:** 6 frames, synced to the cooldown, with the impact on frame 4;
+- **death:** 10 frames, falls backwards, then de-rezzes.
+
+Frames are rendered in 5 facings; SW, W and NW are mirrored. They are packed into 128 px cells with pivot (64, 112) by `tools/anim/pack_program.py`. The six atlases total 0.7 MB. Contact sheet: `docs/anim-pilot/runner-clips-contact.webp`.
+
+**In the game:**
+- **Facing and clip choice:** the Runner turns 8 ways, toward its target while fighting and along its path otherwise, and picks its clip from its real order.
+- **Fallback to the still:** a suspended or forked Runner, or one that is still materialising, uses the still image.
+- **Death:** the fall is followed by a glitch fade.
+- **Other roles:** they keep their stills; no frames exist for them yet.
+
+**Honest limits:**
+- The animation is procedural, not motion-captured.
+- *Harvest* reads weakly from the front facings: the crouch is subtle at 48–60 px.
+- The auto-rig's right knee sits high, so the right leg bends less than the left.
+
+These are good enough for a prototype. For release-grade motion, re-source the model from an A-pose turnaround (option A).

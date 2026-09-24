@@ -1,0 +1,25 @@
+{
+ "type": "runner",
+ "clip": "attack",
+ "frames": 6,
+ "fps": 10,
+ "loop": false,
+ "cell": [
+  128,
+  128
+ ],
+ "cols": 16,
+ "facings": [
+  "s",
+  "se",
+  "e",
+  "ne",
+  "n"
+ ],
+ "pivot": [
+  64,
+  112
+ ],
+ "fire": 4,
+ "standH": 64
+}
