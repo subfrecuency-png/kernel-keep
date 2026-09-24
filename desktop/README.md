@@ -1,6 +1,6 @@
 # Optional desktop shell (Tauri 2)
 
-**Status:** Linux build Tested (0.3.2). macOS is still untested and has no signed or notarized build.
+**Status:** Linux build Tested (0.3.2); macOS app built on the Air (0.3.4). No notarized build.
 
 The default way to play is still to open `dist/kernel-keep.html` in a browser, offline. This folder is an **optional** native window around that same build. It was adapted from the Kernel Keep Master v0.2 kit.
 
@@ -15,17 +15,20 @@ The default way to play is still to open `dist/kernel-keep.html` in a browser, o
 
 - `productName` is Kernel Keep. `frontendDist` is `../../dist`, and it is embedded into the binary at compile time, so **rebuild the web build first**: `npm run build`.
 - It has no plugins and an empty capability set: no filesystem, shell, HTTP or updater access. Saves live in the WebView's localStorage.
-- `bundle.active` is false. Signing is ad-hoc (`"-"`). There is no Apple Developer enrollment, no notarization and no distribution.
+- `bundle.active` is true with the `app` target only. Signing is ad-hoc (`"-"`). There is no Apple Developer enrollment, no notarization and no distribution.
 - The `custom-protocol` cargo feature serves the embedded files. Plain `cargo build` without it expects a dev server.
 
-## Try it on the Mac (untested there; the tools are free)
+## Build the Mac app (Tested on Ryan's MacBook Air, macOS 26, 2026-09-23)
+
+Needs the Xcode Command Line Tools (`xcode-select --install`), Rust (https://rustup.rs) and Node. Nothing is installed
+globally: the Tauri CLI is fetched by `npx`.
 
 ```sh
-# once: install the Xcode Command Line Tools (xcode-select --install) and Rust (https://rustup.rs)
-npm run build
+npm run build                      # only if you changed the game; dist/ is committed
 cd desktop/src-tauri
-cargo build --release --features custom-protocol
-./target/release/kernel-keep
+npx --yes @tauri-apps/cli@2 build --bundles app --config '{"build":{"beforeBuildCommand":""}}'
 ```
 
-Optional: to get a `Kernel Keep.app`, install the Tauri CLI (`cargo install tauri-cli --version "^2"`), set `"bundle": { "active": true, "targets": ["app"], … }`, then run `cargo tauri build`. An ad-hoc-signed app runs only on the Mac that built it; Gatekeeper warns about it elsewhere.
+The app lands in `desktop/src-tauri/target/release/bundle/macos/Kernel Keep.app`. Double-click it, or drag it into
+Applications. It is ad-hoc signed (no Apple Developer account), so on another Mac Gatekeeper will ask: right-click the
+app, choose **Open**, then **Open** again. Saves stay in the app's own WebView storage, separate from the browser's.

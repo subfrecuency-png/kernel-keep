@@ -3,3 +3,6 @@ node_modules/
 !docs/test-logs/*.log
 desktop/src-tauri/target/
 desktop/src-tauri/gen/
+
+# local desktop build (see desktop/README.md)
+*.app/

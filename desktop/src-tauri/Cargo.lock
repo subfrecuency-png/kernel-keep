@@ -1662,7 +1662,7 @@ dependencies = [
 
 [[package]]
 name = "kernel-keep"
-version = "0.2.0"
+version = "0.3.4"
 dependencies = [
  "tauri",
  "tauri-build",
