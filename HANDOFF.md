@@ -1,3 +1,12 @@
+# HANDOFF — 0.3.5 (2026-09-23): Mac and trackpad controls
+
+- **Give orders with a left-click.** This is the default on a Mac and can be changed in Settings. With programs selected, clicking the ground moves them, clicking an enemy attacks, and clicking a Data well harvests. Clicking one of your structures builds, repairs or staffs it when that applies; otherwise it selects the structure. Clicking one of your own programs selects it. Esc deselects.
+- **Ctrl+click is a right-click everywhere,** including the minimap.
+- **Trackpad gestures** (default on a Mac): two-finger scroll moves the camera and pinch zooms. A mouse wheel still zooms.
+- The How-to screen's mouse line follows whichever scheme is chosen.
+
+---
+
 # HANDOFF — session 7 (2026-09-23): 0.3.4 — animation follow-up (B + C)
 
 Committed on branch `anim-pilot`. Details and honest limits are in `docs/ANIMATION_PILOT.md` (follow-up section).

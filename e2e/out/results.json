@@ -1,5 +1,5 @@
 {
- "date": "2026-09-24T01:51:42.827Z",
+ "date": "2026-09-24T05:57:04.784Z",
  "results": [
   {
    "name": "title screen renders with New match button",
@@ -54,17 +54,17 @@
   {
    "name": "staffed Compiler plays its animated working loop (sprite pixels change over time)",
    "ok": true,
-   "detail": "568/1702 samples changed"
+   "detail": "180/1702 samples changed"
   },
   {
    "name": "a gathering Runner plays its harvest clip in the match",
    "ok": true,
-   "detail": "214/1760 samples changed"
+   "detail": "247/1760 samples changed"
   },
   {
    "name": "Rival Core plays its red-shifted working loop",
    "ok": true,
-   "detail": "red 877 blue 0, 142/3258 samples changed"
+   "detail": "red 875 blue 0, 174/3258 samples changed"
   },
   {
    "name": "Q queues a Runner at the Core",
@@ -74,17 +74,17 @@
   {
    "name": "clicking the queue item cancels it with a full refund",
    "ok": true,
-   "detail": "code 143.7→143.6"
+   "detail": "code 143.8→143.7"
   },
   {
    "name": "P pauses the simulation",
    "ok": true,
-   "detail": "1637→1637"
+   "detail": "1635→1635"
   },
   {
    "name": "P again resumes it",
    "ok": true,
-   "detail": "1637→1644"
+   "detail": "1635→1642"
   },
   {
    "name": "Esc opens the pause menu",
@@ -94,7 +94,7 @@
   {
    "name": "Quick save + Quick load restores the exact state (hash)",
    "ok": true,
-   "detail": "19bc4d0d vs 19bc4d0d"
+   "detail": "baf41951 vs baf41951"
   },
   {
    "name": "UI scale setting applies",
@@ -167,9 +167,29 @@
    "detail": "{\"n\":36,\"all\":36,\"ok\":true}"
   },
   {
+   "name": "left-click-to-command: clicking open ground moves the selected Runner there",
+   "ok": true,
+   "detail": "order move, 0.03 tiles from the goal after 12 s"
+  },
+  {
+   "name": "Esc deselects first in left-click mode (no pause menu)",
+   "ok": true,
+   "detail": "selected 1 → 0, pause menu false"
+  },
+  {
+   "name": "Ctrl+click works as right-click (Mac): the Runner moves and stays selected",
+   "ok": true,
+   "detail": "0.03 tiles, still selected true"
+  },
+  {
+   "name": "trackpad: two-finger scroll pans, pinch (Ctrl+wheel) zooms in, a mouse-wheel notch still zooms",
+   "ok": true,
+   "detail": "[[-46.1,15.8,46],[-45.2,16.3,46],[-39.9,19.6,74.3],[-41,18.9,66.4]]"
+  },
+  {
    "name": "battle with 100+ spawned combat units renders (container, software GPU)",
    "ok": true,
-   "detail": "{\"fps\":36.39224943444474,\"avgStep\":2.2716019510901266,\"units\":158}"
+   "detail": "{\"fps\":55.085579382254686,\"avgStep\":1.9897858623395959,\"units\":159}"
   },
   {
    "name": "destroying the Rival Core shows VICTORY",
@@ -179,7 +199,7 @@
   {
    "name": "Play again restarts a fresh match",
    "ok": true,
-   "detail": "{\"tick\":4,\"over\":false}"
+   "detail": "{\"tick\":3,\"over\":false}"
   },
   {
    "name": "losing your Core shows DEFEAT",
@@ -189,7 +209,7 @@
   {
    "name": "performance test runs both phases and reports percentiles",
    "ok": true,
-   "detail": "{\"phases\":[{\"units\":88,\"fps\":44.2,\"frames\":67,\"p95\":33.4},{\"units\":204,\"fps\":26.2,\"frames\":41,\"p95\":50}],\"verdict\":\"Heavy: about 26 fps in the big fight. This is below the 30 fps fallback target — copy the results so the scene can be tuned for this machine.\"}"
+   "detail": "{\"phases\":[{\"units\":88,\"fps\":57.4,\"frames\":87,\"p95\":16.8},{\"units\":203,\"fps\":39.6,\"frames\":60,\"p95\":33.4}],\"verdict\":\"Playable: about 40 fps in the big fight. Try UI scale 1.0, a smaller window, or Reduced flashing if it feels heavy.\"}"
   },
   {
    "name": "same seed, 3000 ticks: Node build and browser bundle produce the same state hash",
@@ -208,9 +228,9 @@
   }
  ],
  "perf": {
-  "fps": 36.39224943444474,
-  "avgStep": 2.2716019510901266,
-  "units": 158
+  "fps": 55.085579382254686,
+  "avgStep": 1.9897858623395959,
+  "units": 159
  },
  "errors": []
 }

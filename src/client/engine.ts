@@ -79,6 +79,7 @@ export class EngineHost {
   // input
   private held = new Set<string>();
   private dragStart: { sx: number; sy: number } | null = null;
+  private ctrlClick = false;
   private midDrag: { sx: number; sy: number; cx: number; cy: number } | null = null;
   private miniDrag = false;
   private lastClick = { t: 0, id: 0 };
@@ -241,8 +242,9 @@ export class EngineHost {
     el.addEventListener('contextmenu', e => e.preventDefault());
     el.addEventListener('mousedown', e => {
       if (!this.cs) return; const p = toWorld(e);
-      if (e.button === 0) { this.miniDrag = true; this.jump(p.x, p.y); }
-      if (e.button === 2) { const us = this.selectedOwn().filter(u => u.kind === 'unit'); if (us.length) { this.issue({ t: this.cs.mode === 'attackMove' ? 'attackMove' : 'move', ids: us.map(u => u.id), x: p.x, y: p.y }); this.cs.mode = undefined; } }
+      const mb = e.button === 0 && e.ctrlKey ? 2 : e.button;
+      if (mb === 0) { this.miniDrag = true; this.jump(p.x, p.y); }
+      if (mb === 2) { const us = this.selectedOwn().filter(u => u.kind === 'unit'); if (us.length) { this.issue({ t: this.cs.mode === 'attackMove' ? 'attackMove' : 'move', ids: us.map(u => u.id), x: p.x, y: p.y }); this.cs.mode = undefined; } }
     });
     el.addEventListener('mousemove', e => { if (this.miniDrag && this.cs) { const p = toWorld(e); this.jump(p.x, p.y); } });
   }
@@ -466,8 +468,10 @@ export class EngineHost {
     canvas.addEventListener('mouseleave', () => { if (this.cs) this.cs.mouse.inView = false; });
     canvas.addEventListener('mousedown', e => {
       const cs = this.cs; if (!cs || this.modalOpen()) return;
-      if (e.button === 1) { this.midDrag = { sx: e.clientX, sy: e.clientY, cx: cs.cam.x, cy: cs.cam.y }; e.preventDefault(); return; }
-      if (e.button === 0) {
+      const button = e.button === 0 && e.ctrlKey ? 2 : e.button; // Ctrl+click is the Mac right-click
+      if (button === 2 && e.button === 0) this.ctrlClick = true;
+      if (button === 1) { this.midDrag = { sx: e.clientX, sy: e.clientY, cx: cs.cam.x, cy: cs.cam.y }; e.preventDefault(); return; }
+      if (button === 0) {
         if (cs.placing) {
           if (B.buildings[cs.placing.type].wall) { cs.placing.dragStart = { tx: cs.placing.tx, ty: cs.placing.ty }; return; }
           this.placeAt(cs.placing.tx, cs.placing.ty, e.shiftKey); return;
@@ -475,7 +479,7 @@ export class EngineHost {
         if (cs.mode === 'attackMove') { const p = this.screenToWorld(e.clientX, e.clientY); this.attackMoveTo(p.x, p.y); if (!e.shiftKey) cs.mode = undefined; this.invalidate(); return; }
         this.dragStart = { sx: e.clientX, sy: e.clientY };
       }
-      if (e.button === 2) {
+      if (button === 2) {
         if (cs.placing || cs.mode) { cs.placing = undefined; cs.mode = undefined; this.invalidate(); return; }
         this.rightClick(e.clientX, e.clientY);
       }
@@ -483,8 +487,16 @@ export class EngineHost {
     canvas.addEventListener('wheel', e => {
       const cs = this.cs; if (!cs) return; e.preventDefault();
       const d = this.dpr(); const px = e.clientX * d, py = e.clientY * d;
+      // Trackpads send many small pixel deltas (and a pinch arrives as Ctrl+wheel); a mouse wheel sends line
+      // steps or large whole-number steps. With trackpad gestures on, scrolling pans and pinching zooms.
+      const pinch = e.ctrlKey;
+      const wheelLike = e.deltaMode !== 0 || (e.deltaX === 0 && Math.abs(e.deltaY) >= 50 && Number.isInteger(e.deltaY));
+      if (this.settings.trackpad && !pinch && !wheelLike) {
+        cs.cam.x += e.deltaX * d / cs.cam.z; cs.cam.y += e.deltaY * d / cs.cam.z; return;
+      }
       const u = cs.cam.x + px / cs.cam.z, v = cs.cam.y + py / cs.cam.z; // keep the iso point under the cursor fixed
-      cs.cam.z = Math.max(18, Math.min(110, cs.cam.z * (e.deltaY < 0 ? 1.12 : 1 / 1.12)));
+      const f = pinch ? Math.exp(-e.deltaY * 0.012) : (e.deltaY < 0 ? 1.12 : 1 / 1.12);
+      cs.cam.z = Math.max(18, Math.min(110, cs.cam.z * f));
       cs.cam.x = u - px / cs.cam.z; cs.cam.y = v - py / cs.cam.z;
     }, { passive: false });
   }
@@ -493,6 +505,7 @@ export class EngineHost {
     const cs = this.cs; if (!cs) return;
     if (e.button === 1) this.midDrag = null;
     if (e.button !== 0) return;
+    if (this.ctrlClick) { this.ctrlClick = false; return; }
     if (cs.placing?.dragStart) {
       const tiles = wallLine(cs.placing.dragStart, { tx: cs.placing.tx, ty: cs.placing.ty });
       const builders = this.selectedOwn().filter(u => u.type === 'runner').map(u => u.id);
@@ -519,6 +532,7 @@ export class EngineHost {
       if (chosen.length) sfx.click();
     } else {
       const hit = this.pick(e.clientX, e.clientY);
+      if (!add && this.settings.orderClick === 'left' && this.leftClickOrders(hit, e.clientX, e.clientY)) { this.dragStart = null; this.rightClick(e.clientX, e.clientY); this.publish(); return; }
       const now = performance.now();
       if (hit && this.lastClick.id === hit.id && now - this.lastClick.t < 350 && hit.owner === cs.me) {
         const cw = this.canvas!.width, ch = this.canvas!.height;
@@ -531,6 +545,21 @@ export class EngineHost {
     }
     this.dragStart = null;
     this.publish();
+  }
+  /** Left-click-to-command: with own programs selected, a click that is not on one of your own programs gives
+   *  the smart order (move, attack, harvest, or build/repair/operate on your structure) instead of selecting. */
+  private leftClickOrders(hit: Entity | undefined, sx: number, sy: number): boolean {
+    const cs = this.cs!; const units = this.selectedOwn().filter(e => e.kind === 'unit'); if (!units.length) return false;
+    if (!hit) return true;
+    if (hit.kind === 'unit') return hit.owner !== cs.me;
+    if (hit.kind === 'well' || hit.owner !== cs.me) return true;
+    // your own structure: runners get the smart order when it does something (build, repair, staff)
+    const bd = B.buildings[hit.type];
+    if (units.some(u => u.type === 'runner') && (!hit.built || hit.hp < hit.maxHp || (!!bd.operator && !cs.game.world.operatorPresent(hit)))) return true;
+    // otherwise select it — but only when the click is on its footprint; a click on the part of a tall sprite that
+    // hangs over open ground behind it is a move there
+    const g = this.screenToWorld(sx, sy);
+    return !(g.x >= hit.tx! && g.x < hit.tx! + hit.w! && g.y >= hit.ty! && g.y < hit.ty! + hit.h!);
   }
   private rightClick(sx: number, sy: number) {
     const cs = this.cs!; const own = this.selectedOwn();
@@ -654,6 +683,8 @@ export class EngineHost {
     this.held.add(key.length === 1 ? key : e.key);
     if (e.key === 'Escape') {
       if (cs.placing || cs.mode) this.cancelMode();
+      // left-click-to-command has no "click empty ground to deselect", so Esc deselects first
+      else if (!this.modalOpen() && this.settings.orderClick === 'left' && cs.sel.size) { cs.sel.clear(); this.publish(); }
       else if (!this.modalOpen()) this.openModal('pause');
       else if (!cs.over) this.back();
       return;

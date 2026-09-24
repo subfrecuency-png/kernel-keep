@@ -1,6 +1,6 @@
 {
   "name": "kernel-keep",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "private": true,
   "description": "Kernel Keep (provisional title) — offline single-player fortress RTS prototype in a luminous digital world.",
   "type": "module",

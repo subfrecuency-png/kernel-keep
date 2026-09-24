@@ -1,6 +1,11 @@
 // Player settings: key bindings, UI scale, reduced flashing, audio. Stored per browser; safe if storage is unavailable.
 export interface Settings {
   uiScale: number; reducedFlash: boolean; edgeScroll: boolean; volume: number; muted: boolean; showHints: boolean;
+  /** 'left': a left-click on the ground, an enemy or a well with programs selected gives the order (right-click
+   *  and Ctrl+click still work) — the natural scheme on a Mac trackpad. 'right': classic RTS, left-click only selects. */
+  orderClick: 'left' | 'right';
+  /** Two-finger scroll pans the camera and pinch zooms (a plain mouse wheel still zooms). */
+  trackpad: boolean;
   keys: Record<string, string>;
 }
 
@@ -42,7 +47,8 @@ const KEY = 'kernelkeep.settings.v1';
 export function defaultSettings(): Settings {
   const keys: Record<string, string> = {};
   for (const a of ACTIONS) keys[a.id] = a.def;
-  return { uiScale: 1, reducedFlash: false, edgeScroll: true, volume: 0.5, muted: false, showHints: true, keys };
+  const mac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+  return { uiScale: 1, reducedFlash: false, edgeScroll: true, volume: 0.5, muted: false, showHints: true, orderClick: mac ? 'left' : 'right', trackpad: mac, keys };
 }
 
 export function loadSettings(): Settings {

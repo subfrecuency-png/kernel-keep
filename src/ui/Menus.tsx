@@ -51,11 +51,11 @@ export function Title({ snap }: { snap: Snapshot }) {
         <button id="t-perf" onClick={() => engine.runPerfTest()} title="Plays a fixed 40-second battle and measures frame and simulation times on this machine">Performance test</button>
       </div>
     </div>
-    <footer className="title-footer"><span><i className="status-dot" /> OFFLINE · NO ACCOUNT · HASH CREDITS ARE FICTIONAL AND MATCH-LOCAL</span><span>MERIDIAN DIVIDE · PROTOTYPE 0.3.4 · PROVISIONAL TITLE</span></footer>
+    <footer className="title-footer"><span><i className="status-dot" /> OFFLINE · NO ACCOUNT · HASH CREDITS ARE FICTIONAL AND MATCH-LOCAL</span><span>MERIDIAN DIVIDE · PROTOTYPE 0.3.5 · PROVISIONAL TITLE</span></footer>
   </main>;
 }
 
-export function HowTo() {
+export function HowTo({ snap }: { snap: Snapshot }) {
   return <Card label="How to play" wide><p className="eyebrow">FIELD MANUAL</p><h2>How to play</h2>
     <div className="legend">
       <b>Goal</b><span>Destroy the Rival Core (east, across the glowing rift). Lose your Core and you lose. Your programs are cyan; the Rival's are crimson.</span>
@@ -67,7 +67,9 @@ export function HowTo() {
       <b>Walls</b><span>Firewalls, Gates and Towers are hardened: only Breakers hurt them properly. Enemies never pass your gates.</span>
       <b>Waves</b><span>When the Rival masses an attack you get a warning with an alarm, a red marker and a minimap pulse (click the alert to look). Use the time to fortify the pass.</span>
       <b>Fork</b><span>Commander power: temporary copies of selected fighters for 25s. Costs 60 Hash, surges Compute, forks die with their originals.</span>
-      <b>Mouse</b><span>Left-click/drag select · right-click = smart order · wheel zoom · middle-drag pan · minimap click / right-click.</span>
+      <b>Mouse</b><span>{snap.settings.orderClick === 'left'
+        ? 'Click a program (or drag a box) to select it · then click the ground to move, an enemy to attack, a Data well to harvest · Esc deselects · right-click or Ctrl+click also orders'
+        : 'Left-click/drag select · right-click (or Ctrl+click) = smart order'}{snap.settings.trackpad ? ' · two-finger scroll pans, pinch zooms' : ' · wheel zoom · middle-drag pan'} · arrow keys pan · minimap click jumps.</span>
       <b>Keys</b><span>A attack-move · S stop · H hold · F fork · Z suspend · O switch/gate · Del decompile · Ctrl+1–9 groups · P pause · Space last alert · . idle Runner · Home Core · F1 controls.</span>
     </div>
     <div className="row"><button id="h-back" className="primary" onClick={() => engine.back()}>Back</button></div></Card>;
@@ -86,6 +88,9 @@ export function SettingsCard({ snap }: { snap: Snapshot }) {
   return <Card label="Settings"><p className="eyebrow">LOCAL PREFERENCES</p><h2>Settings</h2>
     <label className="set">Interface scale <input id="s-scale" type="range" min={0.8} max={1.6} step={0.05} value={s.uiScale} onChange={e => engine.updateSettings({ uiScale: Number(e.target.value) })} /><output>{s.uiScale.toFixed(2)}×</output></label>
     <label className="set"><input id="s-flash" type="checkbox" checked={s.reducedFlash} onChange={e => engine.updateSettings({ reducedFlash: e.target.checked })} /> Reduced flashing and motion (also follows your OS setting on first run)</label>
+    <label className="set">Give orders with <select id="s-order" value={s.orderClick} onChange={e => engine.updateSettings({ orderClick: e.target.value as 'left' | 'right' })}>
+      <option value="left">left-click (Mac / trackpad friendly)</option><option value="right">right-click (classic RTS)</option></select></label>
+    <label className="set"><input id="s-trackpad" type="checkbox" checked={s.trackpad} onChange={e => engine.updateSettings({ trackpad: e.target.checked })} /> Trackpad gestures: two-finger scroll moves the camera, pinch zooms</label>
     <label className="set"><input id="s-edge" type="checkbox" checked={s.edgeScroll} onChange={e => engine.updateSettings({ edgeScroll: e.target.checked })} /> Edge-of-screen camera scrolling</label>
     <label className="set"><input id="s-hints" type="checkbox" checked={s.showHints} onChange={e => engine.updateSettings({ showHints: e.target.checked })} /> Show objective hints</label>
     <label className="set">Volume <input id="s-vol" type="range" min={0} max={1} step={0.05} value={s.volume} onChange={e => engine.updateSettings({ volume: Number(e.target.value) })} /> <input id="s-mute" type="checkbox" checked={s.muted} onChange={e => engine.updateSettings({ muted: e.target.checked })} /> mute</label>

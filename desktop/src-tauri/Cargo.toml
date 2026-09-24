@@ -1,6 +1,6 @@
 [package]
 name = "kernel-keep"
-version = "0.3.4"
+version = "0.3.5"
 description = "Kernel Keep — optional native window around the offline browser build"
 edition = "2021"
 license = "MIT"

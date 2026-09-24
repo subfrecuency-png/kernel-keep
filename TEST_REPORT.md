@@ -1,5 +1,17 @@
 # TEST_REPORT — Kernel Keep
 
+## 0.3.5 controls for Mac and trackpads (branch `anim-pilot`), 2026-09-23
+
+This was prompted by Ryan's report: "movement is difficult and clicking on things doesn't work when it comes to moving the characters." On a Mac trackpad there is often no right-click, and the game only gave orders with a right-click. Scrolling also zoomed the camera instead of panning it.
+
+| Check | Result |
+|---|---|
+| `npm test` | 41 / 41 pass |
+| `npm run e2e` | **45 / 45 pass**. New checks: left-click-to-command moves a selected Runner onto open ground (it arrives within 0.03 tiles); Esc deselects in that mode; Ctrl+click acts as right-click; two-finger scroll pans, pinch zooms, and a mouse-wheel notch still zooms. |
+| Simulation hash | `adb5621a`, unchanged. These are input-only changes. |
+
+---
+
 ## 0.3.4 animation follow-up B + C (branch `anim-pilot`), 2026-09-23
 
 This build uses the same container. **Nothing was run on the Air.**

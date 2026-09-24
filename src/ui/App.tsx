@@ -14,7 +14,7 @@ export function App() {
     <canvas id="view" ref={canvas} aria-label="Battlefield" />
     {m && <Hud m={m} hints={snap.settings.showHints} />}
     {!m && snap.modalStack.includes('title') && <Title snap={snap} />}
-    {snap.modal === 'howto' && <HowTo />}
+    {snap.modal === 'howto' && <HowTo snap={snap} />}
     {snap.modal === 'pause' && m && <Pause snap={snap} />}
     {snap.modal === 'settings' && <SettingsCard snap={snap} />}
     {snap.modal === 'controls' && <Controls snap={snap} />}

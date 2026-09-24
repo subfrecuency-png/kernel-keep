@@ -241,6 +241,44 @@ await page.click('#p-resume');
   await ev(() => { window.__kk.cs.sel.clear(); window.__kk.publish(); });
 }
 
+// ---- Mac / trackpad controls: left-click orders, Ctrl+click = right-click, two-finger pan and pinch zoom ----
+{
+  const setup = () => ev(() => { const k = window.__kk; const w = k.cs.game.world; k.cs.paused = false;
+    const r = w.entities.find(e => e.type === 'runner' && e.owner === 1 && !e.dead);
+    k.issue({ t: 'stop', ids: [r.id] }); k.step(2); k.select([r.id]); k.jump(r.x, r.y);
+    // an open tile about 4 tiles away
+    let goal = null;
+    for (let d = 4; d < 12 && !goal; d++) for (const [dx, dy] of [[d, 0], [0, d], [-d, 0], [0, -d], [d, d], [-d, -d]]) {
+      const tx = Math.floor(r.x + dx), ty = Math.floor(r.y + dy);
+      if (w.nav.passableXY(tx, ty, 1) && !w.entities.some(e => !e.dead && Math.hypot(e.x - tx - 0.5, e.y - ty - 0.5) < 1.2)) { goal = { x: tx + 0.5, y: ty + 0.5 }; break; }
+    }
+    k.publish(); const sc = k.worldToScreen(goal.x, goal.y); return { id: r.id, goal, sx: sc.x, sy: sc.y }; });
+  const arrived = t => ev(t => { const k = window.__kk; k.step(120); const u = k.cs.game.world.get(t.id); return { d: Math.hypot(u.x - t.goal.x, u.y - t.goal.y), order: u.order?.type }; }, t);
+  await ev(() => window.__kk.engine.updateSettings({ orderClick: 'left', trackpad: true })); await settle();
+  let t = await setup(); await settle();
+  await page.mouse.click(t.sx, t.sy);
+  const ord = await ev(id => window.__kk.cs.game.world.get(id).order?.type, t.id);
+  let a = await arrived(t);
+  check('left-click-to-command: clicking open ground moves the selected Runner there', ord === 'move' && a.d < 1.5, `order ${ord}, ${a.d.toFixed(2)} tiles from the goal after 12 s`);
+  const selKept = await ev(() => window.__kk.cs.sel.size);
+  await page.keyboard.press('Escape'); const selAfter = await ev(() => window.__kk.cs.sel.size); const paused = await page.isVisible('#p-save');
+  check('Esc deselects first in left-click mode (no pause menu)', selKept === 1 && selAfter === 0 && !paused, `selected ${selKept} → ${selAfter}, pause menu ${paused}`);
+  await ev(() => window.__kk.engine.updateSettings({ orderClick: 'right' }));
+  t = await setup(); await settle();
+  await page.keyboard.down('Control'); await page.mouse.click(t.sx, t.sy); await page.keyboard.up('Control');
+  a = await arrived(t); const stillSel = await ev(id => window.__kk.cs.sel.has(id), t.id);
+  check('Ctrl+click works as right-click (Mac): the Runner moves and stays selected', a.d < 1.5 && stillSel, `${a.d.toFixed(2)} tiles, still selected ${stillSel}`);
+  const c0 = await ev(() => ({ ...window.__kk.cs.cam }));
+  await page.mouse.move(640, 400); await page.mouse.wheel(37.5, 21.25); await settle();
+  const c1 = await ev(() => ({ ...window.__kk.cs.cam }));
+  await page.keyboard.down('Control'); await page.mouse.wheel(0, -40); await page.keyboard.up('Control'); await settle();
+  const c2 = await ev(() => ({ ...window.__kk.cs.cam }));
+  await page.mouse.wheel(0, 100); await settle(); const c3 = await ev(() => ({ ...window.__kk.cs.cam }));
+  check('trackpad: two-finger scroll pans, pinch (Ctrl+wheel) zooms in, a mouse-wheel notch still zooms',
+    c1.z === c0.z && c1.x > c0.x && c1.y > c0.y && c2.z > c1.z && c3.z < c2.z, JSON.stringify([c0, c1, c2, c3].map(c => [+c.x.toFixed(1), +c.y.toFixed(1), +c.z.toFixed(1)])));
+  await ev(() => { const k = window.__kk; k.engine.updateSettings({ orderClick: 'right', trackpad: false }); k.select([]); });
+}
+
 // ---- battle + performance sample ----
 await ev(() => {
   const k = window.__kk; const w = k.cs.game.world; const types = ['bulwark', 'lancer', 'lancer', 'patcher', 'breaker', 'ping'];
