@@ -13,6 +13,8 @@ const sq = (v: number) => v * v;
 export interface AIState {
   pid: number; difficulty: string;
   nextWaveTick: number; waveSize: number; attacking: boolean; attackIds: number[]; launched: number;
+  /** nextWaveTick value the defender has already been warned about. */
+  warnedFor?: number;
   compIdx: number; scoutId: number; scoutPhase: number; rigsPaused: number[];
   /** Optional personality overrides (used by the economy simulation and future factions). */
   plan?: [string, number][]; comp?: string[]; noAttack?: boolean; noMilitary?: boolean;
@@ -26,6 +28,9 @@ const PLAN: [string, number][] = [
   ['rig', 2], ['tower', 1], ['node', 2], ['rig', 3], ['bank', 3], ['compiler', 3], ['tower', 2], ['bank', 4], ['cache', 1],
 ];
 const COMP = ['ping', 'bulwark', 'lancer', 'lancer', 'bulwark', 'lancer', 'patcher', 'breaker', 'lancer', 'bulwark', 'breaker', 'lancer'];
+
+/** Seconds of warning the defender gets before a Rival wave is due. */
+export const WARN_SEC = 30;
 
 export class AIController {
   s: AIState;
@@ -182,7 +187,17 @@ export class AIController {
     if (!s.attacking && !s.noAttack) {
       const avail = fighters.filter(u => u.type !== 'ping');
       const capped = memFree < 2 && avail.length >= Math.ceil(s.waveSize * 0.6);
+      // Telegraph (by design, like They Are Billions' wave horn): from 30 s before a wave is due, once half of it
+      // is assembled, the defender is warned; a second alert fires when it actually launches. Presentation-level fairness aid; it never changes what the AI does.
+      const foe = pid === 1 ? 2 : 1;
+      const ready = avail.length >= Math.ceil(s.waveSize * 0.5) || capped;
+      if (ready && s.warnedFor !== s.nextWaveTick && w.tick >= s.nextWaveTick - WARN_SEC * B.tickRate && avail.length) {
+        s.warnedFor = s.nextWaveTick;
+        const cx = avail.reduce((a, u) => a + u.x, 0) / avail.length, cy = avail.reduce((a, u) => a + u.y, 0) / avail.length;
+        w.alert(foe, 'waveWarn', `Rival forces massing (${avail.length} of about ${s.waveSize} programs) — an attack is coming soon. Fortify the pass.`, 'danger', cx, cy, 20);
+      }
       if (w.tick >= s.nextWaveTick && (avail.length >= s.waveSize || capped) && !underAttack) {
+        w.alert(foe, 'waveLaunch', `Rival wave launched: ${avail.length} programs are moving on your base.`, 'danger', undefined, undefined, 20);
         s.attacking = true; s.attackIds = avail.map(u => u.id); s.launched = avail.length;
         s.nextWaveTick = w.tick + d.waveIntervalSec * B.tickRate; s.waveSize += d.waveGrowth;
         cmd({ t: 'attackMove', ids: s.attackIds, x: enemyCore.x, y: enemyCore.y });

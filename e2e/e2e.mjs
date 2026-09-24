@@ -225,6 +225,15 @@ await ev(() => { const w = window.__kk.cs.game.world; w.kill(w.coreOf(1)); });
 await page.waitForTimeout(500);
 check('losing your Core shows DEFEAT', /DEFEAT/.test(await page.textContent('#modalCard')));
 
+// ---- one-click performance test (kit docs/04 measurement script), shortened for CI ----
+{
+  await ev(() => { window.__kk.engine.closeModals(); window.__kk.perfTest(1.5, 0.3); });
+  await page.waitForSelector('#perf-verdict', { timeout: 15000 });
+  const perf = await ev(() => { const r = window.__kk.engine.getSnapshot().perfResult; return { phases: r.phases.map(p => ({ units: p.units, fps: p.fps, frames: p.frames, p95: p.frameMs.p95 })), verdict: r.verdict }; });
+  check('performance test runs both phases and reports percentiles', perf.phases.length === 2 && perf.phases.every(p => p.frames > 5 && p.p95 > 0) && perf.phases[1].units > perf.phases[0].units, JSON.stringify(perf));
+  await page.click('#perf-title'); await settle();
+}
+
 // ---- cross-runtime determinism: Node (tsx) vs the bundled build in Chromium ----
 {
   const seed = 777, N = 3000;

@@ -9,3 +9,8 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 tauri = { version = "2", features = [] }
+
+[features]
+# Plain `cargo build --features custom-protocol` (or `cargo tauri build`) serves the bundled ../../dist files;
+# without it Tauri expects a dev server.
+custom-protocol = ["tauri/custom-protocol"]

@@ -23,7 +23,7 @@ Legend: **Implemented** = in the code, **Tested** = covered by an automated chec
 | Legacy art boards (`art/legacy/*`) | **Rejected**. They show a non-canonical roster (Worker/Miner/Commander…). | not copied | — |
 | Canonical roster: 6 roles, 10 buildings; no Commander, Research Lab or Repair Station | **Used**. The existing engine already matched it. | — | Verified |
 | Optional PWA (manifest + service worker) | **Adapted**. It registers only on http(s) with `?pwa`, so the default `file://` launch stays untouched and error-free. The cache name is a content hash, and `skipWaiting` is not used. | `tools/build.mjs`, `src/ui/main.tsx`, `tools/serve.mjs`, `e2e/pwa-smoke.mjs` | Tested in Chromium (installs, reloads offline). Safari untested. |
-| Optional Tauri 2 scaffold | **Adapted**. Product name Kernel Keep, `frontendDist ../../dist`, no plugins, empty capabilities, ad-hoc signing, bundle off. | `desktop/src-tauri/`, `desktop/README.md` | **Blocked**: no Rust toolchain here; never compiled |
+| Optional Tauri 2 scaffold | **Adapted**. Product name Kernel Keep, `frontendDist ../../dist`, no plugins, empty capabilities, ad-hoc signing, bundle off, plus a `custom-protocol` feature. | `desktop/src-tauri/`, `desktop/README.md` | **Tested on Linux (0.3.2)**; macOS untested |
 | Third-party notices and React/React-DOM/Scheduler MIT licences | **Used** | `THIRD_PARTY_NOTICES.md`, `licenses/` | Implemented |
 | Fairness experiment plan (docs/04) | **Run**, and it found real bugs (§3) | `tools/fairness.ts`, `docs/FAIRNESS_RESULTS.md` | Tested; **fully symmetric since 0.3.1** (11–11, every swapped pair mirrored) |
 | Regression gates (docs/04) | **Adopted** where testable (§2) | `e2e/e2e.mjs`, `tests/view.test.ts` | Tested |
@@ -65,10 +65,10 @@ Save schema is unchanged (1). A 0.1 save still loads, but it plays forward under
 ## 5. Not done / next
 
 1. ~~Residual P1 advantage~~: fixed in 0.3.1. See docs/FAIRNESS_RESULTS.md.
-2. Build and run the Tauri shell on the Mac. Confirm the inline-script CSP hashing (**Blocked** here).
+2. Build and run the Tauri shell on the Mac. The Linux build and inline-script CSP hashing are confirmed (0.3.2).
 3. PWA install on Safari/macOS (Chromium is tested) (**Proposed**).
 4. Individual production sprites with pivots, to replace procedural shapes (the kit's P2) (**Proposed**).
-5. Air measurement and a human playtest (**Blocked**: needs the Mac and people).
+5. Air measurement and a human playtest (**Blocked**: needs the Mac and people). The one-click Performance test (0.3.2) is the measurement tool.
 
 ## 6. Follow-up (0.3): the imagery in the game world
 

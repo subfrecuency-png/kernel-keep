@@ -190,3 +190,7 @@ table.keys button{min-width:7rem;padding:.2rem .5rem}
 
 @media (max-width:1320px){.chip{min-width:6.6rem;gap:.35rem;padding:.2rem .45rem}.chip-sub{display:none}.brand span:last-child{display:none}}
 @media (max-width:1150px){.chip{min-width:5.8rem}.bottom{grid-template-columns:10rem minmax(0,1fr) minmax(17rem,22rem)}.portrait{width:5.5rem;height:7rem}}
+.perf-table{width:100%;border-collapse:collapse;font-size:.8rem;margin:.6rem 0}
+.perf-table th,.perf-table td{text-align:left;padding:.3rem .45rem;border-bottom:1px solid var(--divider)}
+.perf-table th{color:var(--muted);font-weight:500;font-size:.72rem}
+.banner.perf-run{border-color:var(--supply);background:#2a220cdd;color:#ffe3b0;letter-spacing:.06em}

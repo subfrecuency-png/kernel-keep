@@ -5,6 +5,7 @@ import { ACTIONS, keyName } from '../client/settings.ts';
 import { B } from '../sim/types.ts';
 import { costText } from '../sim/commands.ts';
 import { ART, PORTRAITS, RIVAL_PORTRAITS } from './assets.ts';
+import { loadHistory, toMarkdown } from '../client/perftest.ts';
 
 /** Accessible modal card: focus moves in, Tab stays inside, Esc is handled by the engine (Back). */
 function Card({ children, wide, label }: { children: ReactNode; wide?: boolean; label: string }) {
@@ -46,9 +47,10 @@ export function Title({ snap }: { snap: Snapshot }) {
         <button id="t-how" onClick={() => engine.openModal('howto')}>How to play</button>
         <button id="t-codex" onClick={() => engine.openModal('codex')}>Art codex</button>
         <button id="t-set" onClick={() => engine.openModal('settings')}>Settings</button>
+        <button id="t-perf" onClick={() => engine.runPerfTest()} title="Plays a fixed 40-second battle and measures frame and simulation times on this machine">Performance test</button>
       </div>
     </div>
-    <footer className="title-footer"><span><i className="status-dot" /> OFFLINE · NO ACCOUNT · HASH CREDITS ARE FICTIONAL AND MATCH-LOCAL</span><span>MERIDIAN DIVIDE · PROTOTYPE 0.3.1 · PROVISIONAL TITLE</span></footer>
+    <footer className="title-footer"><span><i className="status-dot" /> OFFLINE · NO ACCOUNT · HASH CREDITS ARE FICTIONAL AND MATCH-LOCAL</span><span>MERIDIAN DIVIDE · PROTOTYPE 0.3.2 · PROVISIONAL TITLE</span></footer>
   </main>;
 }
 
@@ -62,6 +64,7 @@ export function HowTo() {
       <b>Compute</b><span>Rigs, Towers and a training Grid share Compute. Over-demand causes a brownout that slows all of them. Switch a Rig off (O) in a siege.</span>
       <b>Army</b><span>The Training Grid specializes a free Runner into a Ping, Bulwark, Lancer, Patcher or Breaker. Veterans rank up after 2 and 5 kills.</span>
       <b>Walls</b><span>Firewalls, Gates and Towers are hardened: only Breakers hurt them properly. Enemies never pass your gates.</span>
+      <b>Waves</b><span>When the Rival masses an attack you get a warning with an alarm, a red marker and a minimap pulse (click the alert to look). Use the time to fortify the pass.</span>
       <b>Fork</b><span>Commander power: temporary copies of selected fighters for 25s. Costs 60 Hash, surges Compute, forks die with their originals.</span>
       <b>Mouse</b><span>Left-click/drag select · right-click = smart order · wheel zoom · middle-drag pan · minimap click / right-click.</span>
       <b>Keys</b><span>A attack-move · S stop · H hold · F fork · Z suspend · O switch/gate · Del decompile · Ctrl+1–9 groups · P pause · Space last alert · . idle Runner · Home Core · F1 controls.</span>
@@ -73,7 +76,7 @@ export function Pause({ snap }: { snap: Snapshot }) {
   const m = snap.match!;
   return <Card label="Paused"><p className="eyebrow">PAUSED · {m.clock}</p><h2>Menu</h2>
     <div className="row"><button id="p-resume" className="primary" onClick={() => engine.closeModals(true)}>Resume</button><button id="p-save" onClick={() => engine.quickSave()}>Quick save</button><button id="p-load" onClick={() => engine.quickLoad()}>Quick load</button><button id="p-export" onClick={() => engine.exportSave()}>Export save file</button><button id="p-import" onClick={() => engine.importSave()}>Import save file</button></div>
-    <div className="row"><button id="p-restart" onClick={() => engine.restart()}>Restart match</button><button id="p-how" onClick={() => engine.openModal('howto')}>How to play</button><button id="p-codex" onClick={() => engine.openModal('codex')}>Art codex</button><button id="p-set" onClick={() => engine.openModal('settings')}>Settings & controls</button><button id="p-quit" onClick={() => engine.quitToTitle()}>Quit to title</button></div>
+    <div className="row"><button id="p-restart" onClick={() => engine.restart()}>Restart match</button><button id="p-how" onClick={() => engine.openModal('howto')}>How to play</button><button id="p-codex" onClick={() => engine.openModal('codex')}>Art codex</button><button id="p-set" onClick={() => engine.openModal('settings')}>Settings & controls</button><button id="p-quit" onClick={() => engine.quitToTitle()}>Quit to title</button><button id="p-perf" onClick={() => engine.runPerfTest()}>Performance test</button></div>
     <p className="tag">Seed {m.seed} · {m.difficulty} · balance v{B.version}. Autosave every 60s.</p></Card>;
 }
 
@@ -130,4 +133,19 @@ export function Codex() {
     <img className="sheet" src={ART.sheetRoles} alt="Concept sheet: six program roles" />
     <img className="sheet" src={ART.sheetStructures} alt="Concept sheet: ten structures" />
     <div className="row"><button id="c-back" className="primary" data-autofocus onClick={() => engine.back()}>Back</button></div></Card>;
+}
+
+export function PerfCard({ snap }: { snap: Snapshot }) {
+  const r = snap.perfResult; if (!r) return null;
+  const history = loadHistory().slice(1);
+  return <Card label="Performance test" wide><p className="eyebrow">PERFORMANCE TEST · {r.when}</p><h2>How this machine runs Kernel Keep</h2>
+    <p id="perf-verdict" className="lead">{r.verdict}</p>
+    <table className="perf-table"><thead><tr><th>Phase</th><th>Programs</th><th>fps</th><th>Frame ms p50 / p95 / p99 / max</th><th>Render ms p50 / p95</th><th>Sim ms per tick p50 / p95 / max</th></tr></thead>
+      <tbody>{r.phases.map(p => <tr key={p.label}><td>{p.label}</td><td className="mono">{p.units}</td><td className="mono">{p.fps}</td>
+        <td className="mono">{p.frameMs.p50} / {p.frameMs.p95} / {p.frameMs.p99} / {p.frameMs.max}</td><td className="mono">{p.renderMs.p50} / {p.renderMs.p95}</td>
+        <td className="mono">{p.simMsPerTick.p50} / {p.simMsPerTick.p95} / {p.simMsPerTick.max}</td></tr>)}</tbody></table>
+    <p className="tag">{r.platform} · {r.cores ?? '?'} cores · display scale {r.dpr} · canvas {r.canvas} · UI scale {r.uiScale}{r.heapMB !== null ? ` · JS heap ${r.heapMB} MB` : ''}. The simulation budget is 100 ms per tick; a frame at 60 fps is 16.7 ms. Measured in this browser only — nothing is sent anywhere.</p>
+    {history.length > 0 && <p className="tag">Earlier runs here: {history.map(h => `${h.when.slice(5, 16)} → ${h.phases.map(p => p.fps).join(' / ')} fps`).join(' · ')}</p>}
+    <div className="row"><button id="perf-copy" className="primary" onClick={() => engine.copyPerf(toMarkdown(r))}>Copy results</button><button id="perf-save" onClick={() => engine.savePerf()}>Save file</button>
+      <button id="perf-again" onClick={() => engine.runPerfTest()}>Run again</button><button id="perf-title" onClick={() => engine.quitToTitle()}>Title</button></div></Card>;
 }

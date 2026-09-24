@@ -10,13 +10,14 @@ import { ClientState, COLORS } from './state.ts';
 import { render, renderMinimap, wallLine, pickAt, miniToWorld, unitFacing } from './render.ts';
 import { proj, unproj, toU, toV, mapBounds } from './iso.ts';
 import { preloadSprites } from './sprites.ts';
+import { PerfRecorder, PerfPhase, PerfResult, verdict, saveHistory } from './perftest.ts';
 import { loadSettings, saveSettings, defaultSettings, Settings } from './settings.ts';
 import { sfx, setAudio } from './audio.ts';
 import {
   fmtTime, topView, TopView, recoveryView, RecoveryIssue, OBJECTIVES, selectionView, SelectionView, CommandView, costShort,
 } from './view.ts';
 
-export type ModalId = 'title' | 'howto' | 'pause' | 'settings' | 'controls' | 'gameover' | 'codex';
+export type ModalId = 'title' | 'howto' | 'pause' | 'settings' | 'controls' | 'gameover' | 'codex' | 'perf';
 export interface AlertView { key: string; time: string; text: string; severity: 'info' | 'warn' | 'danger'; x?: number; y?: number }
 export interface ObjectiveView { text: string; hint: string; state: 'done' | 'current' | 'todo' }
 export interface RosterItem { type: string; kind: 'unit' | 'building'; name: string; sub: string; count: number; busy: number }
@@ -39,6 +40,10 @@ export interface Snapshot {
   toast: { id: number; text: string; ok: boolean } | null;
   settings: Settings;
   match: MatchView | null;
+  /** Performance test in progress (phase 1/2 and seconds left), or null. */
+  perfRunning: { phase: number; phases: number; left: number } | null;
+  /** Result of the last performance test this session. */
+  perfResult: PerfResult | null;
 }
 
 const AUTOSAVE = 'kernelkeep.autosave.v1', SLOT = 'kernelkeep.slot1.v1';
@@ -59,6 +64,8 @@ export class EngineHost {
   private lastPublish = 0;
   private started = false;
   private modalStack: ModalId[] = ['title'];
+  private perfState: { rec: PerfRecorder; phase: number; t: number; warm: number; len: number; results: PerfPhase[] } | null = null;
+  private perfResult: PerfResult | null = null;
   private difficulty: 'easy' | 'normal' = 'normal';
   private toastState: Snapshot['toast'] = null;
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -104,6 +111,8 @@ export class EngineHost {
       hasAutosave,
       difficulty: this.difficulty,
       toast: this.toastState,
+      perfRunning: this.perfState ? { phase: this.perfState.phase + 1, phases: 2, left: Math.max(0, Math.ceil(this.perfState.warm + this.perfState.len - this.perfState.t)) } : null,
+      perfResult: this.perfResult,
       settings: JSON.parse(JSON.stringify(this.settings)),
       match: this.cs ? this.matchView() : null,
     });
@@ -159,6 +168,53 @@ export class EngineHost {
     sfx.click(); this.publish();
   }
 
+  // ------------------------------------------------------------------ performance test
+  /** One-click measurement (kit docs/04 "Air measurement script"): two phases of a fixed battle in real time. */
+  runPerfTest(phaseSec = 20, warmSec = 2) {
+    const g = new Game({ seed: 9090, difficulty: 'normal', players: [{ name: 'Test A', ai: true }, { name: 'Test B', ai: true }] });
+    this.startMatch(g);
+    const cs = this.cs!; cs.speed = 1; cs.paused = false;
+    for (const p of g.world.players) p.explored.fill(1);
+    this.perfSpawn(40);
+    cs.cam.z = 46; this.jump(32, 33);
+    this.perfState = { rec: new PerfRecorder(), phase: 0, t: 0, warm: warmSec, len: phaseSec, results: [] };
+    this.toast(`Performance test: 2 phases × ${phaseSec}s. Leave the mouse and keyboard alone until it finishes.`, true);
+  }
+  private perfSpawn(perSide: number) {
+    const w = this.cs!.game.world; const T = ['bulwark', 'lancer', 'lancer', 'patcher', 'breaker', 'ping'];
+    for (let i = 0; i < perSide; i++) {
+      const t = T[i % T.length]; const x = 22 + (i % 8) * 0.9, y = 37 + Math.floor(i / 8) * 0.9;
+      const a = w.spawnUnit(t, 1, x, y), b = w.spawnUnit(t, 2, w.map.w - x, w.map.h - y);
+      a.order = { type: 'attackMove', x: 40, y: 26 }; b.order = { type: 'attackMove', x: 24, y: 38 };
+    }
+  }
+  private perfFrame(dt: number, renderMs: number) {
+    const ps = this.perfState!; const cs = this.cs!;
+    ps.t += dt;
+    // keep both test armies fed so no program crashes mid-measurement (this world exists only for the test)
+    for (const p of cs.game.world.players) if (p.id) { p.code = cs.game.world.caps(p.id).codeCap; p.stability = Math.max(p.stability, 60); }
+    if (ps.t > ps.warm) ps.rec.addFrame(dt * 1000, renderMs, cs.game.world.entities.filter(e => e.kind === 'unit' && !e.dead).length);
+    if (ps.t < ps.warm + ps.len) return;
+    ps.results.push(ps.rec.summary(ps.phase === 0 ? 'Skirmish' : 'Big fight', ps.len));
+    if (ps.phase === 0) { this.perfSpawn(60); ps.phase = 1; ps.t = 0; ps.rec = new PerfRecorder(); return; }
+    const mem = (performance as any).memory;
+    const r: PerfResult = {
+      when: new Date().toISOString().replace('T', ' ').slice(0, 19), build: `Kernel Keep prototype (balance v${B.version})`,
+      userAgent: navigator.userAgent, platform: (navigator as any).userAgentData?.platform ?? navigator.platform ?? '?',
+      cores: navigator.hardwareConcurrency ?? null, dpr: Math.round(this.dpr() * 100) / 100,
+      canvas: `${this.canvas!.width}×${this.canvas!.height}`, uiScale: this.settings.uiScale, reducedFlash: this.settings.reducedFlash,
+      heapMB: mem ? Math.round(mem.usedJSHeapSize / 1048576) : null, phases: ps.results, verdict: verdict(ps.results),
+    };
+    this.perfState = null; this.perfResult = r; saveHistory(r);
+    cs.paused = true; this.openModal('perf');
+  }
+  copyPerf(text: string) { navigator.clipboard?.writeText(text).then(() => this.toast('Results copied.', true), () => this.toast('Copy blocked by the browser — use Save file instead.')); }
+  savePerf() {
+    if (!this.perfResult) return;
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(this.perfResult, null, 1)], { type: 'application/json' }));
+    a.download = `kernel-keep-perf-${this.perfResult.when.replace(/[: ]/g, '-')}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+
   // ------------------------------------------------------------------ lifecycle
   /** Attach the battlefield canvas. Idempotent: StrictMode double effects never start a second loop. */
   mount(canvas: HTMLCanvasElement) {
@@ -208,7 +264,7 @@ export class EngineHost {
   }
   closeModals(resume = false) { this.modalStack = this.cs ? [] : ['title']; if (resume && this.cs) this.cs.paused = false; this.publish(); }
   setDifficulty(d: 'easy' | 'normal') { this.difficulty = d; this.publish(); }
-  quitToTitle() { this.cs = null; this.modalStack = ['title']; this.publish(); }
+  quitToTitle() { this.perfState = null; this.cs = null; this.modalStack = ['title']; this.publish(); }
 
   toast(text: string, ok = false) {
     this.toastState = { id: (this.toastState?.id ?? 0) + 1, text, ok };
@@ -221,6 +277,7 @@ export class EngineHost {
   startMatch(game: Game) {
     const w = game.world; const core = w.coreOf(1)!; const z = 46;
     preloadSprites();
+    this.perfState = null;
     this.cs = {
       game, me: 1, cam: { x: 0, y: 0, z }, sel: new Set(), groups: {}, prev: new Map(), alpha: 0,
       mouse: { sx: 0, sy: 0, wx: 0, wy: 0, inView: false }, fx: [], settings: this.settings, paused: false, speed: 1, showPerf: false, fps: 60, time: 0, hudDirty: true, over: !!w.winner,
@@ -287,6 +344,7 @@ export class EngineHost {
         cs.prev.clear();
         for (const e of w.entities) if (e.kind === 'unit') cs.prev.set(e.id, { x: e.x, y: e.y });
         cs.game.step(); steps++;
+        if (this.perfState) this.perfState.rec.addTick(cs.game.perf.lastStepMs);
         this.handleEvents();
         this.acc -= DT;
       }
@@ -310,7 +368,9 @@ export class EngineHost {
     cs.fx = cs.fx.filter(f => f.t < f.life);
     for (const id of [...cs.sel]) if (!w.get(id)) cs.sel.delete(id);
     if (cs.placing) { const t = this.tileAt(cs.mouse.sx, cs.mouse.sy); const d = B.buildings[cs.placing.type]; cs.placing.tx = t.tx - Math.floor((d.w - 1) / 2); cs.placing.ty = t.ty - Math.floor((d.h - 1) / 2); }
+    const r0 = performance.now();
     render(this.ctx, cs, this.canvas.width, this.canvas.height);
+    if (this.perfState) this.perfFrame(dt, performance.now() - r0);
     if (this.mctx && this.frames % 3 === 0) renderMinimap(this.mctx, cs, this.canvas.width, this.canvas.height);
     if (w.winner && !cs.over) { cs.over = true; w.winner === cs.me ? sfx.victory() : sfx.defeat(); this.modalStack = ['gameover']; this.invalidate(); }
     this.autosaveT += dt;
@@ -351,7 +411,8 @@ export class EngineHost {
         case 'alert':
           if (ev.owner !== me) break;
           if (ev.alert.x !== undefined) cs.lastAlert = { x: ev.alert.x, y: ev.alert.y! };
-          if (ev.alert.kind === 'attacked') sfx.attacked(); else if (ev.alert.severity !== 'info') sfx.warn();
+          if (ev.alert.kind === 'attacked' || ev.alert.kind === 'waveWarn' || ev.alert.kind === 'waveLaunch') sfx.attacked(); else if (ev.alert.severity !== 'info') sfx.warn();
+          if (ev.alert.kind === 'waveWarn' && ev.alert.x !== undefined) cs.fx.push({ kind: 'marker', x: ev.alert.x, y: ev.alert.y!, t: 0, life: 3, color: '#ff4d6a' });
           break;
       }
     }
@@ -639,6 +700,7 @@ export class EngineHost {
       worldToScreen: (x: number, y: number) => self.worldToScreen(x, y),
       pressCommand: (id: string) => self.runCommand(id),
       publish: () => self.publish(),
+      perfTest: (phaseSec: number, warmSec: number) => self.runPerfTest(phaseSec, warmSec),
     };
   }
 }

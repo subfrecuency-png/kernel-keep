@@ -1,0 +1,3 @@
+crates compiled: 270
+    Finished `release` profile [optimized] target(s) in 6m 36s
+rustc 1.95.0, WebKitGTK 2.52.6, Ubuntu 24.04 container, Xvfb 1440x900. Binary: desktop/src-tauri/target/release/kernel-keep (12 MB). Smoke: window opened, title screen rendered (inline script ran under CSP script-src 'self'), New match clicked with xdotool, match clock advanced to 0:07. Screenshots: tauri-title.webp, tauri-match.webp.

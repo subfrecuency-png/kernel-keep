@@ -1,4 +1,4 @@
-const CACHE='kernel-keep-49d3a2606728';
+const CACHE='kernel-keep-b2f4007f5e8b';
 const ASSETS=['./','./index.html','./kernel-keep.html','./manifest.webmanifest','./assets/icon-192.png','./assets/icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(n=>n.startsWith('kernel-keep-')&&n!==CACHE).map(n=>caches.delete(n)))).then(()=>self.clients.claim())));

@@ -1,5 +1,5 @@
 {
- "date": "2026-09-23T23:27:29.080Z",
+ "date": "2026-09-23T23:59:29.122Z",
  "results": [
   {
    "name": "title screen renders with New match button",
@@ -64,12 +64,12 @@
   {
    "name": "P pauses the simulation",
    "ok": true,
-   "detail": "1527→1527"
+   "detail": "1528→1528"
   },
   {
    "name": "P again resumes it",
    "ok": true,
-   "detail": "1527→1535"
+   "detail": "1528→1535"
   },
   {
    "name": "Esc opens the pause menu",
@@ -79,7 +79,7 @@
   {
    "name": "Quick save + Quick load restores the exact state (hash)",
    "ok": true,
-   "detail": "6c1d1f6f vs 6c1d1f6f"
+   "detail": "4036ece9 vs 4036ece9"
   },
   {
    "name": "UI scale setting applies",
@@ -94,7 +94,7 @@
   {
    "name": "recovery panel reports the real Code shortage (starving or low reserve)",
    "ok": true,
-   "detail": "starving,memory · engine code 0, unmet 0.85"
+   "detail": "starving,memory · engine code 0, unmet 0.84"
   },
   {
    "name": "recovery button \"Switch to Lean rations\" issues the real ration command",
@@ -149,7 +149,7 @@
   {
    "name": "battle with 100+ spawned combat units renders (container, software GPU)",
    "ok": true,
-   "detail": "{\"fps\":31.474377889249514,\"avgStep\":2.4369371165849585,\"units\":160}"
+   "detail": "{\"fps\":35.41215817430657,\"avgStep\":2.399906399230198,\"units\":160}"
   },
   {
    "name": "destroying the Rival Core shows VICTORY",
@@ -159,12 +159,17 @@
   {
    "name": "Play again restarts a fresh match",
    "ok": true,
-   "detail": "{\"tick\":3,\"over\":false}"
+   "detail": "{\"tick\":4,\"over\":false}"
   },
   {
    "name": "losing your Core shows DEFEAT",
    "ok": true,
    "detail": ""
+  },
+  {
+   "name": "performance test runs both phases and reports percentiles",
+   "ok": true,
+   "detail": "{\"phases\":[{\"units\":88,\"fps\":40.2,\"frames\":61,\"p95\":33.4},{\"units\":203,\"fps\":26.5,\"frames\":41,\"p95\":50}],\"verdict\":\"Heavy: about 27 fps in the big fight. This is below the 30 fps fallback target — copy the results so the scene can be tuned for this machine.\"}"
   },
   {
    "name": "same seed, 3000 ticks: Node build and browser bundle produce the same state hash",
@@ -183,8 +188,8 @@
   }
  ],
  "perf": {
-  "fps": 31.474377889249514,
-  "avgStep": 2.4369371165849585,
+  "fps": 35.41215817430657,
+  "avgStep": 2.399906399230198,
   "units": 160
  },
  "errors": []

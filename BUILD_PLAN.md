@@ -42,7 +42,10 @@ Status as of 2026-09-23 (end of session 1). Labels: **Tested** (automated eviden
 | Procedural motion from single poses (stride, lunge/recoil, muzzle flash, spawn, de-rez) and x-ray silhouettes | **Implemented (0.3.1)** |
 | Animated sprite frames / several facings; tileable wall art | **Proposed** (needs new art) |
 | Optional offline install (PWA) | **Tested (0.2)**, Chromium only |
-| Optional Tauri 2 shell (`desktop/`) | **Proposed / untested** (no Rust here). Replaces the Electron plan as the lighter option, per the kit's review. |
+| Optional Tauri 2 shell (`desktop/`) | **Tested on Linux (0.3.2)**; macOS build steps documented, untested. Replaces the Electron plan. |
+| WebKit (JavaScriptCore) determinism | **Tested (0.3.2)**: identical hashes to V8 and Chromium |
+| One-click performance test (kit's Air measurement script) | **Tested (0.3.2)**. Run it on the Air. |
+| Wave telegraphing ("Rival forces massing") | **Tested (0.3.2)** |
 
 ## Exact next tasks (ordered) — updated for 0.2
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { engine } from '../client/engine.ts';
 import { Hud } from './Hud.tsx';
-import { Title, HowTo, Pause, SettingsCard, Controls, GameOver, Codex } from './Menus.tsx';
+import { Title, HowTo, Pause, SettingsCard, Controls, GameOver, Codex, PerfCard } from './Menus.tsx';
 
 export function App() {
   const snap = useSyncExternalStore(engine.subscribe, engine.getSnapshot);
@@ -20,6 +20,8 @@ export function App() {
     {snap.modal === 'controls' && <Controls snap={snap} />}
     {snap.modal === 'gameover' && m && <GameOver snap={snap} />}
     {snap.modal === 'codex' && <Codex />}
+    {snap.modal === 'perf' && <PerfCard snap={snap} />}
+    {snap.perfRunning && <div id="perfBanner" className="banner perf-run">PERFORMANCE TEST · phase {snap.perfRunning.phase}/{snap.perfRunning.phases} · {snap.perfRunning.left}s left — hands off</div>}
     <div id="toast" role="status" className={`toast ${snap.toast?.ok ? 'ok' : ''} ${snap.toast ? 'show' : ''}`}>{snap.toast?.text ?? ''}</div>
   </div>;
 }

@@ -1,1 +1,1 @@
-PASS  PWA: service worker active=true, manifest=true, cache=kernel-keep-49d3a2606728, offline reload shows title, console errors=0
+PASS  PWA: service worker active=true, manifest=true, cache=kernel-keep-b2f4007f5e8b, offline reload shows title, console errors=0

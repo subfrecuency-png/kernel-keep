@@ -584,6 +584,11 @@ export function renderMinimap(mctx: CanvasRenderingContext2D, cs: ClientState, v
   mctx.strokeStyle = '#2a4a6a'; mctx.lineWidth = 0.8; mctx.strokeRect(0, 0, MW, MH);
   mctx.lineWidth = 0.6;
   for (const ls of Object.values(w.players[me].lastSeen)) { mctx.strokeStyle = (COLORS[ls.owner] ?? COLORS[0]).main; mctx.strokeRect(ls.tx, ls.ty, ls.w, ls.h); }
+  // recent danger alerts with a location pulse on the minimap (e.g. "Rival forces massing")
+  for (const al of w.players[me].alerts) if (al.severity === 'danger' && al.x !== undefined && w.tick - al.tick < 12 * B.tickRate) {
+    const k = ((w.tick - al.tick) % 10) / 10; mctx.strokeStyle = `rgba(255,77,106,${1 - k})`; mctx.lineWidth = 0.9;
+    mctx.beginPath(); mctx.arc(al.x, al.y!, 1.5 + k * 4, 0, Math.PI * 2); mctx.stroke();
+  }
   // camera footprint on the ground
   const c = [unproj(cs.cam, 0, 0), unproj(cs.cam, viewW, 0), unproj(cs.cam, viewW, viewH), unproj(cs.cam, 0, viewH)];
   mctx.strokeStyle = '#ffffff'; mctx.lineWidth = 0.8; mctx.beginPath(); c.forEach((p, i) => i ? mctx.lineTo(p.x, p.y) : mctx.moveTo(p.x, p.y)); mctx.closePath(); mctx.stroke();

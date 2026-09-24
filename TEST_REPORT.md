@@ -1,5 +1,19 @@
 # TEST_REPORT — Kernel Keep
 
+## 0.3.2 (branch `iso-art-0.3`), 2026-09-23
+
+This build uses the same container. **Nothing was run on the Air.**
+
+| Check | Result |
+|---|---|
+| `npm test` | **34 / 34 pass**. New: the wave telegraph warns at least 20 s before the first Rival wave. In practice it warns at 5:13 and the wave launches at 6:32, about 78 s later. |
+| `npm run e2e` | **37 / 37 pass**. New: the one-click performance test runs both phases and reports percentiles. |
+| **WebKit determinism** (`npm run determinism:webkit`) | Seeds 777 / 1 / 42 over 3,000 ticks give **identical hashes** in WebKitGTK 2.52.6 (JavaScriptCore) and Node 22 (V8): `adb5621a`, `2bee4c0e`, `788e4b85`. Chromium matches in the e2e run. The simulation only uses exactly rounded arithmetic (+ − × ÷ √), which is why this holds across engines. Log: `webkit-determinism.log`. |
+| **Tauri shell (Linux)** | Release build compiles (270 crates). Under Xvfb the window shows the title and a match runs. Log: `tauri-build.log`, plus screenshots. |
+| Simulation hash | still `adb5621a`. The wave warnings add alerts only; alerts are not part of the hash. |
+
+---
+
 ## 0.3.1 (branch `iso-art-0.3`), 2026-09-23
 
 This build uses the same container as below. **Nothing was run on the Air.** Logs in `docs/test-logs/` were overwritten.

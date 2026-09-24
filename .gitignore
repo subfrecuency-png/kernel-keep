@@ -1,3 +1,5 @@
 node_modules/
 *.log
 !docs/test-logs/*.log
+desktop/src-tauri/target/
+desktop/src-tauri/gen/

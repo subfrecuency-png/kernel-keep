@@ -1,3 +1,16 @@
+# HANDOFF — session 5 (2026-09-23): 0.3.2 — desktop shell built, WebKit determinism, performance test, wave warnings
+
+Committed on branch `iso-art-0.3` in `~/Downloads/kernel-keep`, which is checked out there.
+
+| Item | Status |
+|---|---|
+| Tauri shell | Compiled and smoke-tested on **Linux**; the game runs in the window. macOS is untested; steps are in `desktop/README.md` (free tools, no Apple account). |
+| Cross-engine determinism | Tested. JavaScriptCore (WebKitGTK) = V8 = Chromium on three seeds. That is evidence, not proof, for Safari. |
+| **Performance test** (Title → Performance test, or Menu → Performance test) | Implemented and Tested (e2e). It runs a fixed 40 s battle at about 80, then about 200 programs, and shows fps and frame/render/sim p50/p95/p99. You can copy the results or save them to a file. The last 5 runs are kept in the browser. **Run this on the Air** and paste the copied table back. |
+| Wave telegraph | Implemented and Tested. "Rival forces massing (N of about M programs)" appears from 30 s before a wave is due once half of it is assembled, with an alarm, a red ground marker and a minimap pulse. "Rival wave launched" fires when it actually moves. |
+
+---
+
 # HANDOFF — session 4 (2026-09-23): 0.3.1, motion, x-ray and a fair mirror match
 
 Committed on branch `iso-art-0.3` in `~/Downloads/kernel-keep`, which is checked out there.

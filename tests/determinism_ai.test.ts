@@ -100,3 +100,19 @@ test('extended AI-vs-AI run: 30 simulated minutes without NaN, leaks or stuck st
   assert.equal(w.entities.filter(e => e.dead).length, 0, 'dead entities compacted');
   assert.ok(g.perf.maxStepMs < 200, `max step ${g.perf.maxStepMs}ms`);
 });
+
+test('wave telegraph: the defender is warned about 30 s before the first Rival wave launches', async () => {
+  const { humanGame } = await import('./helpers.ts');
+  const g = humanGame(61, true); const w = g.world; // P2 is the Rival AI
+  let warnTick = -1, launchTick = -1;
+  for (let t = 0; t < 12 * 600 && launchTick < 0; t++) {
+    g.step();
+    for (const e of w.events) if (e.t === 'alert' && e.owner === 1) {
+      if (e.alert.kind === 'waveWarn' && warnTick < 0) warnTick = w.tick;
+      if (e.alert.kind === 'waveLaunch') launchTick = w.tick;
+    }
+  }
+  assert.ok(launchTick > 0, 'a wave launched within 12 minutes');
+  assert.ok(warnTick > 0 && warnTick < launchTick, `warned (${warnTick}) before launch (${launchTick})`);
+  assert.ok(launchTick - warnTick >= 20 * 10, `at least 20 s of warning (got ${(launchTick - warnTick) / 10}s)`);
+});

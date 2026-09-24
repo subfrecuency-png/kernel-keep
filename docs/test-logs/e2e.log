@@ -1,5 +1,5 @@
 
-> kernel-keep@0.3.1 e2e
+> kernel-keep@0.3.2 e2e
 > node --import tsx e2e/e2e.mjs
 
 PASS  title screen renders with New match button
@@ -14,13 +14,13 @@ PASS  insufficient Data shows a readable toast  — Need 95 more Data
 PASS  Compiler built and auto-staffed; Code produced; Data harvested  — {"built":true,"staffed":true,"code":75,"data":340}
 PASS  Q queues a Runner at the Core
 PASS  clicking the queue item cancels it with a full refund  — code 139.7→139.7
-PASS  P pauses the simulation  — 1527→1527
-PASS  P again resumes it  — 1527→1535
+PASS  P pauses the simulation  — 1528→1528
+PASS  P again resumes it  — 1528→1535
 PASS  Esc opens the pause menu
-PASS  Quick save + Quick load restores the exact state (hash)  — 6c1d1f6f vs 6c1d1f6f
+PASS  Quick save + Quick load restores the exact state (hash)  — 4036ece9 vs 4036ece9
 PASS  UI scale setting applies  — 1.3
 PASS  key rebinding works (Stop → X)  — x
-PASS  recovery panel reports the real Code shortage (starving or low reserve)  — starving,memory · engine code 0, unmet 0.85
+PASS  recovery panel reports the real Code shortage (starving or low reserve)  — starving,memory · engine code 0, unmet 0.84
 PASS  recovery button "Switch to Lean rations" issues the real ration command  — lean
 PASS  brownout issue shows the engine demand/supply  — △ Compute brownout · 28/26Rigs, towers a · engine 28/26
 PASS  suspended programs appear in the recovery panel
@@ -31,12 +31,13 @@ PASS  your program is drawn as its concept sprite (lit, cyan-dominant pixels abo
 PASS  the Rival program uses the red-shifted sprite  — {"lit":387,"red":212,"blue":0}
 PASS  clicking a program's body selects it (sprite hit-box)  — [188]
 PASS  roster card selects all your Runners  — {"n":35,"all":35,"ok":true}
-PASS  battle with 100+ spawned combat units renders (container, software GPU)  — {"fps":31.474377889249514,"avgStep":2.4369371165849585,"units":160}
+PASS  battle with 100+ spawned combat units renders (container, software GPU)  — {"fps":35.41215817430657,"avgStep":2.399906399230198,"units":160}
 PASS  destroying the Rival Core shows VICTORY
-PASS  Play again restarts a fresh match  — {"tick":3,"over":false}
+PASS  Play again restarts a fresh match  — {"tick":4,"over":false}
 PASS  losing your Core shows DEFEAT
+PASS  performance test runs both phases and reports percentiles  — {"phases":[{"units":88,"fps":40.2,"frames":61,"p95":33.4},{"units":203,"fps":26.5,"frames":41,"p95":50}],"verdict":"Heavy: about 27 fps in the big fight. This is below the 30 fps fallback target — copy the results so the scene can be tuned for this machine."}
 PASS  same seed, 3000 ticks: Node build and browser bundle produce the same state hash  — adb5621a vs adb5621a
 PASS  no page errors or console errors
 PASS  fully offline: no network requests (file: and data: only)
 
-36/36 browser checks passed
+37/37 browser checks passed

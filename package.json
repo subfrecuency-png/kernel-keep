@@ -1,6 +1,6 @@
 {
   "name": "kernel-keep",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "description": "Kernel Keep (provisional title) — offline single-player fortress RTS prototype in a luminous digital world.",
   "type": "module",
@@ -16,7 +16,8 @@
     "serve": "node tools/serve.mjs",
     "fairness": "tsx tools/fairness.ts",
     "e2e:pwa": "node e2e/pwa-smoke.mjs",
-    "mirror": "tsx tools/mirror_probe.ts 1e-9 12000"
+    "mirror": "tsx tools/mirror_probe.ts 1e-9 12000",
+    "determinism:webkit": "tsx tools/hashes.ts && xvfb-run -a python3.12 tools/webkit_determinism.py"
   },
   "devDependencies": {
     "@types/node": "^22.20.4",
