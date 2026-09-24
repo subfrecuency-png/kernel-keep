@@ -99,6 +99,10 @@ Terrain, wells, Firewalls, effects and sound remain **procedural and original**.
 
 At run time `src/client/sprites.ts` keeps pre-scaled, pre-filtered copies in 8% size buckets: normal, grey, suspended, fork, hologram and glow.
 
+**0.3.3 — animation pilot.** Animated sheets live in `assets/anim/` (one WebP atlas + one JSON each):
+`{ type, clip, frames, fps, loop, cell: [w, h], cols, facings?: ['s','se','e','ne','n'], fire?, pivot? }`.
+Frames are row-major; with facings, facing k owns frames `[k·frames, (k+1)·frames)`. Only the P1 atlas ships; the Rival copy is red-shifted at load (`src/client/anim.ts`). Register a new sheet in `ENTRIES` there; the clip selector (`src/client/animlogic.ts`) and the Animation lab pick it up. Tools: `tools/anim/structure_loop.py` (locked-camera video → atlas) and `tools/anim/render_program.py` (rigged GLB → iso frames in five facings). Findings and costs: `docs/ANIMATION_PILOT.md`.
+
 ## 4. Asset / licence manifest
 
 | Asset | Source | Licence | File path | Status | Replacement need |
@@ -106,6 +110,8 @@ At run time `src/client/sprites.ts` keeps pre-scaled, pre-filtered copies in 8% 
 | Lattice terrain, void edges | Procedural Canvas drawing, original | Project-owned | `src/client/render.ts` (terrain section) | Implemented | Optional: textured tiles or 3D terrain |
 | Data well crystals / fragments | Procedural, original | Project-owned | `src/client/render.ts` (`drawWell`) | Implemented | Optional sprite |
 | 9 structure sprites (Core … Tower, Gate) ×2 teams | Cut from the ten-structures concept sheet (below) by `tools/art/cut_sprites.py` | As the sheet | `assets/art/sprites/<type>-p1.webp`, `-p2.webp` | Implemented (0.3, on the map) | Production art with several angles |
+| Compiler working loop (40 frames) | Magnific video generation (Kling 2.5) from the Compiler sprite as start and end frame, cut by `tools/anim/structure_loop.py` | Generated for this project on Ryan's account | `assets/anim/compiler-working.webp`, `.json` | Implemented (0.3.3) | — |
+| Runner 3D model, rig, 6 clips | Magnific 3D (Tripo model, Meshy rig and catalog clips) | Generated for this project | not shipped (kept in the Magnific project "Kernel Keep — Animation Pilot") | **Rejected**: running-pose rest; see `docs/ANIMATION_PILOT.md` | A-pose re-source |
 | Firewall segments | Procedural, modelled on the concept's Firewall | Project-owned | `src/client/render.ts` (`drawWall`, `wallBox`) | Implemented (0.3) | Tileable wall-piece sprites |
 | 6 program sprites ×2 teams | Cut from the six-roles concept sheet (below) by `tools/art/cut_sprites.py` | As the sheet | `assets/art/sprites/<role>-p1.webp`, `-p2.webp` | Implemented (0.3, on the map) | **Needed**: animated frames / several facings |
 | Ownership rings, rank chevrons, bars | Procedural, original | Project-owned | `src/client/render.ts` | Implemented | — |

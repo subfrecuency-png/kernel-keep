@@ -10,6 +10,7 @@ import { ClientState, COLORS } from './state.ts';
 import { render, renderMinimap, wallLine, pickAt, miniToWorld, unitFacing } from './render.ts';
 import { proj, unproj, toU, toV, mapBounds } from './iso.ts';
 import { preloadSprites } from './sprites.ts';
+import { preloadAnims } from './anim.ts';
 import { PerfRecorder, PerfPhase, PerfResult, verdict, saveHistory } from './perftest.ts';
 import { loadSettings, saveSettings, defaultSettings, Settings } from './settings.ts';
 import { sfx, setAudio } from './audio.ts';
@@ -276,7 +277,7 @@ export class EngineHost {
   // ------------------------------------------------------------------ matches
   startMatch(game: Game) {
     const w = game.world; const core = w.coreOf(1)!; const z = 46;
-    preloadSprites();
+    preloadSprites(); preloadAnims();
     this.perfState = null;
     this.cs = {
       game, me: 1, cam: { x: 0, y: 0, z }, sel: new Set(), groups: {}, prev: new Map(), alpha: 0,

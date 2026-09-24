@@ -1,5 +1,5 @@
 {
- "date": "2026-09-23T23:59:29.122Z",
+ "date": "2026-09-24T00:44:35.584Z",
  "results": [
   {
    "name": "title screen renders with New match button",
@@ -52,6 +52,11 @@
    "detail": "{\"built\":true,\"staffed\":true,\"code\":75,\"data\":340}"
   },
   {
+   "name": "staffed Compiler plays its animated working loop (sprite pixels change over time)",
+   "ok": true,
+   "detail": "274/1702 samples changed"
+  },
+  {
    "name": "Q queues a Runner at the Core",
    "ok": true,
    "detail": ""
@@ -59,17 +64,17 @@
   {
    "name": "clicking the queue item cancels it with a full refund",
    "ok": true,
-   "detail": "code 139.7→139.7"
+   "detail": "code 139.7→139.6"
   },
   {
    "name": "P pauses the simulation",
    "ok": true,
-   "detail": "1528→1528"
+   "detail": "1543→1543"
   },
   {
    "name": "P again resumes it",
    "ok": true,
-   "detail": "1528→1535"
+   "detail": "1543→1550"
   },
   {
    "name": "Esc opens the pause menu",
@@ -79,7 +84,7 @@
   {
    "name": "Quick save + Quick load restores the exact state (hash)",
    "ok": true,
-   "detail": "4036ece9 vs 4036ece9"
+   "detail": "0c7d7ec7 vs 0c7d7ec7"
   },
   {
    "name": "UI scale setting applies",
@@ -104,7 +109,7 @@
   {
    "name": "brownout issue shows the engine demand/supply",
    "ok": true,
-   "detail": "△ Compute brownout · 28/26Rigs, towers a · engine 28/26"
+   "detail": "△ Compute brownout · 27/26Rigs, towers a · engine 27/26"
   },
   {
    "name": "suspended programs appear in the recovery panel",
@@ -127,29 +132,34 @@
    "detail": "34 images"
   },
   {
+   "name": "Animation lab plays the Compiler working loop for both teams (frames advance; Rival copy red-shifted)",
+   "ok": true,
+   "detail": "[{\"id\":\"compiler:working\",\"label\":\"frame 6 / 40\",\"lit\":7392,\"red\":2744,\"blue\":1478},\"frame 11 / 40\"]"
+  },
+  {
    "name": "your program is drawn as its concept sprite (lit, cyan-dominant pixels above its feet)",
    "ok": true,
-   "detail": "{\"lit\":587,\"red\":11,\"blue\":327}"
+   "detail": "{\"lit\":603,\"red\":11,\"blue\":342}"
   },
   {
    "name": "the Rival program uses the red-shifted sprite",
    "ok": true,
-   "detail": "{\"lit\":387,\"red\":212,\"blue\":0}"
+   "detail": "{\"lit\":397,\"red\":206,\"blue\":0}"
   },
   {
    "name": "clicking a program's body selects it (sprite hit-box)",
    "ok": true,
-   "detail": "[188]"
+   "detail": "[197]"
   },
   {
    "name": "roster card selects all your Runners",
    "ok": true,
-   "detail": "{\"n\":35,\"all\":35,\"ok\":true}"
+   "detail": "{\"n\":34,\"all\":34,\"ok\":true}"
   },
   {
    "name": "battle with 100+ spawned combat units renders (container, software GPU)",
    "ok": true,
-   "detail": "{\"fps\":35.41215817430657,\"avgStep\":2.399906399230198,\"units\":160}"
+   "detail": "{\"fps\":38.36317135549865,\"avgStep\":3.8245055190180284,\"units\":160}"
   },
   {
    "name": "destroying the Rival Core shows VICTORY",
@@ -159,7 +169,7 @@
   {
    "name": "Play again restarts a fresh match",
    "ok": true,
-   "detail": "{\"tick\":4,\"over\":false}"
+   "detail": "{\"tick\":3,\"over\":false}"
   },
   {
    "name": "losing your Core shows DEFEAT",
@@ -169,7 +179,7 @@
   {
    "name": "performance test runs both phases and reports percentiles",
    "ok": true,
-   "detail": "{\"phases\":[{\"units\":88,\"fps\":40.2,\"frames\":61,\"p95\":33.4},{\"units\":203,\"fps\":26.5,\"frames\":41,\"p95\":50}],\"verdict\":\"Heavy: about 27 fps in the big fight. This is below the 30 fps fallback target — copy the results so the scene can be tuned for this machine.\"}"
+   "detail": "{\"phases\":[{\"units\":88,\"fps\":39.6,\"frames\":60,\"p95\":33.4},{\"units\":203,\"fps\":24.1,\"frames\":37,\"p95\":66.6}],\"verdict\":\"Heavy: about 24 fps in the big fight. This is below the 30 fps fallback target — copy the results so the scene can be tuned for this machine.\"}"
   },
   {
    "name": "same seed, 3000 ticks: Node build and browser bundle produce the same state hash",
@@ -188,8 +198,8 @@
   }
  ],
  "perf": {
-  "fps": 35.41215817430657,
-  "avgStep": 2.399906399230198,
+  "fps": 38.36317135549865,
+  "avgStep": 3.8245055190180284,
   "units": 160
  },
  "errors": []

@@ -1,5 +1,6 @@
 // Menus and dialogs: title, how-to, pause, settings, controls, game over, art codex.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { AnimLab } from './AnimLab.tsx';
 import { engine, Snapshot } from '../client/engine.ts';
 import { ACTIONS, keyName } from '../client/settings.ts';
 import { B } from '../sim/types.ts';
@@ -50,7 +51,7 @@ export function Title({ snap }: { snap: Snapshot }) {
         <button id="t-perf" onClick={() => engine.runPerfTest()} title="Plays a fixed 40-second battle and measures frame and simulation times on this machine">Performance test</button>
       </div>
     </div>
-    <footer className="title-footer"><span><i className="status-dot" /> OFFLINE · NO ACCOUNT · HASH CREDITS ARE FICTIONAL AND MATCH-LOCAL</span><span>MERIDIAN DIVIDE · PROTOTYPE 0.3.2 · PROVISIONAL TITLE</span></footer>
+    <footer className="title-footer"><span><i className="status-dot" /> OFFLINE · NO ACCOUNT · HASH CREDITS ARE FICTIONAL AND MATCH-LOCAL</span><span>MERIDIAN DIVIDE · PROTOTYPE 0.3.3 · PROVISIONAL TITLE</span></footer>
   </main>;
 }
 
@@ -128,8 +129,9 @@ export function Codex() {
     <div className="codex-grid">{STRUCT_ORDER.map(t => { const b = B.buildings[t]; return <figure key={t} className="codex-item">
       <div className="pair"><img src={PORTRAITS[t]} alt={`${b.name} (yours)`} /><img src={RIVAL_PORTRAITS[t]} alt={`${b.name} (Rival)`} /></div><figcaption><b>{b.name}</b><span>{b.desc}</span>
         <small>{b.buildable === false ? 'starting structure' : costText(b.cost)} · HP {b.hp} · {b.w}×{b.h}{b.hardened ? ' · hardened' : ''}</small></figcaption></figure>; })}</div>
+    <AnimLab />
     <h3>Concept sheets</h3>
-    <p className="tag">Generated concept art from the Kernel_Keep_Master_v0.2 kit. These are portraits and direction — the battlefield still uses the readable procedural shapes until production sprites exist.</p>
+    <p className="tag">Generated concept art from the Kernel_Keep_Master_v0.2 kit. The battlefield sprites were cut from these sheets (0.3); animated clips are added as they pass review.</p>
     <img className="sheet" src={ART.sheetRoles} alt="Concept sheet: six program roles" />
     <img className="sheet" src={ART.sheetStructures} alt="Concept sheet: ten structures" />
     <div className="row"><button id="c-back" className="primary" data-autofocus onClick={() => engine.back()}>Back</button></div></Card>;

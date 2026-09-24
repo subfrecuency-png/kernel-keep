@@ -1,2 +1,8 @@
-{"engine": "WebKitGTK 2.52.6", "ticks": 3000, "hashes": {"777": "adb5621a", "1": "2bee4c0e", "42": "788e4b85"}, "errors": []}
+
+> kernel-keep@0.3.2 determinism:webkit
+> tsx tools/hashes.ts && xvfb-run -a python3.12 tools/webkit_determinism.py
+
 {"engine":"Node v22.22.2 (V8)","ticks":3000,"hashes":{"1":"2bee4c0e","42":"788e4b85","777":"adb5621a"}}
+libEGL warning: DRI3 error: Could not get DRI3 device
+libEGL warning: Ensure your X server supports DRI3 to get accelerated rendering
+{"engine": "WebKitGTK 2.52.6", "ticks": 3000, "hashes": {"777": "adb5621a", "1": "2bee4c0e", "42": "788e4b85"}, "errors": []}

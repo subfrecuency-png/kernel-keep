@@ -79,6 +79,20 @@ await ev(() => window.__kk.step(1500));
 const eco = await ev(() => { const w = window.__kk.cs.game.world; const c = w.entities.find(e => e.type === 'compiler' && e.owner === 1); return { built: c.built, staffed: w.operatorPresent(c), code: w.players[1].stats.codeProduced, data: w.players[1].stats.dataHarvested }; });
 check('Compiler built and auto-staffed; Code produced; Data harvested', eco.built && eco.staffed && eco.code > 0 && eco.data > 0, JSON.stringify(eco));
 
+// ---- animation pilot: the staffed Compiler plays its working loop (pixels in its sprite box change) ----
+{
+  const bx = await ev(() => { const k = window.__kk; const w = k.cs.game.world; const c = w.entities.find(e => e.type === 'compiler' && e.owner === 1);
+    k.cs.paused = true; k.jump(c.tx + 1, c.ty + 1); k.cs.sel.clear(); k.publish();
+    const g = k.worldToScreen(c.tx + 1, c.ty + 1); return { x: g.x, y: g.y, z: k.cs.cam.z / k.engine.dpr() }; });
+  const grab = () => ev(b => { const c = document.getElementById('view'); const g = c.getContext('2d'); const d = c.width / innerWidth;
+    const img = g.getImageData(Math.round((b.x - b.z) * d), Math.round((b.y - b.z * 1.6) * d), Math.round(b.z * 2 * d), Math.round(b.z * 1.6 * d)).data;
+    let sum = 0; const v = []; for (let i = 0; i < img.length; i += 16) { v.push(img[i] + img[i + 1] + img[i + 2]); sum += img[i + 2]; } return { v, sum }; }, bx);
+  await page.waitForTimeout(300); const f1 = await grab(); await page.waitForTimeout(700); const f2 = await grab();
+  let diff = 0; for (let i = 0; i < f1.v.length; i++) diff += Math.abs(f1.v[i] - f2.v[i]) > 24 ? 1 : 0;
+  check('staffed Compiler plays its animated working loop (sprite pixels change over time)', f1.sum > 0 && diff > f1.v.length * 0.01, `${diff}/${f1.v.length} samples changed`);
+  await ev(() => { const k = window.__kk; k.cs.paused = false; k.publish(); });
+}
+
 // ---- Core: Q trains, clicking the queue item cancels with refund ----
 const core = await ev(() => { const k = window.__kk; const c = k.cs.game.world.coreOf(1); return { id: c.id, ...k.worldToScreen(c.x, c.y) }; });
 await ev(id => window.__kk.select([id]), core.id);
@@ -148,7 +162,8 @@ await page.click('#p-resume');
   const ration = await ev(() => window.__kk.cs.game.world.players[1].ration);
   check('recovery button "Switch to Lean rations" issues the real ration command', ration === 'lean', ration);
   await ev(() => { const k = window.__kk; const w = k.cs.game.world; w.players[1].code = 200; w.players[1].surgeUntil = w.tick + 5000;
-    for (let i = 0; i < 2; i++) { const b = w.spawnBuilding('tower', 1, 3 + i * 3, 44, true); } k.step(1); });
+    // add Towers until demand exceeds supply (how many depends on how many Nodes the economy has by now)
+    for (let i = 0; i < 10 && w.computeDemand(1) <= w.caps(1).compute; i++) w.spawnBuilding('tower', 1, 3 + i * 3, 44, true); k.step(1); });
   await settle();
   const brown = await page.textContent('#recovery [data-issue="brownout"]').catch(() => null);
   const demand = await ev(() => ({ d: window.__kk.cs.game.world.computeDemand(1), s: window.__kk.cs.game.world.caps(1).compute }));
@@ -169,6 +184,11 @@ await page.click('#p-resume');
   await page.keyboard.press('Escape'); await page.click('#p-codex'); await settle();
   const imgs = await page.evaluate(() => [...document.querySelectorAll('#modalCard img')].map(i => i.naturalWidth));
   check('art codex shows 16 programs/structures in both team colours + 2 concept sheets, all decoded', imgs.length === 34 && imgs.every(w => w > 100), `${imgs.length} images`);
+  const lab = async () => page.evaluate(() => [...document.querySelectorAll('.lab-item')].map(f => { const c = f.querySelector('canvas'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    let lit = 0, red = 0, blue = 0; for (let i = 0; i < d.length; i += 16) { if (d[i + 3] > 0 && d[i] + d[i + 1] + d[i + 2] > 200) { lit++; if (d[i] > d[i + 2] + 40) red++; if (d[i + 2] > d[i] + 40) blue++; } }
+    return { id: f.dataset.sheet, label: f.querySelector('.mono').textContent, lit, red, blue }; }));
+  await page.waitForTimeout(400); const l1 = await lab(); await page.waitForTimeout(600); const l2 = await lab();
+  check('Animation lab plays the Compiler working loop for both teams (frames advance; Rival copy red-shifted)', l1.length === 1 && l1[0].id === 'compiler:working' && l1[0].lit > 500 && l1[0].red > 50 && l1[0].blue > 50 && l1[0].label !== l2[0].label, JSON.stringify([l1[0], l2[0].label]));
   await page.click('#c-back'); await settle(); await page.click('#p-resume'); await settle();
 }
 

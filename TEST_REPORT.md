@@ -1,5 +1,22 @@
 # TEST_REPORT — Kernel Keep
 
+## 0.3.3 animation pilot (branch `anim-pilot`), 2026-09-23
+
+This build uses the same container. **Nothing was run on the Air.**
+
+| Check | Result |
+|---|---|
+| Type check | 0 errors |
+| `npm test` | **40 / 40 pass**. New: `tests/anim.test.ts` (6 tests): 8-way facing with mirrored left facings; loop and one-shot frame timing; the attack fire frame lands exactly when the cooldown reaches 0; clip rules; the working loop only when built, powered, unpaused and staffed (checked on a live Compiler); the shipped atlas matches its JSON. |
+| `npm run e2e` | **39 / 39 pass**. New: a staffed Compiler's sprite pixels change over time in the match (642 of 1,702 samples); the Animation lab plays the loop for both teams, the Rival copy is red, and the frame counter advances. Changed: the brownout check now adds Towers until demand exceeds supply, instead of assuming two are enough. With the new check's timing, two Towers gave 14/26. |
+| `npm run e2e:pwa` | pass |
+| Simulation hash | **`adb5621a` unchanged** (Node = Chromium in e2e). WebKitGTK gives `adb5621a` / `2bee4c0e` / `788e4b85` for seeds 777 / 1 / 42, the same as Node. Animation is presentation only. |
+| A/B frame rate, 6 staffed Compilers in view, 1440×900, software GPU, 3 alternating rounds | 0.3.2: 54.4 / 48.3 / 47.4 fps · pilot: 50.6 / 47.3 / 48.7 fps. This is within run-to-run noise. |
+| Build size | 3.77 MB single HTML (0.3.2: 2.50 MB). The Compiler atlas adds about 1.3 MB as base64. |
+| Runner clips | **Rejected on review** (evidence image and cause in `docs/ANIMATION_PILOT.md`). Not shipped. |
+
+---
+
 ## 0.3.2 (branch `iso-art-0.3`), 2026-09-23
 
 This build uses the same container. **Nothing was run on the Air.**

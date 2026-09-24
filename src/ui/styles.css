@@ -194,3 +194,10 @@ table.keys button{min-width:7rem;padding:.2rem .5rem}
 .perf-table th,.perf-table td{text-align:left;padding:.3rem .45rem;border-bottom:1px solid var(--divider)}
 .perf-table th{color:var(--muted);font-weight:500;font-size:.72rem}
 .banner.perf-run{border-color:var(--supply);background:#2a220cdd;color:#ffe3b0;letter-spacing:.06em}
+
+/* Animation lab (codex) */
+.lab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; margin: 8px 0 16px; }
+.lab-item { margin: 0; background: var(--surface-2, #121a24); border: 1px solid var(--line, #243241); border-radius: 10px; padding: 8px; }
+.lab-item canvas { width: 100%; height: auto; display: block; background: radial-gradient(ellipse at 50% 85%, #1c2a38 0%, #0b1118 70%); border-radius: 6px; }
+.lab-item figcaption { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.lab-item .row { display: flex; gap: 6px; }

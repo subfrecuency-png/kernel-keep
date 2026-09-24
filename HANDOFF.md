@@ -1,3 +1,18 @@
+# HANDOFF — session 6 (2026-09-23): 0.3.3 animation pilot
+
+Committed on branch `anim-pilot` (based on `iso-art-0.3`) in `~/Downloads/kernel-keep`, which is checked out there. Full write-up: `docs/ANIMATION_PILOT.md`.
+
+| Item | Status |
+|---|---|
+| Compiler working loop | **Implemented, Tested.** Staffed, powered Compilers animate (40 frames, 8 fps). The Rival copy is recoloured at load. |
+| Sprites v2 sheets, clip selector, 8-way facing with mirroring, attack sync to cooldown | **Implemented, Tested** (unit). Ready for program frames; no program uses them yet. |
+| Animation lab in the Art codex | **Implemented, Tested** (e2e) |
+| Runner 3D clips (6) | **Rejected.** The model came from a running-pose concept, so every clip keeps the kicked-back leg. Not shipped. |
+| Credits | 9,605 spent (cap 11,000); 1,530 left on the account. The next step needs Ryan's choice (options A/B/C in the pilot doc). |
+| Hash / perf | `adb5621a` unchanged in Node, Chromium and WebKit; A/B frame rate within noise |
+
+---
+
 # HANDOFF — session 5 (2026-09-23): 0.3.2 — desktop shell built, WebKit determinism, performance test, wave warnings
 
 Committed on branch `iso-art-0.3` in `~/Downloads/kernel-keep`, which is checked out there.

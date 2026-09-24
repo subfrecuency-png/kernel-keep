@@ -1,0 +1,14 @@
+{
+ "type": "compiler",
+ "clip": "working",
+ "frames": 40,
+ "fps": 8,
+ "loop": true,
+ "cell": [
+  256,
+  293
+ ],
+ "cols": 8,
+ "maxBaseShiftPx": 0,
+ "source": "compiler_loop.mp4"
+}

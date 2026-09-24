@@ -11,6 +11,8 @@ import { ClientState, COLORS, Fx } from './state.ts';
 import { canPlace } from '../sim/commands.ts';
 import { KU, KV, proj, unproj, groundMatrix, mapBounds, unitRect, buildingRect, depthOf, NATIVE_FACING, Rect, toU } from './iso.ts';
 import { sprite, scaledSprite } from './sprites.ts';
+import { animFrame } from './anim.ts';
+import { buildingClip } from './animlogic.ts';
 
 let fogCanvas: HTMLCanvasElement | null = null;
 let fogCtx: CanvasRenderingContext2D | null = null;
@@ -284,7 +286,11 @@ function drawBuilding(ctx: CanvasRenderingContext2D, cs: ClientState, w: World, 
     return;
   }
   ctx.globalAlpha = alpha;
-  ctx.drawImage(inactive ? scaledSprite(e.type, e.owner, 'gray', r.w) ?? img : img, r.x, r.y, r.w, r.h);
+  // working loop (animation pilot): staffed, powered structures play their clip in place of the still
+  const clip = alpha >= 1 ? buildingClip(e, w.operatorPresent(e)) : null;
+  const a = clip ? animFrame(e.type, clip, e.owner, cs.time, { phase: e.id * 3.7 }) : null;
+  if (a) ctx.drawImage(a.img, a.sx, a.sy, a.sw, a.sh, r.x, r.y, r.w, r.h);
+  else ctx.drawImage(inactive ? scaledSprite(e.type, e.owner, 'gray', r.w) ?? img : img, r.x, r.y, r.w, r.h);
   ctx.globalAlpha = 1;
   if (alpha < 1) return;
   // working glow: producers pulse while staffed and powered
