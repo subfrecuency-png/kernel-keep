@@ -3,6 +3,7 @@ name = "kernel-keep"
 version = "0.2.0"
 description = "Kernel Keep — optional native window around the offline browser build"
 edition = "2021"
+license = "MIT"
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }

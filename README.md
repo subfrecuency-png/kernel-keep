@@ -34,4 +34,8 @@ The concept art and sprites were generated for this project; the animation frame
 video/3D tools and Blender. The concept art was generated with a style reference whose rights have not been
 independently cleared (see `ART_AND_UI_GUIDE.md`, section 4). Third-party code notices: `THIRD_PARTY_NOTICES.md`.
 
-No licence has been chosen yet, so all rights are reserved by the author until one is added.
+## Licence
+
+MIT, see `LICENSE`. Bundled third-party code (React, React-DOM, Scheduler) keeps its own MIT licence in `licenses/`.
+The art-provenance note above still applies: the MIT grant covers what the author can license, and the generated
+art's style reference has not been independently cleared.
