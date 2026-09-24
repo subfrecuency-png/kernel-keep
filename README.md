@@ -10,6 +10,9 @@ exist only inside a match: there is no real cryptocurrency, mining, wallet or NF
 
 Open `dist/kernel-keep.html` in a browser. It is a single offline file: no install, no account, no network.
 
+**As a Mac app:** build `Kernel Keep.app` with the Tauri steps in `desktop/README.md` (Xcode Command Line Tools,
+Rust and Node; about 10 minutes the first time). It opens the same game in its own window, fully offline.
+
 ## Build and test
 
 ```sh
